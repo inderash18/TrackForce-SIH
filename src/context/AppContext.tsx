@@ -107,7 +107,7 @@ const calculateSimResult = (params: SimulationParams, baseProject: Project): Sim
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [activeRoute, setActiveRoute] = useState<ActiveNavRoute>('dashboard');
+  const [activeRoute, setActiveRoute] = useState<ActiveNavRoute>('landing');
   const [selectedProjectId, setSelectedProjectId] = useState<string>('PRJ-602096');
   const [projects] = useState<Project[]>(mockProjects);
   const [alerts, setAlerts] = useState<EarlyWarningAlert[]>(mockEarlyWarnings);

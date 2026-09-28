@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: paimana-postgres
+    environment:
+      POSTGRES_USER: paimana_user
+      POSTGRES_PASSWORD: paimana_password_2026
+      POSTGRES_DB: paimana_sentinel_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U paimana_user -d paimana_sentinel_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - paimana-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: paimana-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - paimana-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.backend
+    container_name: paimana-backend
+    environment:
+      DATABASE_URL: postgresql://paimana_user:paimana_password_2026@postgres:5432/paimana_sentinel_db
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: paimana-sentinel-ultra-secure-key-2026-gov-ai-intelligence
+      JWT_REFRESH_SECRET: paimana-refresh-secret-jwt-key-2026-secure
+      OLLAMA_URL: http://ollama:11434
+      APP_ENV: production
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - paimana-network
+
+  celery-worker:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.backend
+    container_name: paimana-celery-worker
+    command: celery -A app.tasks.celery_app worker --loglevel=info
+    environment:
+      DATABASE_URL: postgresql://paimana_user:paimana_password_2026@postgres:5432/paimana_sentinel_db
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - paimana-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.frontend
+    container_name: paimana-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - paimana-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  paimana-network:
+    driver: bridge

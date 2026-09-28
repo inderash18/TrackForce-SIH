@@ -7,13 +7,12 @@ import { ProgressTimelineChart } from '../components/charts/ProgressTimelineChar
 import {
   Building2,
   Clock,
-  Coins,
   Sparkles,
   Sliders,
-  CheckCircle2,
   FileText,
   MapPin,
-  ArrowLeft
+  ArrowLeft,
+  ShieldCheck
 } from 'lucide-react';
 import type { RecommendedIntervention } from '../types/project';
 
@@ -24,9 +23,9 @@ export const ProjectDetailView: React.FC = () => {
   if (!selectedProject) {
     return (
       <div style={{ padding: '40px', textAlign: 'center' }}>
-        <p>Project not found.</p>
-        <button className="btn btn-primary" onClick={() => navigateTo('projects')}>
-          Back to Projects
+        <p style={{ color: 'var(--color-text-secondary)', marginBottom: '14px' }}>Project not found.</p>
+        <button className="btn-primary" onClick={() => navigateTo('projects')}>
+          Back to Projects Registry
         </button>
       </div>
     );
@@ -35,388 +34,307 @@ export const ProjectDetailView: React.FC = () => {
   const p = selectedProject;
 
   const handleSimulateIntervention = (intItem: RecommendedIntervention) => {
-    // Populate simulator with baseline + intervention improvements
     setSimulationParams({
       physicalProgress: p.physicalProgress,
-      monthlyProgressRate: 2.8,
-      fundingAvailability: 85,
-      contractorCapacity: 75,
+      monthlyProgressRate: 2.5,
+      fundingAvailability: 90,
+      contractorCapacity: 80,
       landAcquisitionPct: Math.min(100, p.cuf.landAcquisitionPct + 15),
-      clearanceSpeed: 80,
-      resourceDeployment: 70
+      clearanceSpeed: 85,
+      resourceDeployment: 75
     });
     navigateTo('simulator');
-    showNotification(`Transferred ${p.code} (${intItem.title}) to What-If Decision Lab for policy simulation.`);
+    showNotification(`Loaded scenario for ${p.code}: "${intItem.title}" into What-If Simulator.`);
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      {/* Back Button & Master Header (Section 11) */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      {/* Top Header & Actions */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
         <button
-          className="btn btn-secondary btn-sm"
+          className="btn-secondary"
           onClick={() => navigateTo('projects')}
-          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+          style={{ fontSize: '12px', padding: '6px 12px' }}
         >
           <ArrowLeft size={13} /> Back to Projects Registry
         </button>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button
-            className="btn btn-secondary btn-sm"
+            className="btn-secondary"
+            style={{ fontSize: '12px', padding: '6px 12px' }}
             onClick={() => {
               setSimulationParams({
                 physicalProgress: p.physicalProgress,
-                monthlyProgressRate: 0.5,
-                fundingAvailability: 60,
+                monthlyProgressRate: 0.8,
+                fundingAvailability: 70,
                 contractorCapacity: p.cuf.contractorCapacity,
                 landAcquisitionPct: p.cuf.landAcquisitionPct,
                 clearanceSpeed: 50,
-                resourceDeployment: 40
+                resourceDeployment: 50
               });
               navigateTo('simulator');
             }}
           >
-            <Sliders size={13} color="var(--color-royal-blue)" />
-            Simulate Interventions
+            <Sliders size={13} color="var(--color-accent-cyan)" />
+            <span>Simulate Interventions</span>
           </button>
           <button
-            className="btn btn-primary btn-sm"
+            className="btn-primary"
+            style={{ fontSize: '12px', padding: '6px 14px' }}
             onClick={() => {
-              showNotification(`Generating MoSPI Project Dossier for ${p.code}...`);
+              showNotification(`Generating MoSPI Executive Briefing for ${p.code}...`);
               navigateTo('reports');
             }}
           >
             <FileText size={13} />
-            Export Executive Dossier
+            <span>Export Executive Dossier</span>
           </button>
         </div>
       </div>
 
-      {/* Top Project Master Card */}
-      <div className="gov-card" style={{ padding: '24px' }}>
+      {/* Project Master Intelligence Banner */}
+      <div className="gov-card" style={{ padding: '20px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
           <div style={{ flex: 1, minWidth: '320px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-              <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '12px', background: 'var(--color-bg-soft)', padding: '2px 8px', borderRadius: '4px', border: '1px solid var(--color-border-grey)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+              <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-accent-cyan)', background: 'var(--color-action-subtle)', padding: '2px 8px', borderRadius: '4px', border: '1px solid var(--color-border-subtle)' }}>
                 {p.code}
               </span>
-              <StatusBadge level={p.riskLevel} />
-              <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)', fontWeight: 500 }}>
-                Confidence: <strong>{p.confidenceScore}% (High)</strong>
+              <span style={{ fontSize: '11.5px', color: 'var(--color-text-muted)' }}>
+                {p.sector} · {p.implementingAgency}
               </span>
             </div>
 
-            <h2 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--color-text-dark)', marginBottom: '10px', letterSpacing: '-0.01em' }}>
+            <h1 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '6px', letterSpacing: '-0.01em' }}>
               {p.name}
-            </h2>
+            </h1>
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '18px', fontSize: '12.5px', color: 'var(--color-text-secondary)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '12px', color: 'var(--color-text-secondary)', flexWrap: 'wrap' }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <Building2 size={14} color="var(--color-royal-blue)" /> {p.ministry}
+                <Building2 size={13} color="var(--color-text-muted)" /> {p.ministry}
               </span>
-              <span><strong>Sector:</strong> {p.sector}</span>
               <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <MapPin size={14} /> {p.state} {p.district ? `(${p.district})` : ''}
+                <MapPin size={13} color="var(--color-text-muted)" /> {p.state}
               </span>
-              <span><strong>Agency:</strong> {p.implementingAgency}</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Clock size={13} color="var(--color-text-muted)" /> Status: <strong>{p.status}</strong>
+              </span>
             </div>
           </div>
 
-          {/* Quick Score Highlight */}
-          <div
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>Risk Index</div>
+              <div className="tabular-nums" style={{ fontSize: '26px', fontWeight: 800, color: p.riskLevel.toLowerCase() === 'critical' ? 'var(--status-critical-text)' : 'var(--status-high-text)' }}>
+                {p.riskScore} <span style={{ fontSize: '12px', color: 'var(--color-text-dim)', fontWeight: 500 }}>/ 100</span>
+              </div>
+            </div>
+            <StatusBadge level={p.riskLevel} size="md" />
+          </div>
+        </div>
+      </div>
+
+      {/* Key Predictive Metrics Cards */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gap: '12px'
+        }}
+      >
+        <MetricCard
+          label="Sanctioned vs Revised Outlay"
+          value={`₹${p.revisedCost.toLocaleString('en-IN')} Cr`}
+          explanation={`Original sanction: ₹${p.originalCost.toLocaleString('en-IN')} Cr (+${Math.round(((p.revisedCost - p.originalCost) / p.originalCost) * 100)}% cost growth)`}
+          subtitleBadge={`Exp: ₹${p.expenditure.toLocaleString('en-IN')} Cr`}
+          indicatorColor="primary"
+        />
+        <MetricCard
+          label="Physical Completion"
+          value={`${p.physicalProgress}%`}
+          explanation={`Target was ${p.monthlyHistory[p.monthlyHistory.length - 1]?.expectedProgress || 70}% (gap of ${Math.round((p.monthlyHistory[p.monthlyHistory.length - 1]?.expectedProgress || 70) - p.physicalProgress)}%)`}
+          trend={{ direction: 'down', text: 'Velocity 0.85%/mo', isGood: false }}
+          indicatorColor={p.physicalProgress < 50 ? 'high' : 'medium'}
+        />
+        <MetricCard
+          label="Predicted Delay Probability"
+          value={`${p.scheduleDelayProbability}%`}
+          explanation={`Model estimates approx ${p.expectedDelayMonths} months delay past revised completion`}
+          indicatorColor="prediction"
+        />
+        <MetricCard
+          label="Forecasted Final Cost"
+          value={`₹${Math.round(p.revisedCost * 1.08).toLocaleString('en-IN')} Cr`}
+          explanation={`Predicted cost escalation probability: ${p.costOverrunProbability}%`}
+          indicatorColor="critical"
+        />
+      </div>
+
+      {/* Navigation Tabs */}
+      <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid var(--color-border)', paddingBottom: '2px' }}>
+        {[
+          { id: 'overview', label: 'Overview & Schedule' },
+          { id: 'explainability', label: 'Why is this Project High Risk? (SHAP)' },
+          { id: 'interventions', label: 'Actionable Interventions' },
+          { id: 'financial', label: 'CUF Statutory Parameters' }
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as any)}
             style={{
-              padding: '14px 20px',
-              backgroundColor: p.riskLevel === 'critical' ? 'var(--status-critical-bg)' : 'var(--color-bg-soft)',
-              border: `1px solid ${p.riskLevel === 'critical' ? 'var(--status-critical-border)' : 'var(--color-border-grey)'}`,
-              borderRadius: 'var(--radius-lg)',
-              textAlign: 'center',
-              minWidth: '160px'
+              padding: '8px 16px',
+              background: 'transparent',
+              border: 'none',
+              borderBottom: activeTab === tab.id ? '2px solid var(--color-action-primary)' : '2px solid transparent',
+              color: activeTab === tab.id ? 'var(--color-text-primary)' : 'var(--color-text-muted)',
+              fontSize: '13px',
+              fontWeight: activeTab === tab.id ? 600 : 500,
+              cursor: 'pointer',
+              transition: 'all 120ms ease'
             }}
           >
-            <span style={{ fontSize: '11px', color: p.riskLevel === 'critical' ? 'var(--status-critical-text)' : 'var(--color-text-secondary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              Overall Risk Score
-            </span>
-            <div style={{ fontSize: '28px', fontWeight: 800, color: p.riskLevel === 'critical' ? 'var(--status-critical-text)' : 'var(--color-text-dark)', lineHeight: 1.1 }}>
-              {p.riskScore} <span style={{ fontSize: '14px', fontWeight: 500, opacity: 0.7 }}>/ 100</span>
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab 1: Overview & Schedule Timeline */}
+      {activeTab === 'overview' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div className="gov-card">
+            <div className="gov-card-header">
+              <div className="gov-card-title">
+                <Clock size={15} color="var(--color-action-primary)" />
+                Monthly Physical & Financial Trajectory
+              </div>
             </div>
-            <span style={{ fontSize: '11px', fontWeight: 700, color: p.riskLevel === 'critical' ? 'var(--status-critical-text)' : 'var(--status-medium-text)', textTransform: 'uppercase' }}>
-              {p.riskLevel} Risk
-            </span>
+            <div className="gov-card-body">
+              <ProgressTimelineChart
+                history={p.monthlyHistory}
+                originalDate={p.originalCompletionDate}
+                revisedDate={p.revisedCompletionDate}
+                aiPredictedDate={p.aiPredictedCompletionDate}
+              />
+            </div>
           </div>
         </div>
+      )}
 
-        {/* Tab Navigation */}
-        <div style={{ display: 'flex', gap: '8px', borderTop: '1px solid var(--color-border-grey)', marginTop: '20px', paddingTop: '14px' }}>
-          <button
-            className={`btn btn-sm ${activeTab === 'overview' ? 'btn-primary' : 'btn-secondary'}`}
-            onClick={() => setActiveTab('overview')}
-          >
-            AI Predictive Overview
-          </button>
-          <button
-            className={`btn btn-sm ${activeTab === 'financial' ? 'btn-primary' : 'btn-secondary'}`}
-            onClick={() => setActiveTab('financial')}
-          >
-            Cost & Financial Audit
-          </button>
-          <button
-            className={`btn btn-sm ${activeTab === 'explainability' ? 'btn-primary' : 'btn-secondary'}`}
-            onClick={() => setActiveTab('explainability')}
-          >
-            SHAP Explainability AI ({p.shapContributors.length})
-          </button>
-          <button
-            className={`btn btn-sm ${activeTab === 'interventions' ? 'btn-primary' : 'btn-secondary'}`}
-            onClick={() => setActiveTab('interventions')}
-          >
-            Actionable Interventions ({p.interventions.length})
-          </button>
-        </div>
-      </div>
-
-      {/* Primary KPI Predictions (Section 11) */}
-      <div className="grid-cols-4">
-        <MetricCard
-          label="Cost Overrun Probability"
-          value={`${p.costOverrunProbability}%`}
-          explanation="Statistical likelihood of budget revision"
-          trend={{ direction: 'up', text: 'High Exposure', isGood: false }}
-          indicatorColor="critical"
-        />
-        <MetricCard
-          label="Schedule Delay Probability"
-          value={`${p.scheduleDelayProbability}%`}
-          explanation="Likelihood of breaching approved target date"
-          trend={{ direction: 'up', text: 'Severe Slippage', isGood: false }}
-          indicatorColor="critical"
-        />
-        <MetricCard
-          label="Expected Delay Drift"
-          value={`+${p.expectedDelayMonths} mos`}
-          explanation={`Expected completion: ${p.aiPredictedCompletionDate}`}
-          trend={{ direction: 'up', text: `vs ${p.revisedCompletionDate}`, isGood: false }}
-          indicatorColor="high"
-        />
-        <MetricCard
-          label="Predicted Final Cost"
-          value={`₹${p.predictedFinalCost.toLocaleString()} Cr`}
-          explanation={`Escalation: +₹${p.costEscalationAmount} Cr over revised`}
-          subtitleBadge={`Orig: ₹${p.originalCost} Cr`}
-          indicatorColor="high"
-        />
-      </div>
-
-      {/* Section 12 & 13: Financial Status & Schedule Timeline */}
-      <div className="grid-2-1">
-        {/* Schedule & Trend Velocity (Section 13 & 14) */}
+      {/* Tab 2: Explainable AI (SHAP) */}
+      {activeTab === 'explainability' && (
         <div className="gov-card">
           <div className="gov-card-header">
             <div>
               <div className="gov-card-title">
-                <Clock size={16} color="var(--color-royal-blue)" />
-                Schedule & Physical Progress Trajectory
+                <Sparkles size={15} color="var(--color-accent-cyan)" />
+                Why is this project classified as {p.riskLevel}?
               </div>
-              <div className="gov-card-subtitle">Monthly execution velocity vs target milestone benchmarks</div>
+              <div className="gov-card-subtitle">
+                TreeSHAP decomposition of exact feature weights influencing the composite risk score
+              </div>
             </div>
           </div>
-
           <div className="gov-card-body">
-            <ProgressTimelineChart
-              history={p.monthlyHistory}
-              originalDate={p.originalCompletionDate}
-              revisedDate={p.revisedCompletionDate}
-              aiPredictedDate={p.aiPredictedCompletionDate}
-            />
+            <SHAPExplanationChart contributors={p.shapContributors} projectRiskScore={p.riskScore} />
           </div>
         </div>
+      )}
 
-        {/* Financial Status Comparison (Section 12) */}
-        <div className="gov-card">
-          <div className="gov-card-header">
-            <div>
-              <div className="gov-card-title">
-                <Coins size={16} color="var(--color-royal-blue)" />
-                Cost & Financial Outlay
-              </div>
-              <div className="gov-card-subtitle">Approved budget vs AI escalation forecast</div>
-            </div>
-          </div>
-
-          <div className="gov-card-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '3px' }}>
-                  <span style={{ color: 'var(--color-text-secondary)' }}>Original Sanctioned Cost</span>
-                  <strong style={{ color: 'var(--color-text-dark)' }}>₹{p.originalCost.toLocaleString()} Cr</strong>
+      {/* Tab 3: Actionable Interventions */}
+      {activeTab === 'interventions' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {(p.recommendedInterventions || []).map((intItem) => (
+            <div
+              key={intItem.id}
+              className="gov-card"
+              style={{
+                padding: '16px 20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '14px',
+                borderLeft: intItem.priority === 'Critical' ? '4px solid var(--status-critical)' : '4px solid var(--status-high)'
+              }}
+            >
+              <div style={{ flex: 1, minWidth: '280px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                  <StatusBadge level={intItem.priority} size="sm" />
+                  <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>{intItem.pillar}</span>
                 </div>
-                <div style={{ height: '6px', width: '100%', backgroundColor: 'var(--color-bg-soft)', borderRadius: '3px' }}>
-                  <div style={{ height: '100%', width: `${(p.originalCost / p.predictedFinalCost) * 100}%`, backgroundColor: '#94A3B8', borderRadius: '3px' }} />
+                <div style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: '3px' }}>
+                  {intItem.title}
                 </div>
-              </div>
-
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '3px' }}>
-                  <span style={{ color: 'var(--color-text-secondary)' }}>Approved Revised Cost</span>
-                  <strong style={{ color: 'var(--color-text-dark)' }}>₹{p.revisedCost.toLocaleString()} Cr</strong>
-                </div>
-                <div style={{ height: '6px', width: '100%', backgroundColor: 'var(--color-bg-soft)', borderRadius: '3px' }}>
-                  <div style={{ height: '100%', width: `${(p.revisedCost / p.predictedFinalCost) * 100}%`, backgroundColor: 'var(--color-royal-blue)', borderRadius: '3px' }} />
-                </div>
-              </div>
-
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '3px' }}>
-                  <span style={{ color: 'var(--color-text-secondary)' }}>Current Expenditure</span>
-                  <strong style={{ color: 'var(--color-text-dark)' }}>₹{p.expenditure.toLocaleString()} Cr ({((p.expenditure / p.revisedCost) * 100).toFixed(1)}%)</strong>
-                </div>
-                <div style={{ height: '6px', width: '100%', backgroundColor: 'var(--color-bg-soft)', borderRadius: '3px' }}>
-                  <div style={{ height: '100%', width: `${(p.expenditure / p.predictedFinalCost) * 100}%`, backgroundColor: '#0EA5E9', borderRadius: '3px' }} />
-                </div>
-              </div>
-
-              <div style={{ padding: '10px 12px', backgroundColor: 'var(--status-critical-bg)', border: '1px solid var(--status-critical-border)', borderRadius: 'var(--radius-md)', marginTop: '4px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
-                  <span style={{ color: 'var(--status-critical-text)', fontWeight: 700 }}>Predicted Final Cost (AI Model)</span>
-                  <strong style={{ color: 'var(--status-critical-text)', fontSize: '13.5px' }}>₹{p.predictedFinalCost.toLocaleString()} Cr</strong>
-                </div>
-                <span style={{ fontSize: '11px', color: 'var(--status-critical-text)', opacity: 0.9, display: 'block' }}>
-                  Anticipated additional escalation: +₹{p.costEscalationAmount} Cr due to contractor idle claims & price index variation.
-                </span>
-              </div>
-            </div>
-
-            {/* CUF Indicators */}
-            <div style={{ borderTop: '1px solid var(--color-border-grey)', paddingTop: '12px' }}>
-              <span style={{ fontSize: '11.5px', fontWeight: 600, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.03em', display: 'block', marginBottom: '8px' }}>
-                CUF Ground Variables
-              </span>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '11.5px' }}>
-                <div style={{ background: 'var(--color-bg-soft)', padding: '6px 8px', borderRadius: '4px' }}>
-                  <span style={{ color: 'var(--color-text-secondary)', display: 'block' }}>Land Acquired</span>
-                  <strong>{p.cuf.landAcquisitionPct}%</strong>
-                </div>
-                <div style={{ background: 'var(--color-bg-soft)', padding: '6px 8px', borderRadius: '4px' }}>
-                  <span style={{ color: 'var(--color-text-secondary)', display: 'block' }}>Clearance Status</span>
-                  <strong style={{ fontSize: '10.5px' }}>{p.cuf.clearanceStatus}</strong>
-                </div>
-                <div style={{ background: 'var(--color-bg-soft)', padding: '6px 8px', borderRadius: '4px' }}>
-                  <span style={{ color: 'var(--color-text-secondary)', display: 'block' }}>Funding Status</span>
-                  <strong>{p.cuf.fundingAvailability}</strong>
-                </div>
-                <div style={{ background: 'var(--color-bg-soft)', padding: '6px 8px', borderRadius: '4px' }}>
-                  <span style={{ color: 'var(--color-text-secondary)', display: 'block' }}>Resource Deployment</span>
-                  <strong style={{ color: 'var(--status-critical-text)' }}>{p.cuf.resourceDeployment}</strong>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Section 15 & 16: Explainable AI (SHAP) & Recommended Actions */}
-      <div className="grid-2-1">
-        {/* Explainable AI (Section 15) */}
-        <div className="gov-card">
-          <div className="gov-card-header">
-            <div>
-              <div className="gov-card-title">
-                <Sparkles size={16} color="var(--color-royal-blue)" />
-                Why is this project high risk?
-              </div>
-              <div className="gov-card-subtitle">SHAP-style mathematical feature importance breakdown</div>
-            </div>
-          </div>
-
-          <div className="gov-card-body">
-            <SHAPExplanationChart
-              contributors={p.shapContributors}
-              projectRiskScore={p.riskScore}
-            />
-          </div>
-        </div>
-
-        {/* Recommended Actions (Section 16) */}
-        <div className="gov-card">
-          <div className="gov-card-header">
-            <div>
-              <div className="gov-card-title">
-                <CheckCircle2 size={16} color="var(--status-low-dot)" />
-                Recommended Interventions
-              </div>
-              <div className="gov-card-subtitle">AI-simulated high impact remedial actions</div>
-            </div>
-          </div>
-
-          <div className="gov-card-body" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            {p.interventions.map(action => (
-              <div
-                key={action.id}
-                style={{
-                  padding: '14px',
-                  borderRadius: 'var(--radius-md)',
-                  border: `1px solid ${action.priority === 'CRITICAL' ? 'var(--status-critical-border)' : 'var(--color-border-grey)'}`,
-                  backgroundColor: action.priority === 'CRITICAL' ? '#FEFBFB' : 'var(--color-white)'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                  <span
-                    style={{
-                      fontSize: '10.5px',
-                      fontWeight: 700,
-                      padding: '2px 6px',
-                      borderRadius: '4px',
-                      backgroundColor: action.priority === 'CRITICAL' ? 'var(--status-critical-bg)' : 'var(--status-medium-bg)',
-                      color: action.priority === 'CRITICAL' ? 'var(--status-critical-text)' : 'var(--status-medium-text)'
-                    }}
-                  >
-                    {action.priority} PRIORITY
-                  </span>
-                  <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>{action.id}</span>
-                </div>
-
-                <strong style={{ fontSize: '13px', color: 'var(--color-text-dark)', display: 'block', marginBottom: '4px' }}>
-                  {action.title}
-                </strong>
-
-                <p style={{ fontSize: '12px', color: 'var(--color-text-body)', margin: '0 0 8px', lineHeight: 1.35 }}>
-                  <strong>Reason:</strong> {action.reason}
+                <p style={{ margin: 0, fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: 1.4 }}>
+                  {intItem.description}
                 </p>
-
-                {/* Expected Impact Box */}
-                <div
-                  style={{
-                    backgroundColor: 'var(--status-low-bg)',
-                    border: '1px solid var(--status-low-border)',
-                    padding: '8px 10px',
-                    borderRadius: '6px',
-                    marginBottom: '10px'
-                  }}
-                >
-                  <span style={{ fontSize: '11px', color: 'var(--status-low-text)', fontWeight: 700, display: 'block' }}>
-                    Predicted Impact:
-                  </span>
-                  <span style={{ fontSize: '12px', color: 'var(--status-low-text)' }}>
-                    {action.expectedImpact}
-                  </span>
-                  <div style={{ display: 'flex', gap: '12px', marginTop: '4px', fontSize: '11px', fontWeight: 600, color: 'var(--status-low-text)' }}>
-                    <span>Delay Risk: {action.delayRiskBefore}% → {action.delayRiskAfter}%</span>
-                    <span>Risk Score: {action.riskScoreBefore} → {action.riskScoreAfter}</span>
-                  </div>
+                <div style={{ fontSize: '11.5px', color: 'var(--status-low-text)', fontWeight: 600, marginTop: '6px' }}>
+                  Expected Outcome: {intItem.expectedImpact}
                 </div>
-
-                <button
-                  className="btn btn-secondary btn-sm"
-                  style={{ width: '100%', fontSize: '11.5px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-                  onClick={() => handleSimulateIntervention(action)}
-                >
-                  <Sliders size={12} color="var(--color-royal-blue)" /> Test In What-If Simulator
-                </button>
               </div>
-            ))}
+
+              <button
+                className="btn-secondary"
+                onClick={() => handleSimulateIntervention(intItem)}
+                style={{ fontSize: '12px', padding: '6px 14px' }}
+              >
+                <Sliders size={13} color="var(--color-accent-cyan)" />
+                <span>Simulate Policy Action</span>
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Tab 4: Statutory CUF Parameters */}
+      {activeTab === 'financial' && (
+        <div className="gov-card">
+          <div className="gov-card-header">
+            <div className="gov-card-title">
+              <ShieldCheck size={15} color="var(--color-action-primary)" />
+              Central Upload Format (CUF) Compliance Matrix
+            </div>
+          </div>
+          <div className="gov-card-body">
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                gap: '12px'
+              }}
+            >
+              <div style={{ padding: '12px', background: 'var(--color-surface-elevated)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
+                <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>Land Acquisition Complete</div>
+                <div className="tabular-nums" style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                  {p.cuf.landAcquisitionPct}%
+                </div>
+              </div>
+
+              <div style={{ padding: '12px', background: 'var(--color-surface-elevated)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
+                <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>Forest Clearance Status</div>
+                <div style={{ fontSize: '14px', fontWeight: 600, color: p.cuf.forestClearance === 'Approved' ? 'var(--status-low-text)' : 'var(--status-critical-text)' }}>
+                  {p.cuf.forestClearance}
+                </div>
+              </div>
+
+              <div style={{ padding: '12px', background: 'var(--color-surface-elevated)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
+                <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>Contractor Capacity Index</div>
+                <div className="tabular-nums" style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                  {p.cuf.contractorCapacity} / 100
+                </div>
+              </div>
+
+              <div style={{ padding: '12px', background: 'var(--color-surface-elevated)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
+                <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>Environment Clearance</div>
+                <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--status-low-text)' }}>
+                  {p.cuf.environmentClearance}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

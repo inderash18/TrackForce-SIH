@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import {
   Search,
   Bell,
   Calendar,
-  Filter,
-  Building2,
   ChevronDown,
-  ShieldCheck,
   LogOut,
-  AlertTriangle
+  Menu,
+  X,
+  ShieldCheck,
+  ExternalLink,
+  Home
 } from 'lucide-react';
-import { ministrySummaryList, sectorSummaryList } from '../../data/nationalMetrics';
 
 export const Header: React.FC = () => {
   const {
@@ -19,60 +19,75 @@ export const Header: React.FC = () => {
     selectedProjectId,
     selectedProject,
     reportingMonth,
-    setReportingMonth,
-    selectedMinistry,
-    setSelectedMinistry,
-    selectedSector,
-    setSelectedSector,
     globalSearch,
     setGlobalSearch,
     alerts,
     user,
     logoutUser,
-    navigateTo
+    navigateTo,
+    sidebarCollapsed,
+    setSidebarCollapsed
   } = useApp();
 
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showSearchModal, setShowSearchModal] = useState(false);
 
-  const activeAlertsCount = alerts.filter(a => a.status === 'active' || a.severity === 'critical').length;
+  // Keyboard shortcut Ctrl+K / Cmd+K
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        setShowSearchModal((prev) => !prev);
+      } else if (e.key === 'Escape') {
+        setShowSearchModal(false);
+        setShowNotifications(false);
+        setShowUserMenu(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
-  // Derive human-readable page title and breadcrumb
+  const activeAlertsCount = alerts.filter(
+    (a) => a.severity === 'critical' || a.status === 'active' || a.status === 'Active'
+  ).length;
+
   const getBreadcrumbs = () => {
     switch (activeRoute) {
       case 'dashboard':
-        return { title: 'National Infrastructure Intelligence', breadcrumb: 'Dashboard / National Overview' };
+        return { title: 'National Infrastructure Intelligence', breadcrumb: 'Dashboard / Overview' };
       case 'projects':
-        return { title: 'Central Sector Projects Inventory', breadcrumb: 'Projects / Registry & Filter' };
+        return { title: 'Central Sector Projects Inventory', breadcrumb: 'Projects / Registry' };
       case 'project-detail':
         return {
-          title: selectedProject ? selectedProject.name : 'Project Intelligence Dossier',
+          title: selectedProject ? selectedProject.name : 'Project Dossier',
           breadcrumb: `Projects / ${selectedProjectId}`
         };
       case 'risk-monitor':
-        return { title: 'National Risk Monitoring Center', breadcrumb: 'Surveillance / Portfolio Risk Monitor' };
+        return { title: 'National Risk Monitoring Center', breadcrumb: 'Surveillance / Risk Monitor' };
       case 'alerts':
-        return { title: 'Early Warning Intelligence Signals', breadcrumb: 'Early Warnings / Active Alerts' };
+        return { title: 'Early Warning Intelligence Signals', breadcrumb: 'Early Warnings / Active Signals' };
       case 'analytics':
-        return { title: 'Infrastructure Portfolio Analytics', breadcrumb: 'Intelligence / Multi-Dimensional Analytics' };
+        return { title: 'Portfolio Analytics', breadcrumb: 'Intelligence / Multi-Dimensional' };
       case 'benchmarking':
         return { title: 'Project Peer Benchmarking Lab', breadcrumb: 'Decision Support / Benchmarking' };
       case 'map':
-        return { title: 'Geospatial Infrastructure Intelligence', breadcrumb: 'Surveillance / India Risk Map' };
+        return { title: 'Geospatial Infrastructure Intelligence', breadcrumb: 'Surveillance / India GIS Map' };
       case 'simulator':
-        return { title: 'What-If Policy & Intervention Simulator', breadcrumb: 'Decision Support / What-If Simulator' };
+        return { title: 'What-If Policy & Intervention Simulator', breadcrumb: 'Decision Support / Simulator' };
       case 'assistant':
-        return { title: 'Sentinel AI Intelligence Assistant', breadcrumb: 'AI Assistant / Copilot' };
+        return { title: 'Sentinel AI Intelligence Assistant', breadcrumb: 'AI Copilot / Qwen RAG' };
       case 'reports':
-        return { title: 'Executive Dossiers & Statutory Reports', breadcrumb: 'Reports / Cabinet & Ministry Briefs' };
+        return { title: 'Executive Dossiers & Statutory Reports', breadcrumb: 'Reports / Flash Reports' };
       case 'data':
-        return { title: 'Data Management & Confidence Audit', breadcrumb: 'Data Pipeline / CUF & OCMS Sources' };
+        return { title: 'Data Management & Confidence Audit', breadcrumb: 'Data Pipeline / Ingestion' };
       case 'model-performance':
-        return { title: 'Predictive ML Model Validation & Metrics', breadcrumb: 'AI Architecture / Model Performance' };
+        return { title: 'Predictive ML Model Validation', breadcrumb: 'AI Architecture / Performance' };
       case 'admin':
-        return { title: 'System Administration & RBAC', breadcrumb: 'System / Governance & Access Control' };
+        return { title: 'System Administration & RBAC', breadcrumb: 'System / Governance' };
       case 'landing':
-        return { title: 'PAIMANA Sentinel AI Platform', breadcrumb: 'Public / Overview' };
+        return { title: 'PAIMANA Sentinel AI Platform', breadcrumb: 'Public / Portal' };
       case 'login':
         return { title: 'Secure Official Login', breadcrumb: 'Auth / Sign In' };
       default:
@@ -83,140 +98,175 @@ export const Header: React.FC = () => {
   const { title, breadcrumb } = getBreadcrumbs();
 
   return (
-    <header
-      style={{
-        height: '72px',
-        backgroundColor: 'var(--color-white)',
-        borderBottom: '1px solid var(--color-border-grey)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '0 32px',
-        position: 'sticky',
-        top: 0,
-        zIndex: 100,
-        boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)'
-      }}
-    >
-      {/* Left: Breadcrumb & Title */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', maxWidth: '380px' }}>
-        <span style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', fontWeight: 500, letterSpacing: '0.02em' }}>
-          {breadcrumb}
-        </span>
-        <h1
-          style={{
-            fontSize: '16px',
-            fontWeight: 700,
-            color: 'var(--color-text-dark)',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            margin: 0
-          }}
-          title={title}
-        >
-          {title}
-        </h1>
-      </div>
-
-      {/* Center/Right Controls */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        {/* Global Search */}
-        <div style={{ position: 'relative', width: '220px' }}>
-          <Search
-            size={14}
-            color="var(--color-text-secondary)"
-            style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }}
-          />
-          <input
-            type="text"
-            className="gov-input"
-            placeholder="Search project, code, state..."
-            value={globalSearch}
-            onChange={e => setGlobalSearch(e.target.value)}
-            style={{ paddingLeft: '32px', width: '100%', fontSize: '12.5px' }}
-          />
-        </div>
-
-        {/* Reporting Month Selector */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--color-bg-soft)', padding: '4px 8px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-grey)' }}>
-          <Calendar size={13} color="var(--color-text-secondary)" />
-          <select
-            className="gov-select"
-            value={reportingMonth}
-            onChange={e => setReportingMonth(e.target.value)}
-            style={{ border: 'none', background: 'transparent', padding: '2px 4px', fontSize: '12.5px', fontWeight: 600, color: 'var(--color-text-dark)', cursor: 'pointer' }}
-          >
-            <option value="April 2026">April 2026 (Live)</option>
-            <option value="March 2026">March 2026</option>
-            <option value="February 2026">February 2026</option>
-            <option value="January 2026">January 2026</option>
-            <option value="December 2025">December 2025</option>
-          </select>
-        </div>
-
-        {/* Ministry Filter */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--color-bg-soft)', padding: '4px 8px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-grey)' }}>
-          <Building2 size={13} color="var(--color-text-secondary)" />
-          <select
-            className="gov-select"
-            value={selectedMinistry}
-            onChange={e => setSelectedMinistry(e.target.value)}
-            style={{ border: 'none', background: 'transparent', padding: '2px 4px', fontSize: '12.5px', color: 'var(--color-text-dark)', maxWidth: '140px', cursor: 'pointer' }}
-          >
-            <option value="All Ministries">All Ministries</option>
-            {ministrySummaryList.map(m => (
-              <option key={m.ministry} value={m.ministry}>
-                {m.ministry.split('(')[0].trim()}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Sector Filter */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--color-bg-soft)', padding: '4px 8px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-grey)' }}>
-          <Filter size={13} color="var(--color-text-secondary)" />
-          <select
-            className="gov-select"
-            value={selectedSector}
-            onChange={e => setSelectedSector(e.target.value)}
-            style={{ border: 'none', background: 'transparent', padding: '2px 4px', fontSize: '12.5px', color: 'var(--color-text-dark)', maxWidth: '130px', cursor: 'pointer' }}
-          >
-            <option value="All Sectors">All Sectors</option>
-            {sectorSummaryList.map(s => (
-              <option key={s.sector} value={s.sector}>
-                {s.sector}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Notifications Dropdown */}
-        <div style={{ position: 'relative' }}>
+    <>
+      <header
+        style={{
+          height: 'var(--header-height)',
+          backgroundColor: 'var(--color-surface-nav)',
+          borderBottom: '1px solid var(--color-border)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 24px',
+          position: 'sticky',
+          top: 0,
+          zIndex: 100,
+          boxShadow: 'var(--shadow-sm)'
+        }}
+      >
+        {/* Left Section: Breadcrumb & Dynamic Title */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <button
-            className="btn btn-secondary"
-            style={{ padding: '7px 10px', position: 'relative' }}
-            onClick={() => setShowNotifications(!showNotifications)}
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            style={{
+              display: 'none',
+              background: 'transparent',
+              border: 'none',
+              color: 'var(--color-text-secondary)',
+              cursor: 'pointer'
+            }}
+            className="mobile-menu-btn"
+          >
+            <Menu size={20} />
+          </button>
+
+          <div>
+            <div
+              style={{
+                fontSize: '11px',
+                fontWeight: 600,
+                color: 'var(--color-text-muted)',
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase'
+              }}
+            >
+              {breadcrumb}
+            </div>
+            <h1
+              style={{
+                fontSize: '16px',
+                fontWeight: 700,
+                color: 'var(--color-text-primary)',
+                letterSpacing: '-0.01em',
+                margin: 0,
+                lineHeight: 1.2
+              }}
+            >
+              {title}
+            </h1>
+          </div>
+        </div>
+
+        {/* Center / Search Bar */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div
+            onClick={() => setShowSearchModal(true)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              backgroundColor: 'var(--color-surface-panel)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-md)',
+              padding: '6px 14px',
+              cursor: 'pointer',
+              minWidth: '220px',
+              transition: 'all 150ms ease',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
+            }}
+          >
+            <Search size={14} color="var(--color-text-muted)" />
+            <span style={{ fontSize: '12px', color: globalSearch ? 'var(--color-text-primary)' : 'var(--color-text-dim)', flex: 1 }}>
+              {globalSearch || 'Search projects, sectors...'}
+            </span>
+            <span
+              style={{
+                fontSize: '10px',
+                fontWeight: 600,
+                backgroundColor: 'var(--color-surface-elevated)',
+                color: 'var(--color-text-muted)',
+                padding: '2px 5px',
+                borderRadius: '4px',
+                border: '1px solid var(--color-border)'
+              }}
+            >
+              Ctrl+K
+            </span>
+          </div>
+        </div>
+
+        {/* Right Section: Notifications & User Profile */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', position: 'relative' }}>
+          {/* Public Portal Button */}
+          <button
+            type="button"
+            onClick={() => navigateTo('landing')}
+            className="btn-secondary"
+            style={{ fontSize: '11.5px', padding: '5px 10px', height: '32px' }}
+            title="Go to Public PAIMANA Portal"
+          >
+            <Home size={13} color="var(--color-action-primary)" />
+            <span>Public Portal</span>
+          </button>
+
+          {/* Reporting Period Badge */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '4px 10px',
+              background: 'var(--color-surface-panel)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-full)',
+              fontSize: '11.5px',
+              color: 'var(--color-text-secondary)',
+              fontWeight: 500
+            }}
+          >
+            <Calendar size={13} color="var(--color-action-primary)" />
+            <span>{reportingMonth}</span>
+          </div>
+
+          {/* Notifications Button */}
+          <button
+            onClick={() => {
+              setShowNotifications(!showNotifications);
+              setShowUserMenu(false);
+            }}
+            style={{
+              width: '34px',
+              height: '34px',
+              borderRadius: 'var(--radius-md)',
+              backgroundColor: showNotifications ? 'var(--color-surface-hover)' : 'var(--color-surface-panel)',
+              border: '1px solid var(--color-border)',
+              color: 'var(--color-text-primary)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              position: 'relative'
+            }}
             title="Early Warning Notifications"
           >
-            <Bell size={15} color="var(--color-text-dark)" />
+            <Bell size={16} />
             {activeAlertsCount > 0 && (
               <span
                 style={{
                   position: 'absolute',
-                  top: '-4px',
-                  right: '-4px',
-                  backgroundColor: 'var(--status-critical-dot)',
-                  color: '#fff',
-                  fontSize: '10px',
-                  fontWeight: 700,
-                  borderRadius: '10px',
-                  minWidth: '16px',
+                  top: '-3px',
+                  right: '-3px',
+                  width: '16px',
                   height: '16px',
+                  borderRadius: '50%',
+                  backgroundColor: 'var(--status-critical)',
+                  color: '#FFFFFF',
+                  fontSize: '9.5px',
+                  fontWeight: 700,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  padding: '0 3px'
+                  border: '2px solid var(--color-surface-nav)'
                 }}
               >
                 {activeAlertsCount}
@@ -227,175 +277,282 @@ export const Header: React.FC = () => {
           {/* Notifications Flyout */}
           {showNotifications && (
             <div
-              className="gov-card"
               style={{
                 position: 'absolute',
-                top: '42px',
-                right: 0,
+                top: '46px',
+                right: '48px',
                 width: '360px',
+                backgroundColor: 'var(--color-surface-elevated)',
+                border: '1px solid var(--color-border-subtle)',
+                borderRadius: 'var(--radius-lg)',
+                boxShadow: 'var(--shadow-elevated)',
                 zIndex: 200,
-                boxShadow: 'var(--shadow-lg)',
-                padding: 0
+                overflow: 'hidden'
               }}
             >
-              <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--color-border-grey)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontWeight: 600, fontSize: '13px', color: 'var(--color-text-dark)' }}>
-                  Active Early Warnings ({activeAlertsCount})
-                </span>
+              <div
+                style={{
+                  padding: '12px 16px',
+                  borderBottom: '1px solid var(--color-border)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}
+              >
+                <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                  Early Warnings ({alerts.length})
+                </div>
                 <button
-                  className="btn btn-sm"
-                  style={{ color: 'var(--color-royal-blue)', background: 'transparent', padding: '2px 6px' }}
                   onClick={() => {
-                    setShowNotifications(false);
                     navigateTo('alerts');
+                    setShowNotifications(false);
+                  }}
+                  style={{
+                    fontSize: '11px',
+                    color: 'var(--color-action-primary)',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontWeight: 500
                   }}
                 >
-                  View All
+                  View All Signals
                 </button>
               </div>
 
               <div style={{ maxHeight: '280px', overflowY: 'auto' }}>
-                {alerts.slice(0, 4).map(alert => (
+                {alerts.slice(0, 4).map((alert) => (
                   <div
                     key={alert.id}
+                    onClick={() => {
+                      navigateTo('alerts');
+                      setShowNotifications(false);
+                    }}
                     style={{
                       padding: '12px 16px',
-                      borderBottom: '1px solid var(--color-border-light)',
+                      borderBottom: '1px solid var(--color-border)',
                       cursor: 'pointer',
-                      transition: 'background-color 100ms'
+                      transition: 'background 120ms ease'
                     }}
-                    onClick={() => {
-                      setShowNotifications(false);
-                      navigateTo('alerts');
-                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-surface-hover)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                      <AlertTriangle size={12} color={alert.severity === 'critical' ? 'var(--status-critical-dot)' : 'var(--status-high-dot)'} />
-                      <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-dark)' }}>
-                        {alert.projectName.slice(0, 32)}...
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                      <span
+                        style={{
+                          fontSize: '10.5px',
+                          fontWeight: 700,
+                          color: alert.severity === 'critical' ? 'var(--status-critical-text)' : 'var(--status-high-text)',
+                          textTransform: 'uppercase'
+                        }}
+                      >
+                        {alert.warningType || alert.severity}
+                      </span>
+                      <span style={{ fontSize: '10px', color: 'var(--color-text-dim)' }}>
+                        {alert.timestamp || 'Fresh Signal'}
                       </span>
                     </div>
-                    <p style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.3 }}>
-                      {alert.warningTitle}
+                    <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: '3px' }}>
+                      {alert.projectName}
+                    </div>
+                    <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: 0, lineHeight: 1.3 }}>
+                      {alert.reason}
                     </p>
-                    <span style={{ fontSize: '10.5px', color: 'var(--color-text-muted)', marginTop: '4px', display: 'block' }}>
-                      {alert.timestamp} • {alert.responsibleAgency}
-                    </span>
                   </div>
                 ))}
               </div>
             </div>
           )}
-        </div>
 
-        {/* User Profile */}
-        <div style={{ position: 'relative' }}>
+          {/* User Profile Button & Menu */}
+          <div style={{ position: 'relative' }}>
+            <button
+              onClick={() => {
+                setShowUserMenu(!showUserMenu);
+                setShowNotifications(false);
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '4px 8px',
+                background: showUserMenu ? 'var(--color-surface-hover)' : 'var(--color-surface-panel)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)',
+                cursor: 'pointer',
+                color: 'var(--color-text-primary)'
+              }}
+            >
+              <div
+                style={{
+                  width: '24px',
+                  height: '24px',
+                  borderRadius: '50%',
+                  backgroundColor: 'var(--color-action-subtle)',
+                  color: 'var(--color-action-primary)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '11px',
+                  fontWeight: 700
+                }}
+              >
+                {user.name ? user.name.charAt(0) : 'U'}
+              </div>
+              <ChevronDown size={14} color="var(--color-text-muted)" />
+            </button>
+
+            {showUserMenu && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '42px',
+                  right: 0,
+                  width: '240px',
+                  backgroundColor: 'var(--color-surface-elevated)',
+                  border: '1px solid var(--color-border-subtle)',
+                  borderRadius: 'var(--radius-lg)',
+                  boxShadow: 'var(--shadow-elevated)',
+                  zIndex: 200,
+                  padding: '12px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px'
+                }}
+              >
+                <div style={{ borderBottom: '1px solid var(--color-border)', paddingBottom: '8px' }}>
+                  <div style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                    {user.name}
+                  </div>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                    {user.email}
+                  </div>
+                  <div style={{ fontSize: '10px', color: 'var(--color-accent-cyan)', marginTop: '2px', fontWeight: 500 }}>
+                    {user.role} · {user.badge}
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => {
+                    navigateTo('admin');
+                    setShowUserMenu(false);
+                  }}
+                  className="btn-ghost"
+                  style={{ width: '100%', justifyContent: 'flex-start', fontSize: '12px', padding: '6px 8px' }}
+                >
+                  <ShieldCheck size={14} /> System Access & Roles
+                </button>
+
+                <button
+                  onClick={() => {
+                    logoutUser();
+                    setShowUserMenu(false);
+                  }}
+                  className="btn-ghost"
+                  style={{ width: '100%', justifyContent: 'flex-start', fontSize: '12px', color: 'var(--status-critical-text)', padding: '6px 8px' }}
+                >
+                  <LogOut size={14} /> End Session
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* Global Search Modal (Ctrl+K) */}
+      {showSearchModal && (
+        <div
+          className="drawer-backdrop"
+          onClick={() => setShowSearchModal(false)}
+          style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: '100px' }}
+        >
           <div
-            onClick={() => setShowUserMenu(!showUserMenu)}
+            onClick={(e) => e.stopPropagation()}
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '4px 10px',
-              border: '1px solid var(--color-border-grey)',
-              borderRadius: 'var(--radius-md)',
-              background: 'var(--color-white)',
-              cursor: 'pointer'
+              width: '580px',
+              maxWidth: '92vw',
+              backgroundColor: 'var(--color-surface-elevated)',
+              border: '1px solid var(--color-border-subtle)',
+              borderRadius: 'var(--radius-xl)',
+              boxShadow: 'var(--shadow-elevated)',
+              overflow: 'hidden'
             }}
           >
             <div
               style={{
-                width: '28px',
-                height: '28px',
-                borderRadius: '50%',
-                backgroundColor: 'var(--color-deep-navy)',
-                color: '#fff',
+                padding: '14px 18px',
+                borderBottom: '1px solid var(--color-border)',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '11px',
-                fontWeight: 700
+                gap: '12px'
               }}
             >
-              RV
+              <Search size={18} color="var(--color-action-primary)" />
+              <input
+                autoFocus
+                type="text"
+                placeholder="Search projects, corridors, ministries, or risk signals..."
+                value={globalSearch}
+                onChange={(e) => setGlobalSearch(e.target.value)}
+                style={{
+                  flex: 1,
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--color-text-primary)',
+                  fontSize: '14px',
+                  outline: 'none',
+                  fontFamily: 'var(--font-sans)'
+                }}
+              />
+              <button
+                onClick={() => setShowSearchModal(false)}
+                style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer' }}
+              >
+                <X size={16} />
+              </button>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
-              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-dark)', lineHeight: 1.2 }}>
-                {user.name.split(',')[0]}
-              </span>
-              <span style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', lineHeight: 1.2 }}>
-                {user.role}
-              </span>
-            </div>
-            <ChevronDown size={13} color="var(--color-text-secondary)" />
-          </div>
 
-          {/* User Menu */}
-          {showUserMenu && (
-            <div
-              className="gov-card"
-              style={{
-                position: 'absolute',
-                top: '46px',
-                right: 0,
-                width: '220px',
-                zIndex: 200,
-                boxShadow: 'var(--shadow-lg)',
-                padding: '8px 0'
-              }}
-            >
-              <div style={{ padding: '8px 16px', borderBottom: '1px solid var(--color-border-grey)' }}>
-                <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', display: 'block' }}>Department</span>
-                <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-dark)' }}>{user.department}</span>
+            <div style={{ padding: '12px 16px', maxHeight: '320px', overflowY: 'auto' }}>
+              <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-dim)', marginBottom: '8px' }}>
+                QUICK NAVIGATION
               </div>
-              <button
-                style={{
-                  width: '100%',
-                  padding: '10px 16px',
-                  background: 'none',
-                  border: 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  fontSize: '12.5px',
-                  color: 'var(--color-text-dark)',
-                  cursor: 'pointer',
-                  textAlign: 'left'
-                }}
-                onClick={() => {
-                  setShowUserMenu(false);
-                  navigateTo('admin');
-                }}
-              >
-                <ShieldCheck size={14} color="var(--color-royal-blue)" />
-                RBAC & User Access
-              </button>
-              <button
-                style={{
-                  width: '100%',
-                  padding: '10px 16px',
-                  background: 'none',
-                  border: 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  fontSize: '12.5px',
-                  color: 'var(--status-critical-text)',
-                  cursor: 'pointer',
-                  textAlign: 'left'
-                }}
-                onClick={() => {
-                  setShowUserMenu(false);
-                  logoutUser();
-                }}
-              >
-                <LogOut size={14} color="var(--status-critical-dot)" />
-                Sign Out
-              </button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                {[
+                  { route: 'dashboard', label: 'National Overview Dashboard' },
+                  { route: 'projects', label: 'Central Projects Explorer' },
+                  { route: 'alerts', label: 'Active Early Warning Signals' },
+                  { route: 'simulator', label: 'What-If Policy & Intervention Simulator' },
+                  { route: 'map', label: 'India Geospatial Intelligence Map' }
+                ].map((item) => (
+                  <button
+                    key={item.route}
+                    onClick={() => {
+                      navigateTo(item.route as any);
+                      setShowSearchModal(false);
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '8px 12px',
+                      background: 'var(--color-surface-panel)',
+                      border: '1px solid var(--color-border)',
+                      borderRadius: 'var(--radius-md)',
+                      color: 'var(--color-text-primary)',
+                      cursor: 'pointer',
+                      fontSize: '12.5px',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <span>{item.label}</span>
+                    <ExternalLink size={13} color="var(--color-text-muted)" />
+                  </button>
+                ))}
+              </div>
             </div>
-          )}
+          </div>
         </div>
-      </div>
-    </header>
+      )}
+    </>
   );
 };

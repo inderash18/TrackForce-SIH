@@ -1,78 +1,160 @@
-/* PAIMANA Sentinel AI Enterprise Design System */
+/* ==========================================================================
+   PAIMANA Sentinel AI — Official Government Design System
+   Faithful, Unified MoSPI PAIMANA Architecture
+   ========================================================================== */
+
 :root {
-  /* Primary Enterprise Palette */
-  --color-deep-navy: #0F2747;
-  --color-navy-dark: #0A1C33;
-  --color-navy-light: #183B6B;
-  --color-royal-blue: #1E5EFF;
-  --color-royal-blue-hover: #1648CC;
-  --color-royal-blue-subtle: #EBF1FF;
-  --color-royal-blue-border: #C8D8FF;
+  /* Core Workspace Surface Tokens (Sky-to-White Theme matching Reference) */
+  --color-bg-app: #F4F8FC;
+  --color-bg-sky: #99C7F4;
+  --color-bg-sky-light: #EBF4FC;
+  --color-bg-gradient: linear-gradient(180deg, #99C7F4 0%, #C3E0FA 120px, #DFEEFD 280px, #F4F8FC 520px, #FFFFFF 100%);
   
-  /* Surfaces and Neutrals */
-  --color-white: #FFFFFF;
-  --color-bg-soft: #F5F7FA;
-  --color-bg-muted: #F0F3F7;
-  --color-border-grey: #E5EAF0;
-  --color-border-light: #EDF1F5;
-  --color-text-dark: #182230;
-  --color-text-body: #344054;
-  --color-text-secondary: #667085;
-  --color-text-muted: #98A2B3;
-  
-  /* Status Colors */
-  --status-low-text: #027A48;
-  --status-low-bg: #ECFDF3;
-  --status-low-border: #A6F4C5;
-  --status-low-dot: #12B76A;
+  --color-surface-nav: #FFFFFF;
+  --color-surface-panel: #FFFFFF;
+  --color-surface-elevated: #FFFFFF;
+  --color-surface-frosted: rgba(255, 255, 255, 0.9);
+  --color-surface-hover: #F1F5F9;
+  --color-surface-active: #E0F2FE;
 
-  --status-medium-text: #B54708;
-  --status-medium-bg: #FFFAEB;
-  --status-medium-border: #FEDF89;
-  --status-medium-dot: #F79009;
+  /* Borders & Dividers */
+  --color-border: #E2E8F0;
+  --color-border-subtle: #F1F5F9;
+  --color-border-focus: #0084C7;
 
-  --status-high-text: #C4320A;
-  --status-high-bg: #FFF4ED;
-  --status-high-border: #FECDCA;
-  --status-high-dot: #F04438;
+  /* Typography & Content Colors (Charcoal & Muted Slate) */
+  --color-text-primary: #0F172A;
+  --color-text-secondary: #334155;
+  --color-text-muted: #64748B;
+  --color-text-dim: #94A3B8;
 
-  --status-critical-text: #B42318;
-  --status-critical-bg: #FEF3F2;
-  --status-critical-border: #FECDCA;
-  --status-critical-dot: #D92D20;
+  /* Brand & Analytical Action Accents */
+  --color-action-primary: #0F172A; /* Dark charcoal primary buttons */
+  --color-action-hover: #1E293B;
+  --color-action-subtle: #E0F2FE;
+  --color-action-border: #BAE6FD;
+  --color-action-accent: #0084C7; /* Sky blue accent */
+
+  --color-accent-cyan: #0284C7;
+  --color-accent-cyan-subtle: #E0F2FE;
+
+  /* Input Surfaces */
+  --color-input-bg: #F1F5F9;
+  --color-input-border: #E2E8F0;
+
+  /* Semantic Risk Hierarchy */
+  --status-low: #16A34A;
+  --status-low-bg: #DCFCE7;
+  --status-low-border: #BBF7D0;
+  --status-low-text: #166534;
+
+  --status-medium: #D97706;
+  --status-medium-bg: #FEF3C7;
+  --status-medium-border: #FDE68A;
+  --status-medium-text: #92400E;
+
+  --status-high: #EA580C;
+  --status-high-bg: #FFEDD5;
+  --status-high-border: #FED7AA;
+  --status-high-text: #9A3412;
+
+  --status-critical: #DC2626;
+  --status-critical-bg: #FEE2E2;
+  --status-critical-border: #FECACA;
+  --status-critical-text: #991B1B;
+
+  /* AI Predictions, Scenarios & Model Intelligence */
+  --status-prediction: #7C3AED;
+  --status-prediction-bg: #EDE9FE;
+  --status-prediction-border: #DDD6FE;
+  --status-prediction-text: #5B21B6;
 
   /* Typography */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-sans: 'Montserrat', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-paimana: 'Montserrat', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
-  /* Shadows */
-  --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.05);
-  --shadow-sm: 0 1px 3px rgba(16, 24, 40, 0.08), 0 1px 2px rgba(16, 24, 40, 0.04);
-  --shadow-md: 0 4px 8px -2px rgba(16, 24, 40, 0.08), 0 2px 4px -2px rgba(16, 24, 40, 0.04);
-  --shadow-lg: 0 12px 16px -4px rgba(16, 24, 40, 0.08), 0 4px 6px -2px rgba(16, 24, 40, 0.03);
+  --color-paimana-navy: #0F172A;
+  --color-paimana-navy-dark: #081C36;
+  --color-paimana-blue: #0084C7;
+  --color-paimana-blue-hover: #0073AD;
+  --color-paimana-orange: #0F172A;
+  --color-paimana-orange-hover: #1E293B;
+  --color-paimana-pale-blue: #F0F7FF;
+  --color-paimana-pale-peach: #FFFFFF;
+  --color-paimana-white: #FFFFFF;
+  --color-paimana-charcoal: #0F172A;
+  --color-paimana-muted: #64748B;
+  --color-paimana-border: #E2E8F0;
+  --color-paimana-border-subtle: #F1F5F9;
 
-  /* Radii */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 12px;
-  --radius-xl: 14px;
+  /* Diffuse Shadows */
+  --shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 14px -2px rgba(15, 23, 42, 0.06), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 10px 30px -10px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
+  --shadow-elevated: 0 20px 40px -12px rgba(15, 23, 42, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.9);
+
+  /* Soft Rounded Radii */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* Layout */
+  --sidebar-width: 256px;
+  --sidebar-collapsed-width: 72px;
+  --header-height: 64px;
 }
 
+/* Reset & Global Base */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+html {
+  font-size: 14px;
+  scroll-behavior: smooth;
+  color-scheme: light;
+}
+
 body {
   font-family: var(--font-sans);
-  background-color: var(--color-bg-soft);
-  color: var(--color-text-dark);
-  font-size: 14px;
+  background-color: var(--color-bg-app);
+  color: var(--color-text-primary);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Tabular Figures for numbers & data precision */
+.tnum,
+.tabular-nums,
+table,
+.stat-value,
+.metric-value {
+  font-feature-settings: 'tnum' 1, 'zero' 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg-app);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-subtle);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-action-primary);
 }
 
 /* Layout Shell */
@@ -80,6 +162,8 @@ body {
   display: flex;
   min-height: 100vh;
   width: 100%;
+  background-color: var(--color-bg-app);
+  position: relative;
 }
 
 .main-wrapper {
@@ -87,50 +171,70 @@ body {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  overflow-x: hidden;
+  background-color: var(--color-bg-app);
+  transition: all 200ms ease;
 }
 
 .content-area {
   flex: 1;
-  padding: 24px 32px 48px;
-  max-width: 1600px;
+  padding: 24px 28px 48px;
+  max-width: 1680px;
   width: 100%;
   margin: 0 auto;
 }
 
-/* Common Card Styles */
+@media (max-width: 768px) {
+  .content-area {
+    padding: 16px 14px 40px;
+  }
+}
+
+/* Panels & Cards (Floating White Surface with Soft Cyan/Sky Illumination) */
 .gov-card {
-  background: var(--color-white);
-  border: 1px solid var(--color-border-grey);
+  background: #FFFFFF;
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-xs);
-  transition: border-color 150ms ease, box-shadow 150ms ease;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+  overflow: hidden;
 }
 
 .gov-card:hover {
-  border-color: #D0D8E2;
+  border-color: #CBD5E1;
+  box-shadow: var(--shadow-md);
+}
+
+.gov-card-elevated {
+  background: #FFFFFF;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
 }
 
 .gov-card-header {
   padding: 16px 20px;
-  border-bottom: 1px solid var(--color-border-grey);
+  border-bottom: 1px solid var(--color-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: linear-gradient(180deg, #FAFCFF 0%, #FFFFFF 100%);
 }
 
 .gov-card-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--color-text-dark);
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--color-text-primary);
   display: flex;
   align-items: center;
   gap: 8px;
+  letter-spacing: -0.01em;
 }
 
 .gov-card-subtitle {
   font-size: 12px;
-  color: var(--color-text-secondary);
+  color: var(--color-text-muted);
   margin-top: 2px;
 }
 
@@ -138,7 +242,7 @@ body {
   padding: 20px;
 }
 
-/* Section Header */
+/* Page Hero Section */
 .page-hero-section {
   margin-bottom: 24px;
   display: flex;
@@ -148,175 +252,117 @@ body {
   gap: 16px;
 }
 
-.page-hero-title {
+.page-title {
   font-size: 22px;
-  font-weight: 700;
-  color: var(--color-text-dark);
-  letter-spacing: -0.01em;
-}
-
-.page-hero-subtitle {
-  font-size: 13.5px;
-  color: var(--color-text-secondary);
-  margin-top: 4px;
-}
-
-/* Grid Layouts */
-.grid-cols-4 {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-}
-
-.grid-cols-3 {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-}
-
-.grid-cols-2 {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-}
-
-.grid-1-2 {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 20px;
-}
-
-.grid-2-1 {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 20px;
-}
-
-/* Badges */
-.status-badge {
-  display: inline-flex;
+  font-weight: 800;
+  color: var(--color-text-primary);
+  letter-spacing: -0.02em;
+  display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 3px 10px;
-  border-radius: 9999px;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  border: 1px solid transparent;
+  gap: 10px;
 }
 
-.status-badge.critical {
-  background-color: var(--status-critical-bg);
-  color: var(--status-critical-text);
-  border-color: var(--status-critical-border);
-}
-
-.status-badge.high {
-  background-color: var(--status-high-bg);
-  color: var(--status-high-text);
-  border-color: var(--status-high-border);
-}
-
-.status-badge.medium {
-  background-color: var(--status-medium-bg);
-  color: var(--status-medium-text);
-  border-color: var(--status-medium-border);
-}
-
-.status-badge.low, .status-badge.safe {
-  background-color: var(--status-low-bg);
-  color: var(--status-low-text);
-  border-color: var(--status-low-border);
-}
-
-.status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  display: inline-block;
-}
-
-.status-dot.critical { background-color: var(--status-critical-dot); }
-.status-dot.high { background-color: var(--status-high-dot); }
-.status-dot.medium { background-color: var(--status-medium-dot); }
-.status-dot.low { background-color: var(--status-low-dot); }
-
-/* Buttons */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 8px 14px;
+.page-subtitle {
   font-size: 13px;
-  font-weight: 500;
-  border-radius: var(--radius-md);
-  border: 1px solid transparent;
-  cursor: pointer;
-  transition: all 150ms ease;
-  text-decoration: none;
-  font-family: var(--font-sans);
+  color: var(--color-text-secondary);
+  margin-top: 3px;
 }
 
+/* Buttons (Charcoal Primary Actions & Crisp Secondary) */
 .btn-primary {
-  background-color: var(--color-royal-blue);
-  color: var(--color-white);
+  background: #0F172A;
+  color: #FFFFFF;
+  border: 1px solid #0F172A;
+  border-radius: var(--radius-md);
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.15);
+  transition: all 150ms ease;
 }
-
 .btn-primary:hover {
-  background-color: var(--color-royal-blue-hover);
+  background: #1E293B;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
+}
+.btn-primary:active {
+  transform: translateY(0);
 }
 
 .btn-secondary {
-  background-color: var(--color-white);
-  color: var(--color-text-dark);
-  border-color: var(--color-border-grey);
+  background: #FFFFFF;
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: all 150ms ease;
 }
-
 .btn-secondary:hover {
-  background-color: var(--color-bg-soft);
-  border-color: #D0D8E2;
+  background: #F8FAFC;
+  border-color: #CBD5E1;
 }
 
-.btn-navy {
-  background-color: var(--color-deep-navy);
-  color: var(--color-white);
-}
-
-.btn-navy:hover {
-  background-color: var(--color-navy-light);
-}
-
-.btn-sm {
-  padding: 5px 10px;
-  font-size: 12px;
-}
-
-/* Forms and Inputs */
-.gov-select, .gov-input {
-  background: var(--color-white);
-  border: 1px solid var(--color-border-grey);
+.btn-ghost {
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: 1px solid transparent;
   border-radius: var(--radius-md);
   padding: 7px 12px;
   font-size: 13px;
-  color: var(--color-text-dark);
-  outline: none;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 150ms ease;
+}
+.btn-ghost:hover {
+  color: var(--color-text-primary);
+  background: #F1F5F9;
+}
+
+/* Form Controls (Cool-Grey Backgrounds & Crisp Borders) */
+.gov-input,
+.gov-select {
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  color: var(--color-text-primary);
+  border-radius: var(--radius-md);
+  padding: 9px 14px;
+  font-size: 13px;
   font-family: var(--font-sans);
-  transition: border-color 150ms ease, box-shadow 150ms ease;
+  outline: none;
+  transition: all 150ms ease;
+}
+.gov-input:focus,
+.gov-select:focus {
+  background: #FFFFFF;
+  border-color: #0084C7;
+  box-shadow: 0 0 0 3px rgba(0, 132, 199, 0.15);
+}
+.gov-input::placeholder {
+  color: var(--color-text-dim);
 }
 
-.gov-select:focus, .gov-input:focus {
-  border-color: var(--color-royal-blue);
-  box-shadow: 0 0 0 3px rgba(30, 94, 255, 0.12);
-}
-
-/* Professional Tables */
-.gov-table-container {
+/* Data Tables (Pale Grey/Sky Headers with Clean Separators) */
+.gov-table-wrapper {
+  width: 100%;
   overflow-x: auto;
-  border: 1px solid var(--color-border-grey);
   border-radius: var(--radius-lg);
-  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  background: #FFFFFF;
+  box-shadow: var(--shadow-sm);
 }
 
 .gov-table {
@@ -327,21 +373,21 @@ body {
 }
 
 .gov-table th {
-  background-color: var(--color-bg-soft);
-  color: var(--color-text-secondary);
-  font-weight: 600;
-  font-size: 11.5px;
+  background: #F8FAFC;
+  color: #475569;
+  font-weight: 700;
+  font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   padding: 12px 16px;
-  border-bottom: 1px solid var(--color-border-grey);
+  border-bottom: 2px solid var(--color-border);
   white-space: nowrap;
 }
 
 .gov-table td {
   padding: 14px 16px;
-  border-bottom: 1px solid var(--color-border-light);
-  color: var(--color-text-body);
+  border-bottom: 1px solid var(--color-border-subtle);
+  color: var(--color-text-primary);
   vertical-align: middle;
 }
 
@@ -349,13 +395,55 @@ body {
   border-bottom: none;
 }
 
-.gov-table tr.interactive-row {
-  cursor: pointer;
-  transition: background-color 120ms ease;
+.gov-table tbody tr {
+  transition: background 120ms ease;
 }
 
-.gov-table tr.interactive-row:hover {
-  background-color: #F8FAFC;
+.gov-table tbody tr:hover {
+  background: var(--color-surface-hover);
+}
+
+/* Status Badges */
+.badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.badge-low {
+  background: var(--status-low-bg);
+  color: var(--status-low-text);
+  border: 1px solid var(--status-low-border);
+}
+
+.badge-medium {
+  background: var(--status-medium-bg);
+  color: var(--status-medium-text);
+  border: 1px solid var(--status-medium-border);
+}
+
+.badge-high {
+  background: var(--status-high-bg);
+  color: var(--status-high-text);
+  border: 1px solid var(--status-high-border);
+}
+
+.badge-critical {
+  background: var(--status-critical-bg);
+  color: var(--status-critical-text);
+  border: 1px solid var(--status-critical-border);
+}
+
+.badge-prediction {
+  background: var(--status-prediction-bg);
+  color: var(--status-prediction-text);
+  border: 1px solid var(--status-prediction-border);
 }
 
 /* Notification Toast */
@@ -363,68 +451,3152 @@ body {
   position: fixed;
   bottom: 24px;
   right: 24px;
-  background: var(--color-deep-navy);
-  color: var(--color-white);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border-subtle);
+  color: var(--color-text-primary);
   padding: 12px 20px;
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-elevated);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  z-index: 9999;
+  animation: slideUpToast 220ms ease;
+}
+
+@keyframes slideUpToast {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile backdrop drawer */
+.drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(7, 17, 31, 0.75);
+  backdrop-filter: blur(4px);
+  z-index: 150;
+  animation: fadeInBackdrop 180ms ease;
+}
+
+@keyframes fadeInBackdrop {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Skeleton Loaders */
+.skeleton-box {
+  background: linear-gradient(90deg, var(--color-surface-elevated) 25%, var(--color-surface-hover) 50%, var(--color-surface-elevated) 75%);
+  background-size: 200% 100%;
+  animation: skeletonPulse 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes skeletonPulse {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ==========================================================================
+   PAIMANA OFFICIAL GOVERNMENT PORTAL STYLES (MATCHING REFERENCE SITE)
+   ========================================================================== */
+
+.paimana-portal-wrapper {
+  font-family: var(--font-paimana);
+  background-color: #FFFFFF;
+  color: var(--color-paimana-charcoal);
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+.paimana-header-root {
+  width: 100%;
+  position: relative;
+  z-index: 100;
+  background-color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.paimana-section-container {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 20px;
+  width: 100%;
+}
+
+/* --------------------------------------------------------------------------
+   HEADER LAYER 1: Deep Navy Utility Strip (~30px)
+   -------------------------------------------------------------------------- */
+.paimana-utility-strip {
+  height: 32px;
+  background-color: var(--color-paimana-navy);
+  color: #E2E8F0;
+  font-size: 11.5px;
+  font-weight: 500;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.paimana-utility-container {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 20px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.paimana-utility-left,
+.paimana-utility-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.paimana-skip-link {
+  color: #93C5FD;
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 600;
+}
+.paimana-skip-link:focus {
+  outline: 2px solid #F59E0B;
+  outline-offset: 2px;
+  background: #1E3A8A;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.paimana-utility-separator {
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 10px;
+}
+
+.paimana-util-btn {
+  background: transparent;
+  border: none;
+  color: #CBD5E1;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: inherit;
+  transition: color 120ms ease;
+}
+.paimana-util-btn:hover {
+  color: #FFFFFF;
+}
+
+.paimana-font-controls {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.paimana-font-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #E2E8F0;
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.paimana-font-btn:hover,
+.paimana-font-btn.active {
+  background: rgba(255, 255, 255, 0.25);
+  color: #FFFFFF;
+}
+
+.paimana-lang-switch {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.paimana-lang-btn {
+  background: transparent;
+  border: none;
+  color: #94A3B8;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: inherit;
+}
+.paimana-lang-btn.active {
+  background: #0084C7;
+  color: #FFFFFF;
+}
+
+/* --------------------------------------------------------------------------
+   HEADER LAYER 2: Identity & Action Strip (~108px, White Background)
+   -------------------------------------------------------------------------- */
+.paimana-identity-strip {
+  background-color: #FFFFFF;
+  border-bottom: 1px solid #E2E8F0;
+  padding: 16px 0;
+  min-height: 96px;
+  display: flex;
+  align-items: center;
+}
+
+.paimana-identity-container {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 20px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.paimana-brand-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.paimana-emblem-wrapper {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.paimana-brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.paimana-gov-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1.2;
+}
+
+.paimana-ministry-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #081C36;
+  margin: 1px 0;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+.paimana-division-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0084C7;
+  line-height: 1.2;
+}
+
+.paimana-actions-right {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 13.5px;
-  z-index: 9999;
-  border-left: 4px solid var(--color-royal-blue);
-  animation: slideUp 200ms ease;
 }
 
-@keyframes slideUp {
+/* Action Buttons in Header */
+.paimana-btn-orange-pill {
+  background: #0F172A;
+  color: #FFFFFF;
+  border: 1px solid #0F172A;
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
+  transition: all 120ms ease;
+  white-space: nowrap;
+}
+.paimana-btn-orange-pill:hover {
+  background: #1E293B;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
+  transform: translateY(-1px);
+}
+.paimana-btn-orange-pill:active {
+  transform: translateY(0);
+}
+
+.paimana-btn-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #38BDF8;
+  display: inline-block;
+}
+
+/* Secondary Action Button */
+.paimana-btn-navy-pill {
+  background: #FFFFFF;
+  color: #0F172A;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: all 120ms ease;
+  white-space: nowrap;
+}
+.paimana-btn-navy-pill:hover {
+  background: #F8FAFC;
+  border-color: #CBD5E1;
+  transform: translateY(-1px);
+}
+
+.paimana-btn-login-pill {
+  background: #F1F5F9;
+  color: #0F172A;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-size: 12.5px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 120ms ease;
+  white-space: nowrap;
+}
+.paimana-btn-login-pill:hover {
+  background: #E2E8F0;
+}
+.paimana-btn-login-pill.logged-in {
+  background: #E0F2FE;
+  color: #0369A1;
+  border-color: #BAE6FD;
+}
+
+.paimana-user-badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #10B981;
+}
+
+/* PAIMANA Logo Insignia */
+.paimana-logo-insignia {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+  padding-left: 6px;
+  border-left: 1px solid #E2E8F0;
+}
+
+.paimana-logo-symbol {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #0F172A;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 16px;
+  position: relative;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.15);
+}
+
+.paimana-logo-typography {
+  display: flex;
+  flex-direction: column;
+}
+
+.paimana-logo-hindi {
+  font-size: 10px;
+  font-weight: 700;
+  color: #0084C7;
+  letter-spacing: 0.05em;
+  line-height: 1;
+}
+
+.paimana-logo-english {
+  font-size: 17px;
+  font-weight: 900;
+  color: #0F172A;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+}
+
+.paimana-mobile-toggle {
+  display: none;
+  background: transparent;
+  border: none;
+  color: #0F172A;
+  cursor: pointer;
+  padding: 4px;
+}
+
+/* --------------------------------------------------------------------------
+   HEADER LAYER 3: Frosted White Navigation Band with Sky Accents
+   -------------------------------------------------------------------------- */
+.paimana-nav-strip {
+  background-color: #FFFFFF;
+  height: 46px;
+  border-bottom: 1px solid #E2E8F0;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+  position: relative;
+  z-index: 90;
+}
+
+.paimana-nav-container {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 20px;
+  height: 100%;
+}
+
+.paimana-nav-list {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  list-style: none;
+  height: 100%;
+}
+
+.paimana-nav-item {
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.paimana-nav-link {
+  background: transparent;
+  border: none;
+  color: #334155;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  letter-spacing: -0.01em;
+  transition: all 120ms ease;
+  position: relative;
+}
+.paimana-nav-link:hover {
+  color: #0F172A;
+  background-color: #F1F5F9;
+}
+.paimana-nav-link.active {
+  color: #0084C7;
+  background-color: #E0F2FE;
+  font-weight: 700;
+}
+.paimana-nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 14px;
+  right: 14px;
+  height: 2.5px;
+  background-color: #0084C7;
+  border-radius: 2px 2px 0 0;
+}
+
+.paimana-chevron {
+  transition: transform 150ms ease;
+}
+.paimana-nav-item.open .paimana-chevron {
+  transform: rotate(180deg);
+}
+
+/* Accessible Navigation Dropdown Menus */
+.paimana-dropdown-menu {
+  position: absolute;
+  top: 44px;
+  left: 0;
+  min-width: 280px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 200;
+  animation: paimanaDropdownFade 150ms ease;
+}
+
+@keyframes paimanaDropdownFade {
   from {
-    transform: translateY(20px);
     opacity: 0;
+    transform: translateY(-4px);
   }
   to {
-    transform: translateY(0);
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
-/* Custom Scrollbars */
-::-webkit-scrollbar {
+.paimana-dropdown-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: background-color 120ms ease;
+  width: 100%;
+}
+.paimana-dropdown-item:hover {
+  background-color: #EEF6FB;
+}
+
+.paimana-dropdown-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: #E0F2FE;
+  color: #0084C7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.paimana-dropdown-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #081C36;
+  line-height: 1.2;
+}
+
+.paimana-dropdown-desc {
+  font-size: 11px;
+  color: #64748B;
+  margin-top: 2px;
+  line-height: 1.3;
+}
+
+/* --------------------------------------------------------------------------
+   PHOTOGRAPHIC HERO CAROUSEL (~480px on desktop)
+   -------------------------------------------------------------------------- */
+.paimana-hero-root {
+  width: 100%;
+  background-color: #081C36;
+  position: relative;
+  overflow: hidden;
+}
+
+.paimana-hero-container {
+  width: 100%;
+  height: 480px;
+  position: relative;
+}
+
+.paimana-hero-track {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.paimana-hero-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 600ms ease, visibility 600ms ease;
+}
+.paimana-hero-slide.active {
+  opacity: 1;
+  visibility: visible;
+  z-index: 1;
+}
+
+.paimana-hero-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 35%;
+  display: block;
+}
+
+.paimana-hero-fallback-bg {
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 50% 50%, #102A4E 0%, #081C36 100%);
+}
+
+.paimana-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(8, 28, 54, 0.45) 0%, rgba(8, 28, 54, 0.65) 100%);
+}
+
+/* Centered Frosted White Caption Panel */
+.paimana-hero-caption-wrapper {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.paimana-hero-caption-box {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: 24px;
+  padding: 36px 44px;
+  max-width: 860px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 25px 60px -12px rgba(15, 23, 42, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.8);
+  pointer-events: auto;
+}
+
+.paimana-hero-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #0369A1;
+  background: #E0F2FE;
+  border: 1px solid #BAE6FD;
+  padding: 4px 14px;
+  border-radius: 9999px;
+  margin-bottom: 14px;
+}
+
+.paimana-hero-heading {
+  font-size: 26px;
+  font-weight: 800;
+  color: #0F172A;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  margin-bottom: 12px;
+  text-shadow: none;
+}
+
+.paimana-hero-subtitle {
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.55;
+  max-width: 720px;
+  margin: 0 auto 24px;
+}
+
+.paimana-hero-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.paimana-hero-btn-primary {
+  background: #0F172A;
+  color: #FFFFFF;
+  border: 1px solid #0F172A;
+  border-radius: 12px;
+  padding: 11px 24px;
+  font-size: 13.5px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.2);
+  transition: all 150ms ease;
+}
+.paimana-hero-btn-primary:hover {
+  background: #1E293B;
+  transform: translateY(-1px);
+}
+
+.paimana-hero-btn-secondary {
+  background: #FFFFFF;
+  color: #0F172A;
+  border: 1px solid #CBD5E1;
+  border-radius: 12px;
+  padding: 11px 22px;
+  font-size: 13.5px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+.paimana-hero-btn-secondary:hover {
+  background: #F8FAFC;
+  border-color: #0084C7;
+}
+
+/* Circular Previous / Next Carousel Controls */
+.paimana-hero-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(8, 28, 54, 0.65);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 15;
+  transition: background 150ms ease, transform 120ms ease;
+}
+.paimana-hero-nav-btn:hover {
+  background: rgba(0, 132, 199, 0.85);
+  transform: translateY(-50%) scale(1.06);
+}
+.paimana-hero-nav-btn.prev {
+  left: 24px;
+}
+.paimana-hero-nav-btn.next {
+  right: 24px;
+}
+
+/* Bottom Controls Bar (4 Dots + Play/Pause) */
+.paimana-hero-controls-bar {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 15;
+  background: rgba(8, 28, 54, 0.7);
+  backdrop-filter: blur(4px);
+  padding: 6px 14px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.paimana-hero-dots {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.paimana-hero-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: all 200ms ease;
+}
+.paimana-hero-dot.active {
+  background: #0084C7;
+  width: 24px;
+  border-radius: 9999px;
+}
+
+.paimana-hero-playpause {
+  background: transparent;
+  border: none;
+  color: #CBD5E1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+}
+.paimana-hero-playpause:hover {
+  color: #FFFFFF;
+}
+
+/* --------------------------------------------------------------------------
+   MACRO INDICATORS & SECTOR SUMMARIES SECTION
+   -------------------------------------------------------------------------- */
+.paimana-metrics-section {
+  padding: 48px 0;
+  background-color: #FFFFFF;
+}
+
+.paimana-section-header-center {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.paimana-reporting-period-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #0369A1;
+  background: #E0F2FE;
+  border: 1px solid #BAE6FD;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  margin-bottom: 10px;
+}
+.paimana-reporting-period-pill .dot {
   width: 6px;
   height: 6px;
+  border-radius: 50%;
+  background: #0284C7;
 }
 
-::-webkit-scrollbar-track {
-  background: var(--color-bg-soft);
+.paimana-section-kicker {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #0084C7;
+  margin-bottom: 4px;
 }
 
-::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
+.paimana-section-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+
+.paimana-section-subtitle {
+  font-size: 14px;
+  color: #64748B;
+  max-width: 680px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+.paimana-macro-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-bottom: 36px;
+}
+
+.paimana-macro-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 20px 22px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.04);
+  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+}
+.paimana-macro-card:hover {
+  border-color: #CBD5E1;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
+  transform: translateY(-2px);
+}
+
+.paimana-macro-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.paimana-macro-icon.blue { background: #E0F2FE; color: #0284C7; }
+.paimana-macro-icon.navy { background: #F1F5F9; color: #0F172A; }
+.paimana-macro-icon.orange { background: #FFEDD5; color: #EA580C; }
+.paimana-macro-icon.green { background: #DCFCE7; color: #16A34A; }
+
+.paimana-macro-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.paimana-macro-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748B;
+  margin-bottom: 4px;
+}
+
+.paimana-macro-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0F172A;
+  line-height: 1.2;
+}
+.paimana-macro-value .unit {
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748B;
+}
+
+.paimana-macro-sub {
+  font-size: 11px;
+  color: #94A3B8;
+  margin-top: 2px;
+}
+
+/* Tabs for Sector vs State Breakdown */
+.paimana-summary-tabs-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.paimana-summary-tabs {
+  background: #F1F5F9;
+  padding: 4px;
+  border-radius: 12px;
+  display: inline-flex;
+  gap: 4px;
+}
+
+.paimana-sum-tab {
+  background: transparent;
+  border: none;
+  color: #64748B;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 120ms ease;
+}
+.paimana-sum-tab.active {
+  background: #FFFFFF;
+  color: #0F172A;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+}
+
+.paimana-sectors-table-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.paimana-sector-summary-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+.paimana-sector-summary-card:hover {
+  border-color: #0084C7;
+  box-shadow: 0 4px 12px rgba(0, 132, 199, 0.12);
+  transform: translateY(-2px);
+}
+
+.paimana-sec-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.paimana-sec-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #081C36;
+  margin: 0;
+}
+
+.paimana-sec-card-arrow {
+  color: #94A3B8;
+  transition: transform 120ms ease, color 120ms ease;
+}
+.paimana-sector-summary-card:hover .paimana-sec-card-arrow {
+  color: #0084C7;
+  transform: translate(2px, -2px);
+}
+
+.paimana-sec-stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  background: #F8FAFC;
+  padding: 10px;
+  border-radius: 6px;
+}
+
+.paimana-sec-stat-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: #64748B;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.paimana-sec-stat-val {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #081C36;
+}
+.paimana-sec-stat-val.text-warning {
+  color: #EA580C;
+}
+
+.paimana-states-table-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.paimana-state-summary-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+.paimana-state-summary-card:hover {
+  border-color: #0084C7;
+  background: #F0F9FF;
+}
+
+.paimana-st-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.paimana-st-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #081C36;
+}
+
+.paimana-st-badge {
+  font-size: 10.5px;
+  font-weight: 600;
+  background: #E2E8F0;
+  color: #475569;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.paimana-st-metric {
+  font-size: 11.5px;
+  color: #64748B;
+  display: flex;
+  justify-content: space-between;
+}
+.paimana-st-crit {
+  font-weight: 700;
+  color: #DC2626;
+}
+
+.paimana-loading-state,
+.paimana-error-state {
+  text-align: center;
+  padding: 32px;
+  background: #F8FAFC;
+  border-radius: 10px;
+  border: 1px dashed #CBD5E1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #64748B;
+}
+
+.spin-icon {
+  animation: spin 1s linear infinite;
+  color: #0084C7;
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+/* --------------------------------------------------------------------------
+   HIGH-VALUE PROJECT SHOWCASE SECTION (PALE BLUE BACKGROUND #EEF6FB)
+   -------------------------------------------------------------------------- */
+.paimana-showcase-section {
+  background-color: var(--color-paimana-pale-blue);
+  padding: 56px 0;
+  border-top: 1px solid #E2E8F0;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.paimana-showcase-carousel-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.paimana-showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  flex: 1;
+}
+
+.paimana-showcase-nav-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  color: #081C36;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: all 120ms ease;
+}
+.paimana-showcase-nav-btn:hover:not(:disabled) {
+  background: #0084C7;
+  color: #FFFFFF;
+  border-color: #0084C7;
+}
+.paimana-showcase-nav-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* White Project Card */
+.paimana-project-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+.paimana-project-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+  border-color: #CBD5E1;
+}
+
+.paimana-card-top {
+  padding: 18px 18px 10px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.paimana-card-sector-icon {
+  color: #081C36;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.paimana-card-sector-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0084C7;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.paimana-card-agency {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #64748B;
+  margin-top: 2px;
+}
+
+.paimana-card-title-area {
+  padding: 0 18px 14px;
+  min-height: 64px;
+}
+
+.paimana-card-project-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0F172A;
+  line-height: 1.35;
+  margin-bottom: 4px;
+  cursor: pointer;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.paimana-card-project-title:hover {
+  color: #0084C7;
+}
+
+.paimana-card-meta {
+  font-size: 11px;
+  color: #94A3B8;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.paimana-card-meta .dot {
+  font-weight: 800;
+}
+
+.paimana-card-divider {
+  height: 1px;
+  background-color: #F1F5F9;
+  width: 100%;
+}
+
+/* 2x2 Metric Grid with Thin Borders */
+.paimana-card-metric-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  background-color: #FAFCFF;
+}
+
+.paimana-metric-cell {
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+}
+.paimana-metric-cell.border-right {
+  border-right: 1px solid #E2E8F0;
+}
+.paimana-metric-cell.border-bottom {
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.paimana-metric-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 2px;
+}
+
+.paimana-metric-val {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0F172A;
+}
+.paimana-metric-val.highlight {
+  color: #0084C7;
+}
+.paimana-metric-val .unit {
+  font-size: 11px;
+  font-weight: 500;
+  color: #64748B;
+}
+
+.paimana-card-footer {
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid #E2E8F0;
+  background: #FFFFFF;
+}
+
+.paimana-card-status-tag .tag-warning {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #EA580C;
+  background: #FFEDD5;
+  padding: 3px 8px;
+  border-radius: 9999px;
+}
+.paimana-card-status-tag .tag-success {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #16A34A;
+  background: #DCFCE7;
+  padding: 3px 8px;
+  border-radius: 9999px;
+}
+
+.paimana-card-btn-view {
+  background: transparent;
+  border: none;
+  color: #0084C7;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: inherit;
+}
+.paimana-card-btn-view:hover {
+  text-decoration: underline;
+}
+
+.paimana-showcase-bottom-action {
+  text-align: center;
+  margin-top: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   WHAT'S NEW & PUBLICATIONS SECTION
+   -------------------------------------------------------------------------- */
+.paimana-whatsnew-section {
+  padding: 56px 0;
+  background-color: #FFFFFF;
+}
+
+.paimana-whatsnew-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.paimana-filter-tabs {
+  display: flex;
+  gap: 8px;
+  background: #F1F5F9;
+  padding: 4px;
+  border-radius: 12px;
+}
+
+.paimana-filter-tab {
+  background: transparent;
+  border: none;
+  color: #64748B;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 120ms ease;
+}
+.paimana-filter-tab.active {
+  background: #0F172A;
+  color: #FFFFFF;
+}
+
+.paimana-publications-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.paimana-pub-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.04);
+  transition: all 150ms ease;
+}
+.paimana-pub-card:hover {
+  border-color: #CBD5E1;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
+  transform: translateY(-2px);
+}
+
+.paimana-pub-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.paimana-pub-tag-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.paimana-pub-badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.paimana-pub-badge.badge-blue { background: #E0F2FE; color: #0369A1; }
+.paimana-pub-badge.badge-navy { background: #E2E8F0; color: #081C36; }
+
+.paimana-pub-new-tag {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #FFFFFF;
+  background: #E11D48;
+  padding: 2px 6px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.paimana-pub-period {
+  font-size: 11.5px;
+  color: #64748B;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+}
+
+.paimana-pub-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #081C36;
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+
+.paimana-pub-desc {
+  font-size: 12px;
+  color: #64748B;
+  line-height: 1.45;
+  margin-bottom: 14px;
+}
+
+.paimana-pub-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid #F1F5F9;
+  padding-top: 12px;
+}
+
+.paimana-pub-format {
+  font-size: 11px;
+  color: #64748B;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.paimana-pub-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.paimana-pub-btn-view {
+  background: #F1F5F9;
+  color: #081C36;
+  border: 1px solid #CBD5E1;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.paimana-pub-btn-view:hover {
+  background: #E2E8F0;
+}
+
+.paimana-pub-btn-download {
+  background: #0084C7;
+  color: #FFFFFF;
+  border: none;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: inherit;
+}
+.paimana-pub-btn-download:hover {
+  background: #0288D1;
+}
+
+.paimana-pub-view-all-row {
+  text-align: center;
+  margin-top: 12px;
+}
+
+.paimana-pub-viewmore-btn {
+  background: transparent;
+  border: 1px solid #CBD5E1;
+  color: #0084C7;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 20px;
+  border-radius: 9999px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+  transition: all 150ms ease;
+}
+.paimana-pub-viewmore-btn:hover {
+  background: #0084C7;
+  color: #FFFFFF;
+  border-color: #0084C7;
+}
+
+/* --------------------------------------------------------------------------
+   APP PROMOTION SECTION (PALE PEACH BACKGROUND #FFF3EB)
+   -------------------------------------------------------------------------- */
+.paimana-app-promo-section {
+  background-color: var(--color-paimana-pale-peach);
+  padding: 56px 0;
+  border-top: 1px solid #FED7AA;
+  border-bottom: 1px solid #FED7AA;
+}
+
+.paimana-app-promo-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+/* Smartphone Artwork */
+.paimana-phone-mockup-wrapper {
+  flex-shrink: 0;
+  width: 220px;
+}
+
+.paimana-phone-frame {
+  width: 200px;
+  height: 280px;
+  background: #081C36;
+  border: 6px solid #1E293B;
+  border-radius: 28px;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.18);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.paimana-phone-notch {
+  width: 48px;
+  height: 8px;
+  background: #1E293B;
+  border-radius: 0 0 6px 6px;
+  margin: 0 auto 6px;
+}
+
+.paimana-phone-screen {
+  background: #F8FAFC;
+  border-radius: 18px;
+  flex: 1;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.paimana-phone-app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #E2E8F0;
+  padding-bottom: 6px;
+}
+
+.phone-brand {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #081C36;
+}
+
+.phone-p {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #0084C7;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+}
+
+.phone-badge {
+  font-size: 8px;
+  font-weight: 700;
+  color: #10B981;
+  background: #D1FAE5;
+  padding: 1px 4px;
   border-radius: 3px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
+.paimana-phone-widget {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 8px;
 }
 
-/* Responsive adjustments */
-@media (max-width: 1200px) {
-  .grid-cols-4 {
+.widget-label {
+  font-size: 9px;
+  color: #64748B;
+  display: block;
+}
+
+.widget-number {
+  font-size: 15px;
+  font-weight: 800;
+  color: #081C36;
+}
+
+.widget-bar {
+  height: 4px;
+  background: #E2E8F0;
+  border-radius: 2px;
+  margin-top: 4px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background: #0084C7;
+  border-radius: 2px;
+}
+
+.paimana-phone-mini-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+
+.mini-card {
+  border-radius: 6px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  font-size: 8.5px;
+}
+.mini-card.green { background: #DCFCE7; color: #166534; }
+.mini-card.orange { background: #FFEDD5; color: #9A3412; }
+.mini-card strong { font-size: 11px; margin-top: 2px; }
+
+/* Announcement Text */
+.paimana-app-promo-text {
+  flex: 1;
+}
+
+.paimana-coming-soon-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #C2410C;
+  background: #FFEDD5;
+  border: 1px solid #FDBA74;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  margin-bottom: 10px;
+}
+
+.paimana-app-promo-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #081C36;
+  margin-bottom: 8px;
+  letter-spacing: -0.01em;
+}
+
+.paimana-app-promo-desc {
+  font-size: 13.5px;
+  color: #475569;
+  line-height: 1.55;
+  margin-bottom: 14px;
+  max-width: 580px;
+}
+
+.paimana-app-promo-credit {
+  font-size: 12px;
+  color: #64748B;
+}
+
+/* Store Badges */
+.paimana-app-store-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.paimana-store-badge-card {
+  background: #081C36;
+  color: #FFFFFF;
+  border-radius: 10px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 170px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  cursor: default;
+}
+
+.badge-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.badge-sub {
+  font-size: 9px;
+  color: #94A3B8;
+  letter-spacing: 0.04em;
+}
+
+.badge-main {
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.badge-tag {
+  font-size: 8.5px;
+  color: #F59E0B;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   INSTITUTIONAL FOOTER
+   -------------------------------------------------------------------------- */
+.paimana-footer-root {
+  background-color: #FFFFFF;
+  border-top: 1px solid #E2E8F0;
+  color: #475569;
+}
+
+.paimana-footer-main {
+  padding: 48px 0 36px;
+}
+
+.paimana-footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1.8fr 1.2fr 1.2fr;
+  gap: 32px;
+}
+
+.paimana-footer-brand-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.paimana-emblem-small {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.paimana-footer-heading {
+  font-size: 14px;
+  font-weight: 800;
+  color: #081C36;
+  line-height: 1.3;
+}
+
+.paimana-footer-sub {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #0084C7;
+  display: block;
+  margin-top: 2px;
+}
+
+.paimana-footer-about {
+  font-size: 12px;
+  color: #64748B;
+  line-height: 1.6;
+}
+
+.paimana-footer-col-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #081C36;
+  margin-bottom: 14px;
+  letter-spacing: -0.01em;
+}
+
+.paimana-footer-contact-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 12px;
+  color: #475569;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.contact-icon {
+  color: #0084C7;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.contact-link {
+  color: #0084C7;
+  text-decoration: none;
+  font-weight: 600;
+}
+.contact-link:hover {
+  text-decoration: underline;
+}
+
+.paimana-footer-nav-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.paimana-footer-nav-list a {
+  color: #64748B;
+  font-size: 12.5px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: color 120ms ease;
+}
+.paimana-footer-nav-list a:hover {
+  color: #0084C7;
+}
+
+.paimana-footer-bottom {
+  border-top: 1px solid #F1F5F9;
+  padding: 16px 0;
+  background-color: #F8FAFC;
+}
+
+.paimana-footer-bottom-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: center;
+}
+
+.paimana-footer-copy {
+  font-size: 11.5px;
+  color: #475569;
+}
+
+.paimana-footer-subcopy {
+  font-size: 10.5px;
+  color: #94A3B8;
+}
+
+/* --------------------------------------------------------------------------
+   MODAL & EXPANSION DIALOGS
+   -------------------------------------------------------------------------- */
+.paimana-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 28, 54, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: paimanaFade 150ms ease;
+}
+
+@keyframes paimanaFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.paimana-modal-box {
+  background: #FFFFFF;
+  border-radius: 12px;
+  max-width: 520px;
+  width: 100%;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  animation: paimanaScale 150ms ease;
+}
+
+@keyframes paimanaScale {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.paimana-modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.paimana-modal-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #081C36;
+  margin: 0;
+}
+
+.paimana-modal-close {
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  color: #64748B;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.paimana-modal-body {
+  padding: 20px;
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.paimana-modal-sector {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #0084C7;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.paimana-modal-name {
+  font-size: 16px;
+  font-weight: 800;
+  color: #081C36;
+  margin-bottom: 8px;
+}
+
+.paimana-modal-footer {
+  padding: 12px 20px;
+  border-top: 1px solid #E2E8F0;
+  display: flex;
+  justify-content: flex-end;
+  background: #F8FAFC;
+}
+
+/* --------------------------------------------------------------------------
+   MOBILE NAVIGATION DRAWER
+   -------------------------------------------------------------------------- */
+.paimana-mobile-drawer {
+  position: fixed;
+  inset: 0;
+  background: #FFFFFF;
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  animation: paimanaDrawerSlide 200ms ease;
+}
+
+@keyframes paimanaDrawerSlide {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.paimana-mobile-drawer-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.paimana-mobile-brand {
+  font-size: 16px;
+  font-weight: 800;
+  color: #081C36;
+}
+
+.paimana-mobile-close {
+  background: transparent;
+  border: none;
+  color: #081C36;
+  cursor: pointer;
+}
+
+.paimana-mobile-drawer-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+}
+
+.paimana-mobile-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.w-full {
+  width: 100%;
+  justify-content: center;
+}
+
+.paimana-mobile-links {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.paimana-mob-link {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #081C36;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* --------------------------------------------------------------------------
+   HIGH CONTRAST MODE
+   -------------------------------------------------------------------------- */
+.high-contrast-mode {
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+}
+.high-contrast-mode .paimana-utility-strip,
+.high-contrast-mode .paimana-identity-strip,
+.high-contrast-mode .paimana-nav-strip,
+.high-contrast-mode .paimana-metrics-section,
+.high-contrast-mode .paimana-showcase-section,
+.high-contrast-mode .paimana-whatsnew-section,
+.high-contrast-mode .paimana-app-promo-section,
+.high-contrast-mode .paimana-footer-root {
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+  border-color: #FFFFFF !important;
+}
+.high-contrast-mode .paimana-project-card,
+.high-contrast-mode .paimana-pub-card,
+.high-contrast-mode .paimana-macro-card,
+.high-contrast-mode .paimana-sector-summary-card {
+  background-color: #111111 !important;
+  border-color: #FFFF00 !important;
+  color: #FFFFFF !important;
+}
+.high-contrast-mode h1,
+.high-contrast-mode h2,
+.high-contrast-mode h3,
+.high-contrast-mode h4,
+.high-contrast-mode .paimana-macro-value,
+.high-contrast-mode .paimana-metric-val {
+  color: #FFFF00 !important;
+}
+
+/* --------------------------------------------------------------------------
+   PAIMANA SUBPAGES, REPORTS & DOCUMENT REGISTRIES
+   -------------------------------------------------------------------------- */
+.paimana-reports-page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.paimana-heading-with-underline {
+  margin-bottom: 6px;
+}
+
+.paimana-reports-h1 {
+  font-size: 26px;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+.paimana-heading-line {
+  width: 60px;
+  height: 3.5px;
+  background-color: #0084C7;
+  border-radius: 2px;
+  margin-top: 6px;
+}
+
+.paimana-reports-lead {
+  font-size: 13.5px;
+  color: #64748B;
+  max-width: 820px;
+  line-height: 1.55;
+}
+
+.paimana-reports-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.paimana-archive-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #0F172A;
+  color: #FFFFFF;
+  padding: 9px 18px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid #0F172A;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
+  font-family: inherit;
+  transition: all 120ms ease;
+  white-space: nowrap;
+}
+.paimana-archive-link-btn:hover {
+  background: #1E293B;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
+  transform: translateY(-1px);
+}
+
+/* --------------------------------------------------------------------------
+   FILTER CARD & CONTROLS (White card, cool-grey inputs)
+   -------------------------------------------------------------------------- */
+.paimana-pub-filter-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 20px 24px;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+  margin-bottom: 24px;
+}
+
+.paimana-filter-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.paimana-filter-grid-5 {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr) auto;
+  gap: 14px;
+  align-items: flex-end;
+}
+
+.paimana-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.paimana-filter-lbl {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #0F172A;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.paimana-dash-select {
+  width: 100%;
+  height: 40px;
+  padding: 0 14px;
+  background-color: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #0F172A;
+  font-family: inherit;
+  outline: none;
+  transition: all 150ms ease;
+}
+.paimana-dash-select:focus {
+  background-color: #FFFFFF;
+  border-color: #0084C7;
+  box-shadow: 0 0 0 3px rgba(0, 132, 199, 0.15);
+}
+
+.paimana-filter-btn-show {
+  height: 40px;
+  padding: 0 22px;
+  background-color: #0F172A;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.2);
+  transition: all 120ms ease;
+  white-space: nowrap;
+}
+.paimana-filter-btn-show:hover {
+  background-color: #1E293B;
+  transform: translateY(-1px);
+}
+
+/* --------------------------------------------------------------------------
+   NAVY / REFINED OUTLINED TABLE FRAME (Clean light headers & soft borders)
+   -------------------------------------------------------------------------- */
+.paimana-navy-table-frame {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+  margin-bottom: 32px;
+}
+
+.paimana-navy-frame-header {
+  background: linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 100%);
+  color: #0F172A;
+  padding: 16px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.frame-title {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.01em;
+}
+
+.frame-count {
+  font-size: 12px;
+  font-weight: 600;
+  background: #E0F2FE;
+  color: #0369A1;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  border: 1px solid #BAE6FD;
+}
+
+.paimana-navy-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.paimana-navy-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+
+.paimana-navy-table thead {
+  background: #F8FAFC;
+  border-bottom: 2px solid #E2E8F0;
+}
+
+.paimana-navy-table th {
+  padding: 13px 18px;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #475569;
+  white-space: nowrap;
+}
+
+.paimana-navy-table tbody tr {
+  border-bottom: 1px solid #F1F5F9;
+  transition: background-color 100ms ease;
+}
+.paimana-navy-table tbody tr:nth-child(even) {
+  background-color: #FAFCFF;
+}
+.paimana-navy-table tbody tr:hover {
+  background-color: #F0F7FF;
+}
+
+.paimana-navy-table td {
+  padding: 14px 18px;
+  vertical-align: middle;
+  color: #334155;
+}
+
+.paimana-pub-month-cell {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.paimana-tag-new {
+  background: #DC2626;
+  color: #FFFFFF;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+  letter-spacing: 0.05em;
+}
+
+.paimana-report-title-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.paimana-report-title-cell .title-text {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0F172A;
+  line-height: 1.35;
+}
+
+.paimana-report-title-cell .meta-sub {
+  font-size: 11.5px;
+  color: #64748B;
+}
+
+.paimana-table-actions-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.paimana-action-btn-view {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #F1F5F9;
+  color: #0F172A;
+  border: 1px solid #E2E8F0;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 120ms ease;
+  white-space: nowrap;
+}
+.paimana-action-btn-view:hover {
+  background: #0084C7;
+  color: #FFFFFF;
+  border-color: #0084C7;
+}
+
+.paimana-action-btn-dl {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #0F172A;
+  color: #FFFFFF;
+  border: 1px solid #0F172A;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 120ms ease;
+  white-space: nowrap;
+}
+.paimana-action-btn-dl:hover {
+  background: #1E293B;
+  border-color: #1E293B;
+}
+
+.paimana-navy-table-footer {
+  padding: 14px 22px;
+  background: #F8FAFC;
+  border-top: 1px solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.page-summary {
+  font-size: 12px;
+  color: #64748B;
+  font-weight: 500;
+}
+
+.paimana-pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.paimana-page-btn {
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  color: #0F172A;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: inherit;
+  transition: all 120ms ease;
+}
+.paimana-page-btn:hover:not(:disabled) {
+  border-color: #0084C7;
+  color: #0084C7;
+}
+.paimana-page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.paimana-current-page-tag {
+  padding: 6px 12px;
+  background: #0F172A;
+  color: #FFFFFF;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* --------------------------------------------------------------------------
+   PUBLIC DASHBOARD: PASTEL CARDS & 2x2 ANALYTICS GRID
+   -------------------------------------------------------------------------- */
+.paimana-dashboard-header-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.paimana-pub-dash-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.01em;
+  margin-bottom: 2px;
+}
+
+.paimana-pub-dash-sub {
+  font-size: 13px;
+  color: #64748B;
+  font-weight: 500;
+}
+
+.paimana-dash-period-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  color: #475569;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.paimana-summary-cards-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.paimana-summary-card {
+  border-radius: 16px;
+  padding: 20px 22px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.04);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.paimana-card-aqua {
+  background-color: #E0F2FE;
+  border-color: #BAE6FD;
+}
+.paimana-card-aqua.clickable {
+  cursor: pointer;
+}
+.paimana-card-aqua.clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(2, 132, 199, 0.15);
+}
+
+.paimana-card-yellow {
+  background-color: #FEF3C7;
+  border-color: #FDE68A;
+}
+
+.paimana-card-pink {
+  background-color: #FCE7F3;
+  border-color: #FBCFE8;
+}
+
+.paimana-card-cream {
+  background-color: #FEF9C3;
+  border-color: #FEF08A;
+}
+
+.paimana-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.card-title-lbl {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #334155;
+}
+
+.card-icon-wrap {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #F1F5F9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0F172A;
+}
+
+.card-val-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.card-val-row .val-num {
+  font-size: 28px;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.02em;
+}
+
+.card-val-row .val-unit {
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748B;
+}
+
+.card-sub-info {
+  font-size: 11.5px;
+  color: #64748B;
+  font-weight: 500;
+}
+
+/* 2x2 Analytics Panels (White surfaces with soft diffuse shadows) */
+.paimana-panels-grid-2x2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 22px;
+  margin-bottom: 32px;
+}
+
+.paimana-analytics-panel {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.paimana-panel-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 100%);
+}
+
+.paimana-panel-title {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.01em;
+}
+
+.paimana-panel-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.paimana-segmented-control {
+  display: inline-flex;
+  background: #F1F5F9;
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.paimana-seg-btn {
+  border: none;
+  background: transparent;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #64748B;
+  padding: 5px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: inherit;
+  transition: all 120ms ease;
+}
+.paimana-seg-btn.active {
+  background: #0F172A;
+  color: #FFFFFF;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.2);
+}
+
+.paimana-panel-body {
+  padding: 20px;
+  flex: 1;
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Stepped Cost Graphic */
+.paimana-cost-bands-graphic {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+
+.paimana-cost-band-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cost-band-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.cost-band-lbl {
+  color: #64748B;
+  font-weight: 600;
+}
+
+.cost-band-val {
+  color: #0F172A;
+  font-weight: 700;
+}
+
+.cost-band-visual-bar {
+  width: 100%;
+  height: 8px;
+  background-color: #F1F5F9;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.cost-band-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 300ms ease;
+}
+
+/* Project Overview Modal Box */
+.paimana-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1000;
+}
+
+.paimana-overview-modal-box {
+  background: #FFFFFF;
+  border-radius: 20px;
+  max-width: 820px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.25);
+  border: 1px solid #E2E8F0;
+  overflow: hidden;
+  animation: modalFadeIn 180ms ease;
+}
+
+.paimana-modal-head {
+  padding: 18px 24px;
+  background: linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 100%);
+  border-bottom: 1px solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.paimana-modal-head h3 {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.paimana-modal-close-btn {
+  background: #F1F5F9;
+  border: none;
+  color: #64748B;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 120ms ease;
+}
+.paimana-modal-close-btn:hover {
+  background: #E2E8F0;
+  color: #0F172A;
+}
+
+.cost-band-visual-bar {
+  height: 24px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 700;
+  transition: width 400ms ease;
+}
+.cost-band-visual-bar.bg-blue-1 { background: #0284C7; }
+.cost-band-visual-bar.bg-blue-2 { background: #0369A1; }
+.cost-band-visual-bar.bg-blue-3 { background: #075985; }
+
+/* Physical Progress Vertical Green Bars */
+.paimana-progress-bars-graphic {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  align-items: flex-end;
+  height: 200px;
+  padding-top: 20px;
+}
+
+.paimana-progress-band-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.prog-bar-container {
+  width: 100%;
+  max-width: 54px;
+  height: 140px;
+  background: #F1F5F9;
+  border-radius: 6px 6px 0 0;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.prog-bar-fill {
+  width: 100%;
+  border-radius: 6px 6px 0 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 4px;
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 700;
+  transition: height 400ms ease;
+}
+.prog-bar-fill.green-1 { background: #86EFAC; color: #166534; }
+.prog-bar-fill.green-2 { background: #4ADE80; color: #166534; }
+.prog-bar-fill.green-3 { background: #22C55E; }
+.prog-bar-fill.green-4 { background: #15803D; }
+
+.prog-band-lbl {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #64748B;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* State Distribution Multi-Color Donuts & Mini-Table */
+.paimana-state-donut-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.paimana-state-donut-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.paimana-state-pill-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.paimana-state-pill-item .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.paimana-state-pill-item .state-name {
+  flex: 1;
+  font-weight: 600;
+  color: #081C36;
+}
+
+.paimana-mini-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.paimana-mini-table th {
+  padding: 8px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #081C36;
+  text-transform: uppercase;
+  background: #F8FAFC;
+  border-bottom: 1.5px solid #CBD5E1;
+}
+.paimana-mini-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #E2E8F0;
+  color: #334155;
+}
+
+/* --------------------------------------------------------------------------
+   PROJECT OVERVIEW MODAL (Full Multi-column Data Table)
+   -------------------------------------------------------------------------- */
+.paimana-overview-modal-box {
+  background: #FFFFFF;
+  border-radius: 12px;
+  max-width: 1200px;
+  width: 95vw;
+  max-height: 90vh;
+  box-shadow: 0 25px 50px rgba(8, 28, 54, 0.35);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: paimanaScale 150ms ease;
+}
+
+.paimana-modal-search-bar {
+  padding: 12px 20px;
+  background: #F8FAFC;
+  border-bottom: 1px solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.paimana-modal-table-wrap {
+  flex: 1;
+  overflow: auto;
+  max-height: calc(90vh - 180px);
+}
+
+.paimana-modal-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  text-align: left;
+}
+.paimana-modal-table th {
+  position: sticky;
+  top: 0;
+  background: #081C36;
+  color: #FFFFFF;
+  padding: 10px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  z-index: 10;
+}
+.paimana-modal-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #E2E8F0;
+  color: #334155;
+}
+.paimana-modal-table tr:nth-child(even) {
+  background: #F8FAFC;
+}
+.paimana-modal-table tr:hover {
+  background: #F0F7FF;
+}
+
+.paimana-modal-page-info {
+  font-size: 12px;
+  color: #64748B;
+}
+
+.paimana-modal-page-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* --------------------------------------------------------------------------
+   SITEMAP & SUBPAGE CARDS
+   -------------------------------------------------------------------------- */
+.paimana-sitemap-link-card {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+.paimana-sitemap-link-card:hover {
+  background: #EEF6FB;
+  border-color: #0084C7;
+  transform: translateX(2px);
+}
+
+.paimana-white-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+/* --------------------------------------------------------------------------
+   RESPONSIVE BREAKPOINTS (360px, 390px, 768px, 1024px, 1366px, 1440px)
+   -------------------------------------------------------------------------- */
+@media (max-width: 1024px) {
+  .paimana-macro-cards-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  .grid-cols-3 {
-    grid-template-columns: 1fr;
+  .paimana-showcase-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
-  .grid-1-2, .grid-2-1 {
-    grid-template-columns: 1fr;
+  .paimana-footer-grid {
+    grid-template-columns: 1fr 1fr;
   }
 }
 
 @media (max-width: 768px) {
-  .content-area {
-    padding: 16px;
+  .paimana-nav-strip {
+    display: none;
   }
-  .grid-cols-4, .grid-cols-2 {
+  .paimana-mobile-toggle {
+    display: block;
+  }
+  .paimana-btn-orange-pill,
+  .paimana-btn-navy-pill {
+    display: none;
+  }
+  .paimana-hero-container {
+    height: 380px;
+  }
+  .paimana-hero-caption-box {
+    padding: 20px;
+  }
+  .paimana-hero-heading {
+    font-size: 18px;
+  }
+  .paimana-hero-subtitle {
+    font-size: 12px;
+    margin-bottom: 14px;
+  }
+  .paimana-showcase-grid {
     grid-template-columns: 1fr;
   }
+  .paimana-app-promo-card {
+    flex-direction: column;
+    text-align: center;
+  }
+  .paimana-phone-mockup-wrapper {
+    margin: 0 auto;
+  }
+  .paimana-app-store-badges {
+    flex-direction: row;
+    justify-content: center;
+    width: 100%;
+  }
+  .paimana-footer-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
 }
+
+@media (max-width: 480px) {
+  .paimana-utility-left .paimana-utility-text {
+    display: none;
+  }
+  .paimana-brand-text .paimana-division-title {
+    display: none;
+  }
+  .paimana-macro-cards-grid {
+    grid-template-columns: 1fr;
+  }
+  .paimana-app-store-badges {
+    flex-direction: column;
+    align-items: center;
+  }
+  .paimana-hero-nav-btn {
+    display: none;
+  }
+/* Utility classes for layout & spacing */
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.flex-row { flex-direction: row; }
+.flex-1 { flex: 1 1 0%; }
+.items-center { align-items: center; }
+.items-start { align-items: flex-start; }
+.justify-between { justify-content: space-between; }
+.justify-center { justify-content: center; }
+.shrink-0 { flex-shrink: 0; }
+.grid { display: grid; }
+.gap-1 { gap: 0.25rem; }
+.gap-2 { gap: 0.5rem; }
+.gap-3 { gap: 0.75rem; }
+.gap-4 { gap: 1rem; }
+.gap-6 { gap: 1.5rem; }
+.gap-8 { gap: 2rem; }
+.space-y-1 > * + * { margin-top: 0.25rem; }
+.space-y-2 > * + * { margin-top: 0.5rem; }
+.space-y-3 > * + * { margin-top: 0.75rem; }
+.space-y-4 > * + * { margin-top: 1rem; }
+.space-y-6 > * + * { margin-top: 1.5rem; }
+.w-full { width: 100%; }
+.w-4 { width: 1rem; }
+.h-4 { height: 1rem; }
+.w-5 { width: 1.25rem; }
+.h-5 { height: 1.25rem; }
+.w-6 { width: 1.5rem; }
+.h-6 { height: 1.5rem; }
+.rounded-lg { border-radius: 0.5rem; }
+.rounded-xl { border-radius: 0.75rem; }
+.rounded-full { border-radius: 9999px; }
+.shadow-sm { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+.border { border-width: 1px; }
+.tnum { font-variant-numeric: tabular-nums; }

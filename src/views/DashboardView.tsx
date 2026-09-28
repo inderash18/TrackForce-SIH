@@ -11,16 +11,19 @@ import {
   Coins,
   ShieldCheck,
   Download,
-  Activity
+  Activity,
+  ArrowRight,
+  ChevronRight,
+  Sparkles
 } from 'lucide-react';
 
 export const DashboardView: React.FC = () => {
   const { projects, alerts, navigateToProject, navigateTo, showNotification, reportingMonth } = useApp();
 
-  const [tableSearch, setTableSearch] = useState('');
+  const [tableSearch] = useState('');
   const [selectedTableSector] = useState('all');
 
-  const filteredEmergingProjects = projects.filter(p => {
+  const filteredEmergingProjects = projects.filter((p) => {
     if (selectedTableSector !== 'all' && p.sector !== selectedTableSector) return false;
     if (
       tableSearch &&
@@ -33,9 +36,23 @@ export const DashboardView: React.FC = () => {
     return true;
   });
 
+  const criticalProjectsCount = projects.filter((p) => (p.riskLevel || '').toLowerCase() === 'critical').length;
+  const highRiskCount = projects.filter((p) => (p.riskLevel || '').toLowerCase() === 'high').length;
+
   const exportTableCSV = () => {
-    const headers = ['Project Code', 'Project Name', 'Sector', 'Ministry', 'State', 'Risk Score', 'Cost Risk %', 'Delay Risk %', 'Progress %', 'Status'];
-    const rows = filteredEmergingProjects.map(p => [
+    const headers = [
+      'Project Code',
+      'Project Name',
+      'Sector',
+      'Ministry',
+      'State',
+      'Risk Score',
+      'Cost Risk %',
+      'Delay Risk %',
+      'Progress %',
+      'Status'
+    ];
+    const rows = filteredEmergingProjects.map((p) => [
       p.code,
       `"${p.name}"`,
       p.sector,
@@ -47,7 +64,7 @@ export const DashboardView: React.FC = () => {
       `${p.physicalProgress}%`,
       p.riskLevel
     ]);
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
@@ -59,482 +76,313 @@ export const DashboardView: React.FC = () => {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* Top Section Header */}
       <div className="page-hero-section">
         <div>
-          <h1 className="page-hero-title">National Infrastructure Intelligence</h1>
-          <p className="page-hero-subtitle">
-            Predictive risk monitoring and early warning across 1,981 Central Sector Infrastructure Projects (MoSPI IPMD)
+          <h1 className="page-title">
+            National Infrastructure Intelligence
+          </h1>
+          <p className="page-subtitle">
+            Predictive risk monitoring, delay forecasting, and early warning surveillance across Central Sector Projects (MoSPI IPMD)
           </p>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <button className="btn btn-secondary btn-sm" onClick={() => navigateTo('simulator')}>
-            <Activity size={14} color="var(--color-royal-blue)" />
-            Open Decision Simulator
+          <button className="btn-secondary" onClick={() => navigateTo('simulator')}>
+            <Activity size={14} color="var(--color-accent-cyan)" />
+            <span>Open Decision Simulator</span>
           </button>
-          <button className="btn btn-primary btn-sm" onClick={() => navigateTo('reports')}>
+          <button className="btn-primary" onClick={() => navigateTo('reports')}>
             <Download size={14} />
-            Monthly Cabinet Brief
+            <span>Monthly Cabinet Brief</span>
           </button>
         </div>
       </div>
 
-      {/* Top KPI Cards (Section 4) */}
-      <div className="grid-cols-4">
+      {/* Top KPI Cards */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+          gap: '14px'
+        }}
+      >
         <MetricCard
-          label="Total Central Projects"
-          value="1,981"
-          explanation="Active projects monitored in PAIMANA master registry"
+          label="Total Monitored Projects"
+          value={projects.length}
+          explanation="Active mega & major projects monitored in PAIMANA registry"
           trend={{ direction: 'neutral', text: '100% data coverage', isGood: true }}
-          icon={<FolderGit2 size={18} />}
+          icon={<FolderGit2 size={16} />}
           indicatorColor="primary"
           onClick={() => navigateTo('projects')}
         />
         <MetricCard
           label="Cumulative Expenditure"
-          value="₹20.36 L Cr"
-          explanation="Out of ₹42.78 Lakh Cr approved revised outlay (47.6%)"
-          subtitleBadge="Revised: ₹42.78 L Cr"
-          trend={{ direction: 'up', text: '+₹0.42 L Cr this quarter', isGood: true }}
-          icon={<Coins size={18} />}
-          indicatorColor="neutral"
+          value="₹48.2 L Cr"
+          explanation="Against ₹138.5 Lakh Cr sanctioned revised outlay"
+          subtitleBadge="Revised: ₹138.5 L Cr"
+          trend={{ direction: 'up', text: '+₹1.4 L Cr this cycle', isGood: true }}
+          icon={<Coins size={16} />}
+          indicatorColor="primary"
         />
         <MetricCard
-          label="Critical Risk Projects"
-          value="184"
-          explanation="Immediate inter-ministerial intervention required"
-          trend={{ direction: 'up', text: '+12 from last month', isGood: false }}
-          icon={<AlertTriangle size={18} />}
+          label="Critical Risk Hotspots"
+          value={criticalProjectsCount}
+          explanation="Packages exhibiting acute milestone & RoW bottlenecks"
+          subtitleBadge="Requires Cabinet Review"
+          trend={{ direction: 'down', text: 'Down from 5 last cycle', isGood: true }}
+          icon={<AlertTriangle size={16} />}
           indicatorColor="critical"
-          onClick={() => navigateTo('risk-monitor')}
+          onClick={() => navigateTo('alerts')}
         />
         <MetricCard
-          label="Predicted Delay Projects"
-          value="613"
-          explanation="Likely to exceed approved revised completion target"
-          trend={{ direction: 'up', text: '30.9% of portfolio', isGood: false }}
-          icon={<Clock size={18} />}
-          indicatorColor="high"
-          onClick={() => navigateTo('analytics')}
+          label="Predicted Delay Exposure"
+          value="34 Months"
+          explanation="Weighted cumulative schedule slippage across high-risk corridors"
+          trend={{ direction: 'up', text: '+4 mos variance', isGood: false }}
+          icon={<Clock size={16} />}
+          indicatorColor="prediction"
         />
       </div>
 
-      {/* National Risk Overview & Portfolio Health Score (Section 5) */}
-      <div className="grid-1-2">
-        {/* Left: Portfolio Health Score */}
-        <div className="gov-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-          <div className="gov-card-header">
-            <div>
+      {/* National Risk Map & Portfolio Distribution */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))',
+          gap: '16px'
+        }}
+      >
+        {/* Geospatial Map */}
+        <div style={{ minHeight: '440px' }}>
+          <IndiaRiskMap height="440px" />
+        </div>
+
+        {/* National Risk Index & Portfolio Breakdown */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          {/* Risk Gauge Card */}
+          <div className="gov-card">
+            <div className="gov-card-header">
               <div className="gov-card-title">
-                <ShieldCheck size={16} color="var(--color-royal-blue)" />
-                Portfolio Health Score
+                <ShieldCheck size={15} color="var(--color-action-primary)" />
+                National Project Risk Index (NPRI)
               </div>
-              <div className="gov-card-subtitle">AI Weighted Composite Integrity Index</div>
+              <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                Reporting Cycle: {reportingMonth}
+              </span>
             </div>
-            <StatusBadge level="medium" customLabel="Needs Attention" />
+            <div className="gov-card-body">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                <div>
+                  <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--status-high-text)', letterSpacing: '-0.02em' }}>
+                    58.4 <span style={{ fontSize: '14px', color: 'var(--color-text-muted)', fontWeight: 500 }}>/ 100</span>
+                  </div>
+                  <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
+                    Portfolio composite risk classified under <strong style={{ color: 'var(--status-high-text)' }}>Moderate-to-High</strong> surveillance tier.
+                  </div>
+                </div>
+
+                <StatusBadge level="high" customLabel="Moderate-High" />
+              </div>
+
+              {/* Segmented Risk Bar */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11.5px', color: 'var(--color-text-secondary)' }}>
+                  <span>Portfolio Risk Breakdown</span>
+                  <span className="tabular-nums">{projects.length} Total Projects</span>
+                </div>
+
+                <div
+                  style={{
+                    height: '10px',
+                    width: '100%',
+                    display: 'flex',
+                    borderRadius: 'var(--radius-full)',
+                    overflow: 'hidden',
+                    backgroundColor: 'var(--color-surface-hover)'
+                  }}
+                >
+                  <div style={{ width: `${(criticalProjectsCount / projects.length) * 100}%`, backgroundColor: 'var(--status-critical)' }} title="Critical" />
+                  <div style={{ width: `${(highRiskCount / projects.length) * 100}%`, backgroundColor: 'var(--status-high)' }} title="High" />
+                  <div style={{ width: '35%', backgroundColor: 'var(--status-medium)' }} title="Moderate" />
+                  <div style={{ width: '40%', backgroundColor: 'var(--status-low)' }} title="Low" />
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11px', color: 'var(--color-text-dim)', marginTop: '4px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--status-critical)' }} />
+                    <span>Critical ({criticalProjectsCount})</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--status-high)' }} />
+                    <span>High ({highRiskCount})</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--status-medium)' }} />
+                    <span>Moderate</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--status-low)' }} />
+                    <span>Low</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="gov-card-body" style={{ textAlign: 'center', padding: '24px 20px' }}>
-            <div style={{ position: 'relative', display: 'inline-block', marginBottom: '16px' }}>
-              <svg width="150" height="150" viewBox="0 0 120 120">
-                <circle cx="60" cy="60" r="50" fill="none" stroke="#E5EAF0" strokeWidth="10" />
-                <circle
-                  cx="60"
-                  cy="60"
-                  r="50"
-                  fill="none"
-                  stroke="var(--status-medium-dot)"
-                  strokeWidth="10"
-                  strokeDasharray="314.159"
-                  strokeDashoffset={314.159 * (1 - 72 / 100)}
-                  strokeLinecap="round"
-                  transform="rotate(-90 60 60)"
-                />
-              </svg>
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center'
-                }}
-              >
-                <span style={{ fontSize: '32px', fontWeight: 800, color: 'var(--color-text-dark)', lineHeight: 1 }}>
-                  72
-                </span>
-                <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontWeight: 600, marginTop: '2px' }}>
-                  / 100
-                </span>
+          {/* Key Risk Drivers */}
+          <div className="gov-card" style={{ flex: 1 }}>
+            <div className="gov-card-header">
+              <div className="gov-card-title">
+                <Sparkles size={15} color="var(--color-accent-cyan)" />
+                Top Root-Cause Delay Drivers (SHAP)
               </div>
+              <button onClick={() => navigateTo('analytics')} className="btn-ghost" style={{ fontSize: '11px', padding: '2px 6px' }}>
+                Full Analytics <ChevronRight size={12} />
+              </button>
             </div>
-
-            <p style={{ fontSize: '12.5px', color: 'var(--color-text-body)', margin: '0 0 16px', lineHeight: 1.4 }}>
-              Portfolio vulnerability is elevated due to stagnation clusters in metropolitan transit and Himalayan rail packages.
-            </p>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', textAlign: 'left', background: 'var(--color-bg-soft)', padding: '10px 12px', borderRadius: 'var(--radius-md)' }}>
-              <div>
-                <span style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', display: 'block' }}>Cost Risk Projects</span>
-                <strong style={{ fontSize: '13px', color: 'var(--color-text-dark)' }}>381 projects</strong>
-              </div>
-              <div>
-                <span style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', display: 'block' }}>Estimated Cost Drift</span>
-                <strong style={{ fontSize: '13px', color: 'var(--status-critical-text)' }}>+₹5.65 L Cr</strong>
-              </div>
+            <div className="gov-card-body" style={{ padding: '14px 18px' }}>
+              <RiskDriverBarChart />
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Right: Project Risk Distribution (Donut & Stacked Bars) */}
+      {/* Critical Projects Table & Early Warnings Stream */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(460px, 1fr))',
+          gap: '16px'
+        }}
+      >
+        {/* Critical & High Risk Projects Watchlist */}
         <div className="gov-card">
           <div className="gov-card-header">
-            <div>
-              <div className="gov-card-title">Project Risk Distribution</div>
-              <div className="gov-card-subtitle">Predictive classification across 1,981 projects</div>
-            </div>
-            <span style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)' }}>
-              Updated: {reportingMonth}
-            </span>
-          </div>
-
-          <div className="gov-card-body" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-            {/* Stacked Risk Progress Bar */}
-            <div>
-              <div
-                style={{
-                  height: '24px',
-                  width: '100%',
-                  borderRadius: '6px',
-                  overflow: 'hidden',
-                  display: 'flex',
-                  boxShadow: 'var(--shadow-xs)'
-                }}
-              >
-                <div
-                  style={{
-                    width: `${(894 / 1981) * 100}%`,
-                    backgroundColor: 'var(--status-low-dot)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#fff',
-                    fontSize: '11px',
-                    fontWeight: 700
-                  }}
-                  title="Low Risk: 894 (45.1%)"
-                >
-                  45%
-                </div>
-                <div
-                  style={{
-                    width: `${(562 / 1981) * 100}%`,
-                    backgroundColor: 'var(--status-medium-dot)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#fff',
-                    fontSize: '11px',
-                    fontWeight: 700
-                  }}
-                  title="Medium Risk: 562 (28.4%)"
-                >
-                  28%
-                </div>
-                <div
-                  style={{
-                    width: `${(341 / 1981) * 100}%`,
-                    backgroundColor: 'var(--status-high-dot)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#fff',
-                    fontSize: '11px',
-                    fontWeight: 700
-                  }}
-                  title="High Risk: 341 (17.2%)"
-                >
-                  17%
-                </div>
-                <div
-                  style={{
-                    width: `${(184 / 1981) * 100}%`,
-                    backgroundColor: 'var(--status-critical-dot)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#fff',
-                    fontSize: '11px',
-                    fontWeight: 700
-                  }}
-                  title="Critical Risk: 184 (9.3%)"
-                >
-                  9%
-                </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <AlertTriangle size={15} color="var(--status-critical)" />
+              <div>
+                <div className="gov-card-title">High Risk Watchlist</div>
+                <div className="gov-card-subtitle">Packages with acute delay and cost overrun probabilities</div>
               </div>
             </div>
 
-            {/* Breakdown Cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
-              <div style={{ padding: '12px', background: 'var(--status-low-bg)', border: '1px solid var(--status-low-border)', borderRadius: 'var(--radius-md)' }}>
-                <span style={{ fontSize: '11px', color: 'var(--status-low-text)', fontWeight: 600 }}>Low / Safe</span>
-                <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--status-low-text)' }}>894</div>
-                <span style={{ fontSize: '10.5px', color: 'var(--status-low-text)', opacity: 0.85 }}>45.1% of portfolio</span>
-              </div>
-              <div style={{ padding: '12px', background: 'var(--status-medium-bg)', border: '1px solid var(--status-medium-border)', borderRadius: 'var(--radius-md)' }}>
-                <span style={{ fontSize: '11px', color: 'var(--status-medium-text)', fontWeight: 600 }}>Medium Risk</span>
-                <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--status-medium-text)' }}>562</div>
-                <span style={{ fontSize: '10.5px', color: 'var(--status-medium-text)', opacity: 0.85 }}>28.4% of portfolio</span>
-              </div>
-              <div style={{ padding: '12px', background: 'var(--status-high-bg)', border: '1px solid var(--status-high-border)', borderRadius: 'var(--radius-md)' }}>
-                <span style={{ fontSize: '11px', color: 'var(--status-high-text)', fontWeight: 600 }}>High Risk</span>
-                <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--status-high-text)' }}>341</div>
-                <span style={{ fontSize: '10.5px', color: 'var(--status-high-text)', opacity: 0.85 }}>17.2% of portfolio</span>
-              </div>
-              <div style={{ padding: '12px', background: 'var(--status-critical-bg)', border: '1px solid var(--status-critical-border)', borderRadius: 'var(--radius-md)' }}>
-                <span style={{ fontSize: '11px', color: 'var(--status-critical-text)', fontWeight: 600 }}>Critical Risk</span>
-                <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--status-critical-text)' }}>184</div>
-                <span style={{ fontSize: '10.5px', color: 'var(--status-critical-text)', opacity: 0.85 }}>9.3% of portfolio</span>
-              </div>
-            </div>
-
-            <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--color-border-light)', paddingTop: '10px' }}>
-              <span>Primary Driver: <strong>Land Acquisition (27%)</strong> & <strong>Contractor Liquidity (21%)</strong></span>
-              <button
-                className="btn btn-sm"
-                style={{ color: 'var(--color-royal-blue)', background: 'transparent', padding: 0 }}
-                onClick={() => navigateTo('risk-monitor')}
-              >
-                View Risk Surveillance Matrix →
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button onClick={exportTableCSV} className="btn-secondary" style={{ fontSize: '11.5px', padding: '4px 10px' }}>
+                <Download size={12} /> CSV
+              </button>
+              <button onClick={() => navigateTo('projects')} className="btn-ghost" style={{ fontSize: '11.5px', padding: '4px 8px' }}>
+                View All <ArrowRight size={12} />
               </button>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Geospatial Map (Section 6) */}
-      <IndiaRiskMap height="460px" />
-
-      {/* Top Emerging Risks Table (Section 7) */}
-      <div className="gov-card">
-        <div className="gov-card-header">
-          <div>
-            <div className="gov-card-title">
-              <AlertTriangle size={16} color="var(--status-critical-dot)" />
-              Top Emerging Infrastructure Risks
-            </div>
-            <div className="gov-card-subtitle">
-              Prioritized by AI Risk Severity, Physical Stagnation & Cost Overrun Probability
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <input
-              type="text"
-              placeholder="Search table..."
-              className="gov-input"
-              value={tableSearch}
-              onChange={e => setTableSearch(e.target.value)}
-              style={{ fontSize: '12px', padding: '4px 10px', width: '180px' }}
-            />
-            <button className="btn btn-secondary btn-sm" onClick={exportTableCSV}>
-              <Download size={13} /> Export CSV
-            </button>
-          </div>
-        </div>
-
-        <div className="gov-table-container">
-          <table className="gov-table">
-            <thead>
-              <tr>
-                <th>Project Code & Name</th>
-                <th>Sector</th>
-                <th>Ministry</th>
-                <th>State</th>
-                <th style={{ textAlign: 'center' }}>Risk Score</th>
-                <th style={{ textAlign: 'center' }}>Cost Risk</th>
-                <th style={{ textAlign: 'center' }}>Delay Risk</th>
-                <th style={{ textAlign: 'center' }}>Progress</th>
-                <th style={{ textAlign: 'center' }}>Trend</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredEmergingProjects.map(p => (
-                <tr
-                  key={p.id}
-                  className="interactive-row"
-                  onClick={() => navigateToProject(p.id)}
-                >
-                  <td>
-                    <div>
-                      <strong style={{ color: 'var(--color-text-dark)', fontSize: '13px', display: 'block' }}>
-                        {p.name}
-                      </strong>
-                      <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontFamily: 'monospace' }}>
-                        {p.code}
-                      </span>
-                    </div>
-                  </td>
-                  <td>
-                    <span style={{ fontSize: '12.5px', fontWeight: 500 }}>{p.sector}</span>
-                  </td>
-                  <td>
-                    <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
-                      {p.ministry.replace('Ministry of ', '')}
-                    </span>
-                  </td>
-                  <td>
-                    <span style={{ fontSize: '12.5px' }}>{p.state}</span>
-                  </td>
-                  <td style={{ textAlign: 'center' }}>
-                    <span
-                      style={{
-                        fontSize: '14px',
-                        fontWeight: 700,
-                        color:
-                          p.riskLevel === 'critical'
-                            ? 'var(--status-critical-text)'
-                            : p.riskLevel === 'high'
-                            ? 'var(--status-high-text)'
-                            : p.riskLevel === 'medium'
-                            ? 'var(--status-medium-text)'
-                            : 'var(--status-low-text)'
-                      }}
-                    >
-                      {p.riskScore}
-                    </span>
-                  </td>
-                  <td style={{ textAlign: 'center', fontWeight: 600 }}>{p.costOverrunProbability}%</td>
-                  <td style={{ textAlign: 'center', fontWeight: 600 }}>{p.scheduleDelayProbability}%</td>
-                  <td style={{ textAlign: 'center' }}>
-                    <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center' }}>
-                      <span style={{ fontWeight: 600, fontSize: '12.5px' }}>{p.physicalProgress}%</span>
-                      <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>Target {p.expectedProgress}%</span>
-                    </div>
-                  </td>
-                  <td style={{ textAlign: 'center' }}>
-                    <span
-                      style={{
-                        color:
-                          p.riskTrend === 'worsening'
-                            ? 'var(--status-critical-dot)'
-                            : p.riskTrend === 'improving'
-                            ? 'var(--status-low-dot)'
-                            : 'var(--color-text-secondary)',
-                        fontWeight: 700
-                      }}
-                    >
-                      {p.riskTrend === 'worsening' ? '↑' : p.riskTrend === 'improving' ? '↓' : '→'}
-                    </span>
-                  </td>
-                  <td>
-                    <StatusBadge level={p.riskLevel} size="sm" />
-                  </td>
-                  <td>
-                    <button
-                      className="btn btn-secondary btn-sm"
-                      style={{ padding: '3px 8px', fontSize: '11.5px' }}
-                      onClick={e => {
-                        e.stopPropagation();
-                        navigateToProject(p.id);
-                      }}
-                    >
-                      Examine
-                    </button>
-                  </td>
+          <div className="gov-table-wrapper" style={{ border: 'none' }}>
+            <table className="gov-table">
+              <thead>
+                <tr>
+                  <th>Project</th>
+                  <th>Sector</th>
+                  <th>Physical %</th>
+                  <th>Delay Risk</th>
+                  <th>Risk Index</th>
+                  <th>Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredEmergingProjects.slice(0, 5).map((project) => (
+                  <tr key={project.id}>
+                    <td>
+                      <div style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                        {project.name}
+                      </div>
+                      <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                        {project.code} · {project.state}
+                      </div>
+                    </td>
+                    <td>
+                      <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+                        {project.sector}
+                      </span>
+                    </td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ width: '45px', height: '5px', borderRadius: '3px', background: 'var(--color-surface-hover)', overflow: 'hidden' }}>
+                          <div style={{ width: `${project.physicalProgress}%`, height: '100%', background: 'var(--color-action-primary)' }} />
+                        </div>
+                        <span className="tabular-nums" style={{ fontSize: '12px', fontWeight: 600 }}>
+                          {project.physicalProgress}%
+                        </span>
+                      </div>
+                    </td>
+                    <td>
+                      <span className="tabular-nums" style={{ fontSize: '12px', fontWeight: 600, color: project.scheduleDelayProbability > 70 ? 'var(--status-critical-text)' : 'var(--status-high-text)' }}>
+                        {project.scheduleDelayProbability}%
+                      </span>
+                    </td>
+                    <td>
+                      <StatusBadge level={project.riskLevel} customLabel={`${project.riskScore}/100`} size="sm" />
+                    </td>
+                    <td>
+                      <button
+                        onClick={() => navigateToProject(project.id)}
+                        className="btn-ghost"
+                        style={{ fontSize: '11.5px', padding: '3px 8px', color: 'var(--color-action-primary)' }}
+                      >
+                        Inspect <ChevronRight size={13} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
 
-      {/* Early Warning Signals & Risk Driver Analytics (Sections 8 & 9) */}
-      <div className="grid-2-1">
-        {/* Early Warning Signals (Section 8) */}
+        {/* Live Early Warning Signals */}
         <div className="gov-card">
           <div className="gov-card-header">
-            <div>
-              <div className="gov-card-title">
-                <Activity size={16} color="var(--status-critical-dot)" />
-                Early Warning Signals
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Activity size={15} color="var(--status-high)" />
+              <div>
+                <div className="gov-card-title">Early Warning Surveillance</div>
+                <div className="gov-card-subtitle">Algorithmic risk triggers from recent monthly updates</div>
               </div>
-              <div className="gov-card-subtitle">Real-time AI telemetry detecting velocity and spending deviations</div>
             </div>
-            <button
-              className="btn btn-sm"
-              style={{ color: 'var(--color-royal-blue)', background: 'transparent' }}
-              onClick={() => navigateTo('alerts')}
-            >
-              View All Alerts ({alerts.length}) →
+            <button onClick={() => navigateTo('alerts')} className="btn-ghost" style={{ fontSize: '11.5px', padding: '4px 8px' }}>
+              All Signals ({alerts.length}) <ArrowRight size={12} />
             </button>
           </div>
 
-          <div className="gov-card-body" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {alerts.slice(0, 3).map(alert => (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '14px' }}>
+            {alerts.slice(0, 4).map((alert) => (
               <div
                 key={alert.id}
+                onClick={() => navigateTo('alerts')}
                 style={{
-                  padding: '14px 16px',
+                  padding: '12px 14px',
+                  backgroundColor: 'var(--color-surface-elevated)',
+                  border: '1px solid var(--color-border)',
                   borderRadius: 'var(--radius-md)',
-                  border: `1px solid ${
-                    alert.severity === 'critical'
-                      ? 'var(--status-critical-border)'
-                      : alert.severity === 'high'
-                      ? 'var(--status-high-border)'
-                      : 'var(--color-border-grey)'
-                  }`,
-                  backgroundColor: alert.severity === 'critical' ? '#FEFBFB' : '#FFFFFF',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  transition: 'border-color 120ms ease'
                 }}
-                onClick={() => navigateToProject(alert.projectId)}
               >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <StatusBadge level={alert.severity} size="sm" />
-                    <strong style={{ fontSize: '13px', color: 'var(--color-text-dark)' }}>
-                      {alert.projectName}
-                    </strong>
-                  </div>
-                  <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>
-                    {alert.timestamp}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <StatusBadge level={alert.severity} size="sm" />
+                  <span style={{ fontSize: '10.5px', color: 'var(--color-text-dim)' }}>
+                    {alert.timestamp || 'Fresh update'}
                   </span>
                 </div>
-
-                <div style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--status-critical-text)', marginBottom: '4px' }}>
-                  {alert.warningTitle}
+                <div style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: '3px' }}>
+                  {alert.projectName}
                 </div>
-
-                <p style={{ fontSize: '12px', color: 'var(--color-text-body)', margin: '0 0 8px', lineHeight: 1.35 }}>
-                  <strong>Reason:</strong> {alert.aiExplanation}
+                <p style={{ margin: 0, fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: 1.35 }}>
+                  {alert.reason || alert.aiExplanation}
                 </p>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', color: 'var(--color-text-muted)', borderTop: '1px solid var(--color-border-light)', paddingTop: '6px' }}>
-                  <span>Agency: {alert.responsibleAgency}</span>
-                  <span style={{ color: 'var(--color-royal-blue)', fontWeight: 600 }}>Review Dossier →</span>
-                </div>
               </div>
             ))}
-          </div>
-        </div>
-
-        {/* Risk Driver Analytics (Section 9) */}
-        <div className="gov-card">
-          <div className="gov-card-header">
-            <div>
-              <div className="gov-card-title">Top Portfolio Risk Drivers</div>
-              <div className="gov-card-subtitle">Root causes across delayed schemes</div>
-            </div>
-          </div>
-
-          <div className="gov-card-body">
-            <RiskDriverBarChart />
           </div>
         </div>
       </div>

@@ -10,32 +10,40 @@ export interface MonthlyProgressPoint {
 
 export interface ShapContributor {
   factor: string;
-  contribution: number; // e.g. +23%
-  direction: 'increase' | 'decrease';
+  contribution: number; // e.g. +23% or pts
+  direction: 'increase' | 'decrease' | 'increases_risk' | 'decreases_risk';
   explanation: string;
-  category: 'progress' | 'schedule' | 'financial' | 'historical' | 'milestone' | 'clearance';
+  category?: 'progress' | 'schedule' | 'financial' | 'historical' | 'milestone' | 'clearance' | string;
+  feature?: string;
+  impact?: number;
+  description?: string;
 }
 
 export interface RecommendedIntervention {
   id: string;
-  priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'Critical' | 'High' | 'Medium' | 'Low';
   title: string;
-  reason: string;
+  pillar?: string;
+  reason?: string;
+  description?: string;
+  action?: string;
   expectedImpact: string;
-  delayRiskBefore: number;
-  delayRiskAfter: number;
-  riskScoreBefore: number;
-  riskScoreAfter: number;
-  status: 'suggested' | 'in-review' | 'actioned';
+  delayRiskBefore?: number;
+  delayRiskAfter?: number;
+  riskScoreBefore?: number;
+  riskScoreAfter?: number;
+  status?: 'suggested' | 'in-review' | 'actioned' | string;
   assignedAgency?: string;
 }
 
 export interface ProjectCufData {
   landAcquisitionPct: number;
   contractorCapacity: number; // 0 - 100
-  clearanceStatus: 'Pending Forest Clearance' | 'Environmental Cleared' | 'Railway Right-of-Way Pending' | 'All Clearances Granted' | 'State Nodal Bottleneck';
-  fundingAvailability: 'Fully Allocated' | 'Partial Disbursal Gap' | 'Quarterly Trench Pending' | 'Constrained';
-  resourceDeployment: 'Optimal' | 'Sub-optimal (-18%)' | 'Severe Deficit (-35%)';
+  clearanceStatus: string;
+  forestClearance?: string;
+  environmentClearance?: string;
+  fundingAvailability: string;
+  resourceDeployment: string;
 }
 
 export interface Project {
@@ -47,7 +55,7 @@ export interface Project {
   state: string;
   district?: string;
   implementingAgency: string;
-  status: 'Ongoing' | 'Delayed' | 'Critical Review' | 'Near Completion';
+  status: 'Ongoing' | 'Delayed' | 'Critical Review' | 'Near Completion' | 'In Progress' | 'Critical Delay' | 'On Track' | 'Completed' | string;
   
   // Financials (₹ in Crores)
   originalCost: number;
@@ -69,21 +77,24 @@ export interface Project {
   
   // AI Risk Assessment
   riskScore: number; // e.g. 87
-  riskLevel: RiskLevel;
-  riskTrend: 'worsening' | 'stable' | 'improving';
-  confidenceScore: number; // e.g. 94%
-  mainRiskReason: string;
+  riskLevel: RiskLevel | string;
+  riskTrend?: 'worsening' | 'stable' | 'improving';
+  confidenceScore?: number; // e.g. 94%
+  mainRiskReason?: string;
 
   // Geospatial
-  lat: number;
-  lng: number;
+  lat?: number;
+  lng?: number;
+  latitude?: number;
+  longitude?: number;
 
   // Deep Intelligence
   monthlyHistory: MonthlyProgressPoint[];
   shapContributors: ShapContributor[];
-  interventions: RecommendedIntervention[];
+  interventions?: RecommendedIntervention[];
+  recommendedInterventions?: RecommendedIntervention[];
   cuf: ProjectCufData;
-  tags: string[];
+  tags?: string[];
 }
 
 export interface EarlyWarningAlert {
@@ -92,17 +103,21 @@ export interface EarlyWarningAlert {
   projectName: string;
   sector: string;
   ministry: string;
-  state: string;
-  severity: 'critical' | 'high' | 'medium' | 'resolved';
-  warningTitle: string;
-  riskChangeText: string;
-  riskChangeValue: { from: number; to: number };
-  aiExplanation: string;
+  state?: string;
+  severity: 'critical' | 'high' | 'medium' | 'resolved' | string;
+  warningTitle?: string;
+  warningType?: string;
+  reason?: string;
+  riskChangeText?: string;
+  riskChangeValue?: { from: number; to: number };
+  aiExplanation?: string;
   timestamp: string;
-  responsibleAgency: string;
-  recommendedAction: string;
-  status: 'active' | 'reviewed' | 'escalated' | 'resolved';
+  responsibleAgency?: string;
+  responsibleTeam?: string;
+  recommendedAction?: string;
+  status: 'active' | 'reviewed' | 'escalated' | 'resolved' | 'Active' | 'In Review' | 'Resolved' | string;
   assignedOfficer?: string;
+  assignedTo?: string;
 }
 
 export interface NationalSummaryMetrics {
@@ -156,9 +171,12 @@ export interface ModelMetricRow {
   accuracy: number;
   precision: number;
   recall: number;
-  f1Score: number;
+  f1Score?: number;
+  f1?: number;
   rocAuc: number;
-  trainingTimeSec: number;
+  trainingTimeSec?: number;
+  trainingTime?: string | number;
+  status?: string;
   isBest?: boolean;
 }
 
@@ -170,10 +188,25 @@ export interface ChatMessage {
   referencedProjectIds?: string[];
   suggestedActions?: string[];
   metricsTable?: { label: string; value: string; note?: string }[];
-  confidence?: 'High (94%)' | 'Moderate (81%)' | 'Preliminary (68%)';
+  confidence?: 'High (94%)' | 'Moderate (81%)' | 'Preliminary (68%)' | string;
 }
 
 export type ActiveNavRoute =
+  | 'landing'
+  | 'public-dashboard'
+  | 'project-monitoring'
+  | 'performance-monitoring'
+  | 'archive-project-monitoring'
+  | 'archive-project-performance'
+  | 'about-ipmd'
+  | 'about-ocms'
+  | 'about-vision'
+  | 'orders-manuals'
+  | 'media-gallery'
+  | 'faq'
+  | 'sitemap'
+  | 'contact'
+  | 'policies'
   | 'dashboard'
   | 'projects'
   | 'project-detail'
@@ -188,5 +221,4 @@ export type ActiveNavRoute =
   | 'data'
   | 'model-performance'
   | 'admin'
-  | 'landing'
   | 'login';

@@ -83,5 +83,35 @@ export const dataQualityMetrics = {
   duplicateRecords: 0,
   missingMandatoryFields: 12,
   invalidDateResolutions: 3,
-  costAnomaliesFlagged: 7
+  costAnomaliesFlagged: 7,
+  sources: [
+    {
+      name: 'MoSPI CUF Automated Ingestion Feed',
+      description: 'Common Utility Format project monthly progress, expenditure, and target milestones',
+      type: 'REST / JSON Webhook',
+      lastSync: '2.4 hours ago',
+      completeness: 99.1
+    },
+    {
+      name: 'OCMS (Online Computerized Monitoring System)',
+      description: 'Central sector projects database monitoring projects ₹150 Cr and above',
+      type: 'SFTP / Batch ETL',
+      lastSync: '4.1 hours ago',
+      completeness: 98.4
+    },
+    {
+      name: 'PM GatiShakti National Master Plan GIS',
+      description: 'Geospatial alignment corridors, RoW permissions, and inter-agency layers',
+      type: 'OGC WFS / GeoJSON',
+      lastSync: '12 hours ago',
+      completeness: 96.7
+    },
+    {
+      name: 'Direct Ministry ERP / Project Portals',
+      description: 'Indian Railways CRIS, MoRTH Bhoomi Rashi, PowerGrid MIS direct connectors',
+      type: 'OAuth 2.0 API Gateway',
+      lastSync: '1.2 hours ago',
+      completeness: 99.5
+    }
+  ]
 };

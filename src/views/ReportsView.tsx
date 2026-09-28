@@ -5,16 +5,15 @@ import { useApp } from '../context/AppContext';
 import {
   Download,
   Eye,
-  FileSpreadsheet,
   X
 } from 'lucide-react';
 
 export const ReportsView: React.FC = () => {
-  const { showNotification, reportingMonth, user } = useApp();
+  const { showNotification, reportingMonth } = useApp();
   const [previewReport, setPreviewReport] = useState<ReportItem | null>(null);
 
   const handleDownload = (rep: ReportItem, format: 'PDF' | 'XLSX') => {
-    showNotification(`Downloading "${rep.title}" as ${format}...`);
+    showNotification(`Exporting "${rep.title}" as ${format} package.`);
   };
 
   return (
@@ -22,16 +21,24 @@ export const ReportsView: React.FC = () => {
       {/* Header */}
       <div className="page-hero-section">
         <div>
-          <h1 className="page-hero-title">Executive Dossiers & Statutory Reports</h1>
-          <p className="page-hero-subtitle">
+          <h1 className="page-title">
+            Executive Dossiers & Statutory Reports
+          </h1>
+          <p className="page-subtitle">
             Official infrastructure intelligence briefings generated for PMO, Cabinet Secretariat, and Inter-Ministerial Committees
           </p>
         </div>
       </div>
 
       {/* Reports Grid */}
-      <div className="grid-cols-2">
-        {standardReportsList.map(rep => (
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))',
+          gap: '16px'
+        }}
+      >
+        {standardReportsList.map((rep) => (
           <div
             key={rep.id}
             className="gov-card"
@@ -39,7 +46,8 @@ export const ReportsView: React.FC = () => {
               padding: '20px',
               display: 'flex',
               flexDirection: 'column',
-              justifyContent: 'space-between'
+              justifyContent: 'space-between',
+              gap: '14px'
             }}
           >
             <div>
@@ -52,8 +60,8 @@ export const ReportsView: React.FC = () => {
                     letterSpacing: '0.04em',
                     padding: '2px 8px',
                     borderRadius: '4px',
-                    backgroundColor: 'var(--color-bg-soft)',
-                    border: '1px solid var(--color-border-grey)',
+                    backgroundColor: 'var(--color-surface-elevated)',
+                    border: '1px solid var(--color-border)',
                     color: 'var(--color-text-secondary)'
                   }}
                 >
@@ -63,50 +71,43 @@ export const ReportsView: React.FC = () => {
                   style={{
                     fontSize: '10.5px',
                     fontWeight: 600,
-                    color: rep.classification.includes('Cabinet') ? 'var(--status-critical-text)' : 'var(--color-royal-blue)'
+                    color: rep.classification.includes('Cabinet') ? 'var(--status-critical-text)' : 'var(--color-action-primary)'
                   }}
                 >
                   {rep.classification}
                 </span>
               </div>
 
-              <h3 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-text-dark)', marginBottom: '6px', lineHeight: 1.3 }}>
+              <h2 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '6px', lineHeight: 1.3 }}>
                 {rep.title}
-              </h3>
+              </h2>
 
-              <p style={{ fontSize: '12px', color: 'var(--color-text-body)', margin: '0 0 12px', lineHeight: 1.35 }}>
+              <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.4 }}>
                 {rep.description}
               </p>
             </div>
 
-            <div style={{ borderTop: '1px solid var(--color-border-light)', paddingTop: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11.5px', color: 'var(--color-text-muted)', marginBottom: '10px' }}>
-                <span>Frequency: <strong>{rep.frequency}</strong></span>
-                <span>Last Ingested: <strong>{rep.lastGenerated}</strong></span>
-                <span>Pages: <strong>{rep.pages} pp</strong></span>
+            <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', color: 'var(--color-text-muted)', marginBottom: '12px' }}>
+                <span>Frequency: <strong style={{ color: 'var(--color-text-secondary)' }}>{rep.frequency}</strong></span>
+                <span>Generated: <strong style={{ color: 'var(--color-text-secondary)' }}>{rep.lastGenerated}</strong></span>
+                <span>Pages: <strong style={{ color: 'var(--color-text-secondary)' }}>{rep.pages} pp</strong></span>
               </div>
 
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button
-                  className="btn btn-secondary btn-sm"
-                  style={{ flex: 1 }}
+                  className="btn-secondary"
+                  style={{ flex: 1, fontSize: '12px', padding: '6px 10px', justifyContent: 'center' }}
                   onClick={() => setPreviewReport(rep)}
                 >
-                  <Eye size={13} /> Preview
+                  <Eye size={13} /> <span>Preview</span>
                 </button>
                 <button
-                  className="btn btn-primary btn-sm"
-                  style={{ flex: 1 }}
+                  className="btn-primary"
+                  style={{ flex: 1, fontSize: '12px', padding: '6px 10px', justifyContent: 'center' }}
                   onClick={() => handleDownload(rep, 'PDF')}
                 >
-                  <Download size={13} /> PDF
-                </button>
-                <button
-                  className="btn btn-secondary btn-sm"
-                  onClick={() => handleDownload(rep, 'XLSX')}
-                  title="Export Excel"
-                >
-                  <FileSpreadsheet size={13} />
+                  <Download size={13} /> <span>Export PDF</span>
                 </button>
               </div>
             </div>
@@ -117,96 +118,52 @@ export const ReportsView: React.FC = () => {
       {/* Report Preview Modal */}
       {previewReport && (
         <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'rgba(15, 23, 42, 0.65)',
-            backdropFilter: 'blur(3px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-            padding: '24px'
-          }}
+          className="drawer-backdrop"
+          onClick={() => setPreviewReport(null)}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         >
           <div
-            className="gov-card"
+            onClick={(e) => e.stopPropagation()}
             style={{
-              width: '100%',
-              maxWidth: '780px',
-              maxHeight: '90vh',
-              display: 'flex',
-              flexDirection: 'column',
-              backgroundColor: '#FFFFFF',
-              boxShadow: 'var(--shadow-lg)',
-              overflow: 'hidden'
+              width: '640px',
+              maxWidth: '92vw',
+              maxHeight: '85vh',
+              backgroundColor: 'var(--color-surface-elevated)',
+              border: '1px solid var(--color-border-subtle)',
+              borderRadius: 'var(--radius-lg)',
+              padding: '24px',
+              boxShadow: 'var(--shadow-elevated)',
+              overflowY: 'auto'
             }}
           >
-            {/* Modal Header */}
-            <div className="gov-card-header" style={{ padding: '16px 24px', backgroundColor: 'var(--color-deep-navy)', color: '#fff' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <div>
-                <span style={{ fontSize: '11px', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                  Official Document Preview • {previewReport.classification}
+                <span style={{ fontSize: '11px', color: 'var(--color-accent-cyan)', fontWeight: 600 }}>
+                  {previewReport.category} · {previewReport.classification}
                 </span>
-                <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#fff', margin: '2px 0 0' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-text-primary)' }}>
                   {previewReport.title}
                 </h3>
               </div>
-              <button
-                style={{ background: 'none', border: 'none', color: '#CBD5E1', cursor: 'pointer' }}
-                onClick={() => setPreviewReport(null)}
-              >
-                <X size={20} />
+              <button onClick={() => setPreviewReport(null)} style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer' }}>
+                <X size={18} />
               </button>
             </div>
 
-            {/* Modal Body: Mock Dossier Layout */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '24px', fontSize: '13px', lineHeight: 1.6, color: 'var(--color-text-body)' }}>
-              <div style={{ textAlign: 'center', borderBottom: '2px solid var(--color-deep-navy)', paddingBottom: '16px', marginBottom: '20px' }}>
-                <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>
-                  Government of India • Ministry of Statistics and Programme Implementation
-                </div>
-                <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
-                  Infrastructure and Project Monitoring Division (IPMD) • PAIMANA Sentinel AI System
-                </div>
-                <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-deep-navy)', marginTop: '8px' }}>
-                  {previewReport.title}
-                </h2>
-                <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-royal-blue)' }}>
-                  Reporting Period: {reportingMonth} | Clearance Level: {previewReport.classification}
-                </span>
+            <div style={{ background: 'var(--color-surface-panel)', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', marginBottom: '16px' }}>
+              <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: '8px' }}>
+                EXECUTIVE SUMMARY & MANDATE
               </div>
-
-              <h4 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-text-dark)', marginBottom: '8px' }}>
-                1. Executive Summary & National Portfolio Pulse
-              </h4>
-              <p>
-                During the month of {reportingMonth}, the Central Sector Infrastructure monitoring registry under PAIMANA tracked <strong>1,981 projects</strong> with an aggregate revised outlay of <strong>₹42.78 Lakh Crore</strong>. Cumulative expenditure stands at <strong>₹20.36 Lakh Crore (47.6%)</strong>.
+              <p style={{ fontSize: '12.5px', color: 'var(--color-text-secondary)', lineHeight: 1.5, margin: 0 }}>
+                {previewReport.description} Prepared under the authority of MoSPI Infrastructure Monitoring Division for review period {reportingMonth}.
               </p>
-              <p>
-                The Composite AI Portfolio Health Score is calibrated at <strong>72 / 100 (Needs Attention)</strong>, with <strong>184 projects categorized under Critical Risk</strong> and <strong>613 projects exhibiting statistically high schedule delay drift</strong>.
-              </p>
-
-              <h4 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-text-dark)', margin: '16px 0 8px' }}>
-                2. Key Inter-Ministerial Escalation Highlights
-              </h4>
-              <ul style={{ paddingLeft: '20px', margin: '0 0 16px' }}>
-                <li><strong>Ministry of Railways:</strong> 52 critical projects; Himalayan fault line in Rishikesh-Karanprayag Rail Link (`PRJ-108273`) projecting +11.2 months completion drift.</li>
-                <li><strong>Urban Development & Metro:</strong> Bengaluru Suburban Rail (`PRJ-992015`) requiring Cabinet Secretariat inter-ministerial resolution for 14 defense land parcels.</li>
-                <li><strong>Roads & Highways:</strong> Mumbai-Vadodara Expressway (`PRJ-401182`) exhibiting 27% divergence in spending-to-physical progress.</li>
-              </ul>
-
-              <div style={{ background: 'var(--color-bg-soft)', padding: '12px 16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-grey)', fontSize: '12px' }}>
-                <strong>Authorized Signatory:</strong> {user.name}, {user.role}, {user.department}
-              </div>
             </div>
 
-            {/* Modal Footer */}
-            <div style={{ padding: '14px 24px', borderTop: '1px solid var(--color-border-grey)', display: 'flex', justifyContent: 'flex-end', gap: '10px', background: 'var(--color-bg-soft)' }}>
-              <button className="btn btn-secondary" onClick={() => setPreviewReport(null)}>
-                Close
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+              <button className="btn-secondary" onClick={() => setPreviewReport(null)}>
+                Close Preview
               </button>
-              <button className="btn btn-primary" onClick={() => { handleDownload(previewReport, 'PDF'); setPreviewReport(null); }}>
+              <button className="btn-primary" onClick={() => handleDownload(previewReport, 'PDF')}>
                 <Download size={14} /> Download Official PDF
               </button>
             </div>

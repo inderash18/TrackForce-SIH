@@ -8,9 +8,9 @@ interface MetricCardProps {
   trend?: {
     direction: 'up' | 'down' | 'neutral';
     text: string;
-    isGood?: boolean; // If true, green, if false, red/amber
+    isGood?: boolean;
   };
-  indicatorColor?: 'critical' | 'high' | 'medium' | 'low' | 'primary' | 'neutral';
+  indicatorColor?: 'critical' | 'high' | 'medium' | 'low' | 'primary' | 'prediction' | 'neutral';
   icon?: React.ReactNode;
   subtitleBadge?: string;
   onClick?: () => void;
@@ -26,21 +26,50 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   subtitleBadge,
   onClick
 }) => {
+  const getIndicatorColor = () => {
+    switch (indicatorColor) {
+      case 'critical':
+        return 'var(--status-critical)';
+      case 'high':
+        return 'var(--status-high)';
+      case 'medium':
+        return 'var(--status-medium)';
+      case 'low':
+        return 'var(--status-low)';
+      case 'prediction':
+        return 'var(--status-prediction)';
+      case 'primary':
+        return 'var(--color-action-primary)';
+      default:
+        return 'var(--color-border-subtle)';
+    }
+  };
+
   return (
     <div
       className="gov-card"
+      tabIndex={onClick ? 0 : undefined}
+      role={onClick ? 'button' : undefined}
+      onKeyDown={(e) => {
+        if (onClick && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          onClick();
+        }
+      }}
       style={{
-        padding: '18px 20px',
+        padding: '16px 18px',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
         cursor: onClick ? 'pointer' : 'default',
         position: 'relative',
-        overflow: 'hidden'
+        background: 'var(--color-surface-panel)',
+        border: '1px solid var(--color-border)',
+        borderRadius: 'var(--radius-lg)'
       }}
       onClick={onClick}
     >
-      {/* Subtle top indicator bar */}
+      {/* Top indicator bar */}
       <div
         style={{
           position: 'absolute',
@@ -48,56 +77,45 @@ export const MetricCard: React.FC<MetricCardProps> = ({
           left: 0,
           right: 0,
           height: '3px',
-          backgroundColor:
-            indicatorColor === 'critical'
-              ? 'var(--status-critical-dot)'
-              : indicatorColor === 'high'
-              ? 'var(--status-high-dot)'
-              : indicatorColor === 'medium'
-              ? 'var(--status-medium-dot)'
-              : indicatorColor === 'low'
-              ? 'var(--status-low-dot)'
-              : indicatorColor === 'primary'
-              ? 'var(--color-royal-blue)'
-              : 'transparent'
+          backgroundColor: getIndicatorColor()
         }}
       />
 
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-          <span style={{ fontSize: '12.5px', fontWeight: 500, color: 'var(--color-text-secondary)', letterSpacing: '0.01em' }}>
+          <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--color-text-muted)', letterSpacing: '0.01em' }}>
             {label}
           </span>
-          {icon && <div style={{ color: 'var(--color-text-secondary)', opacity: 0.8 }}>{icon}</div>}
+          {icon && <div style={{ color: 'var(--color-text-muted)' }}>{icon}</div>}
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '6px' }}>
-          <span style={{ fontSize: '24px', fontWeight: 700, color: 'var(--color-text-dark)', letterSpacing: '-0.02em' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '4px' }}>
+          <span className="tabular-nums" style={{ fontSize: '24px', fontWeight: 700, color: 'var(--color-text-primary)', letterSpacing: '-0.02em' }}>
             {value}
           </span>
           {subtitleBadge && (
-            <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontWeight: 500 }}>
+            <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontWeight: 500 }}>
               {subtitleBadge}
             </span>
           )}
         </div>
       </div>
 
-      <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid var(--color-border-light)' }}>
+      <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--color-border)' }}>
         {trend && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '4px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '3px' }}>
             {trend.direction === 'up' && (
-              <TrendingUp size={13} color={trend.isGood ? 'var(--status-low-dot)' : 'var(--status-critical-dot)'} />
+              <TrendingUp size={12} color={trend.isGood ? 'var(--status-low)' : 'var(--status-critical)'} />
             )}
             {trend.direction === 'down' && (
-              <TrendingDown size={13} color={trend.isGood ? 'var(--status-low-dot)' : 'var(--status-critical-dot)'} />
+              <TrendingDown size={12} color={trend.isGood ? 'var(--status-low)' : 'var(--status-critical)'} />
             )}
             {trend.direction === 'neutral' && (
-              <Minus size={13} color="var(--color-text-muted)" />
+              <Minus size={12} color="var(--color-text-muted)" />
             )}
             <span
               style={{
-                fontSize: '11.5px',
+                fontSize: '11px',
                 fontWeight: 600,
                 color: trend.isGood
                   ? 'var(--status-low-text)'
@@ -110,7 +128,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
             </span>
           </div>
         )}
-        <p style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: 1.35, margin: 0 }}>
+        <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', lineHeight: 1.35, margin: 0 }}>
           {explanation}
         </p>
       </div>

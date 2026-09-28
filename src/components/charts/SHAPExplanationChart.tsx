@@ -1,38 +1,54 @@
 import React from 'react';
 import type { ShapContributor } from '../../types/project';
-import { ArrowUpRight, ArrowDownRight, Info } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Cpu } from 'lucide-react';
 
 interface SHAPExplanationChartProps {
   contributors: ShapContributor[];
   projectRiskScore?: number;
+  modelVersion?: string;
 }
 
 export const SHAPExplanationChart: React.FC<SHAPExplanationChartProps> = ({
-  contributors
+  contributors,
+  modelVersion = 'LightGBM / TreeSHAP v2.4'
 }) => {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-        <span style={{ fontSize: '13px', color: 'var(--color-text-secondary)', fontWeight: 500 }}>
-          Top Feature Attribution (SHAP Values)
-        </span>
-        <span style={{ fontSize: '11.5px', color: 'var(--color-royal-blue)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <Info size={13} /> XGBoost Ensemble Attribution
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      {/* Attribution Methodology Header */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '8px 12px',
+          background: 'var(--color-surface-panel)',
+          border: '1px solid var(--color-border)',
+          borderRadius: 'var(--radius-md)'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', color: 'var(--color-text-secondary)' }}>
+          <Cpu size={13} color="var(--color-action-primary)" />
+          <span>Attribution Model: <strong style={{ color: 'var(--color-text-primary)' }}>{modelVersion}</strong></span>
+        </div>
+        <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
+          Additive Feature Importance (TreeSHAP)
         </span>
       </div>
 
       {contributors.map((c, idx) => {
-        const isWorsening = c.direction === 'increase';
-        const barWidth = Math.min(100, Math.abs(c.contribution) * 2.8);
+        const isWorsening = c.direction === 'increase' || (c as any).direction === 'increases_risk';
+        const impactVal = Math.abs(c.contribution || (c as any).impact || 0);
+        const barWidth = Math.min(100, impactVal * 3.2);
 
         return (
           <div
             key={idx}
             style={{
               padding: '12px 14px',
-              backgroundColor: isWorsening ? '#FFFBFB' : '#F9FDFB',
-              border: `1px solid ${isWorsening ? '#FEE4E2' : '#D1FADF'}`,
-              borderRadius: 'var(--radius-md)'
+              backgroundColor: 'var(--color-surface-panel)',
+              border: `1px solid ${isWorsening ? 'var(--status-critical-border)' : 'var(--status-low-border)'}`,
+              borderRadius: 'var(--radius-md)',
+              transition: 'all 150ms ease'
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
@@ -50,7 +66,7 @@ export const SHAPExplanationChart: React.FC<SHAPExplanationChartProps> = ({
                       fontWeight: 700
                     }}
                   >
-                    <ArrowUpRight size={12} /> +{Math.abs(c.contribution)}% Risk
+                    <ArrowUpRight size={12} /> +{impactVal} pts Risk
                   </span>
                 ) : (
                   <span
@@ -65,49 +81,51 @@ export const SHAPExplanationChart: React.FC<SHAPExplanationChartProps> = ({
                       fontWeight: 700
                     }}
                   >
-                    <ArrowDownRight size={12} /> -{Math.abs(c.contribution)}% Risk
+                    <ArrowDownRight size={12} /> -{impactVal} pts Risk
                   </span>
                 )}
-                <strong style={{ fontSize: '13px', color: 'var(--color-text-dark)' }}>{c.factor}</strong>
+                <strong style={{ fontSize: '13px', color: 'var(--color-text-primary)' }}>
+                  {c.factor || (c as any).feature}
+                </strong>
               </div>
 
               <span
                 style={{
-                  fontSize: '11px',
+                  fontSize: '10.5px',
                   fontWeight: 600,
                   textTransform: 'uppercase',
-                  color: 'var(--color-text-muted)',
-                  letterSpacing: '0.03em'
+                  color: 'var(--color-text-dim)',
+                  letterSpacing: '0.04em'
                 }}
               >
-                {c.category}
+                {c.category || 'MoSPI Risk Driver'}
               </span>
             </div>
 
             {/* Impact Horizontal Bar */}
             <div
               style={{
-                height: '6px',
+                height: '4px',
                 width: '100%',
-                backgroundColor: 'rgba(0,0,0,0.05)',
-                borderRadius: '3px',
+                backgroundColor: 'var(--color-surface-hover)',
+                borderRadius: '2px',
                 overflow: 'hidden',
-                margin: '8px 0'
+                margin: '6px 0 8px'
               }}
             >
               <div
                 style={{
                   height: '100%',
                   width: `${barWidth}%`,
-                  backgroundColor: isWorsening ? 'var(--status-critical-dot)' : 'var(--status-low-dot)',
-                  borderRadius: '3px'
+                  backgroundColor: isWorsening ? 'var(--status-critical)' : 'var(--status-low)',
+                  borderRadius: '2px'
                 }}
               />
             </div>
 
             {/* Plain Language Rationale */}
-            <p style={{ margin: 0, fontSize: '12px', color: 'var(--color-text-body)', lineHeight: 1.4 }}>
-              {c.explanation}
+            <p style={{ margin: 0, fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: 1.4 }}>
+              {c.explanation || (c as any).description}
             </p>
           </div>
         );
