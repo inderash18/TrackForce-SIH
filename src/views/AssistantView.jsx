@@ -97,7 +97,9 @@ export const AssistantView = () => {
 
       {/* Main Chat Interface */}
       <div className="gov-card" style={{
-            height: '650px',
+            height: 'calc(100dvh - 230px)',
+            minHeight: '480px',
+            maxHeight: '750px',
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden'
@@ -109,14 +111,16 @@ export const AssistantView = () => {
             background: 'var(--color-surface-nav)',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between'
+            justifyContent: 'space-between',
+            gap: '8px',
+            flexWrap: 'wrap'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Sparkles size={16} color="var(--color-accent-cyan)"/>
             <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-text-primary)' }}>
               Qwen 2.5 RAG Copilot
             </span>
-            <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
+            <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', display: 'none', sm: 'inline' }}>
               · Grounded on {projects.length} Central Sector Projects
             </span>
           </div>
@@ -135,18 +139,18 @@ export const AssistantView = () => {
         </div>
 
         {/* Message Stream Area */}
-        <div style={{ flex: 1, padding: '18px 20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ flex: 1, padding: '14px 16px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {messages.map((msg) => {
             const isBot = msg.sender === 'assistant';
             return (<div key={msg.id} style={{
                     display: 'flex',
-                    gap: '12px',
+                    gap: '10px',
                     alignItems: 'flex-start',
                     justifyContent: isBot ? 'flex-start' : 'flex-end'
                 }}>
                 {isBot && (<div style={{
-                        width: '32px',
-                        height: '32px',
+                        width: '30px',
+                        height: '30px',
                         borderRadius: 'var(--radius-md)',
                         backgroundColor: 'var(--color-surface-hover)',
                         border: '1px solid var(--color-border-subtle)',
@@ -156,16 +160,16 @@ export const AssistantView = () => {
                         color: 'var(--color-accent-cyan)',
                         flexShrink: 0
                     }}>
-                    <Bot size={17}/>
+                    <Bot size={16}/>
                   </div>)}
 
                 <div style={{
-                    maxWidth: '82%',
+                    maxWidth: isBot ? 'min(100%, 650px)' : 'min(90%, 550px)',
                     backgroundColor: isBot ? 'var(--color-surface-panel)' : 'var(--color-action-primary)',
                     color: isBot ? 'var(--color-text-primary)' : '#FFFFFF',
                     border: isBot ? '1px solid var(--color-border)' : '1px solid var(--color-action-border)',
                     borderRadius: 'var(--radius-lg)',
-                    padding: '14px 18px',
+                    padding: '12px 16px',
                     boxShadow: 'var(--shadow-sm)'
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px', gap: '12px' }}>

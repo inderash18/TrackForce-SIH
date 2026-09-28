@@ -47,16 +47,16 @@ export const ModelPerformanceView = () => {
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '12px', fontSize: '12px' }}>
-          <div style={{ textAlign: 'center', background: 'var(--color-surface-elevated)', padding: '8px 14px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
+        <div style={{ display: 'flex', gap: '8px', fontSize: '12px', flexWrap: 'wrap', width: '100%', sm: 'auto' }}>
+          <div style={{ flex: '1 1 90px', textAlign: 'center', background: 'var(--color-surface-elevated)', padding: '8px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
             <span style={{ color: 'var(--color-text-muted)', display: 'block', fontSize: '10.5px' }}>ROC-AUC</span>
             <strong className="tabular-nums" style={{ fontSize: '18px', color: 'var(--color-action-primary)' }}>0.958</strong>
           </div>
-          <div style={{ textAlign: 'center', background: 'var(--color-surface-elevated)', padding: '8px 14px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
+          <div style={{ flex: '1 1 90px', textAlign: 'center', background: 'var(--color-surface-elevated)', padding: '8px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
             <span style={{ color: 'var(--color-text-muted)', display: 'block', fontSize: '10.5px' }}>F1-Score</span>
             <strong className="tabular-nums" style={{ fontSize: '18px', color: 'var(--status-low-text)' }}>0.913</strong>
           </div>
-          <div style={{ textAlign: 'center', background: 'var(--color-surface-elevated)', padding: '8px 14px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
+          <div style={{ flex: '1 1 110px', textAlign: 'center', background: 'var(--color-surface-elevated)', padding: '8px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
             <span style={{ color: 'var(--color-text-muted)', display: 'block', fontSize: '10.5px' }}>Inference Latency</span>
             <strong className="tabular-nums" style={{ fontSize: '18px', color: 'var(--color-text-primary)' }}>14 ms</strong>
           </div>
@@ -121,7 +121,7 @@ export const ModelPerformanceView = () => {
       {/* Feature Engineering & Ablation Comparison */}
       <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 340px), 1fr))',
             gap: '16px'
         }}>
         {/* CUF Baseline vs Engineered Feature Lift */}

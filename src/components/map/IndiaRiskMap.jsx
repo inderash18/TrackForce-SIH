@@ -160,18 +160,20 @@ export const IndiaRiskMap = ({ height = '520px', filteredProjects, showFiltersBa
         {/* Legend Overlay */}
         <div style={{
             position: 'absolute',
-            bottom: '16px',
-            left: '16px',
+            bottom: '12px',
+            left: '12px',
             backgroundColor: 'rgba(11, 22, 40, 0.92)',
             backdropFilter: 'blur(6px)',
             border: '1px solid var(--color-border-subtle)',
             borderRadius: 'var(--radius-md)',
-            padding: '8px 12px',
+            padding: '6px 10px',
             zIndex: 1000,
             display: 'flex',
             alignItems: 'center',
-            gap: '14px',
-            fontSize: '11px',
+            gap: '10px',
+            flexWrap: 'wrap',
+            maxWidth: 'calc(100% - 24px)',
+            fontSize: '10.5px',
             fontWeight: 500,
             color: 'var(--color-text-secondary)'
         }}>
@@ -196,9 +198,10 @@ export const IndiaRiskMap = ({ height = '520px', filteredProjects, showFiltersBa
         {/* Project Preview Drawer (on marker click) */}
         {previewProject && (<div style={{
                 position: 'absolute',
-                top: '16px',
-                right: '16px',
-                width: '320px',
+                top: '12px',
+                right: '12px',
+                width: 'calc(100% - 24px)',
+                maxWidth: '320px',
                 backgroundColor: 'var(--color-surface-elevated)',
                 border: '1px solid var(--color-border-subtle)',
                 borderRadius: 'var(--radius-lg)',

@@ -1,11 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Search, Bell, Calendar, ChevronDown, LogOut, Menu, X, ShieldCheck, ExternalLink, Home } from 'lucide-react';
+
 export const Header = () => {
-    const { activeRoute, selectedProjectId, selectedProject, reportingMonth, globalSearch, setGlobalSearch, alerts, user, logoutUser, navigateTo, sidebarCollapsed, setSidebarCollapsed } = useApp();
+    const {
+        activeRoute,
+        selectedProjectId,
+        selectedProject,
+        reportingMonth,
+        globalSearch,
+        setGlobalSearch,
+        alerts,
+        user,
+        logoutUser,
+        navigateTo,
+        mobileNavOpen,
+        setMobileNavOpen
+    } = useApp();
+
     const [showNotifications, setShowNotifications] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [showSearchModal, setShowSearchModal] = useState(false);
+
     // Keyboard shortcut Ctrl+K / Cmd+K
     useEffect(() => {
         const handleKeyDown = (e) => {
@@ -22,7 +38,11 @@ export const Header = () => {
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, []);
-    const activeAlertsCount = alerts.filter((a) => a.severity === 'critical' || a.status === 'active' || a.status === 'Active').length;
+
+    const activeAlertsCount = alerts.filter(
+        (a) => a.severity === 'critical' || a.status === 'active' || a.status === 'Active'
+    ).length;
+
     const getBreadcrumbs = () => {
         switch (activeRoute) {
             case 'dashboard':
@@ -64,367 +84,277 @@ export const Header = () => {
                 return { title: 'Overview', breadcrumb: 'PAIMANA / Overview' };
         }
     };
+
     const { title, breadcrumb } = getBreadcrumbs();
-    return (<>
-      <header style={{
-            height: 'var(--header-height)',
-            backgroundColor: 'var(--color-surface-nav)',
-            borderBottom: '1px solid var(--color-border)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '0 24px',
-            position: 'sticky',
-            top: 0,
-            zIndex: 100,
-            boxShadow: 'var(--shadow-sm)'
-        }}>
-        {/* Left Section: Breadcrumb & Dynamic Title */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)} style={{
-            display: 'none',
-            background: 'transparent',
-            border: 'none',
-            color: 'var(--color-text-secondary)',
-            cursor: 'pointer'
-        }} className="mobile-menu-btn">
-            <Menu size={20}/>
-          </button>
 
-          <div>
-            <div style={{
-            fontSize: '11px',
-            fontWeight: 600,
-            color: 'var(--color-text-muted)',
-            letterSpacing: '0.04em',
-            textTransform: 'uppercase'
-        }}>
-              {breadcrumb}
-            </div>
-            <h1 style={{
-            fontSize: '16px',
-            fontWeight: 700,
-            color: 'var(--color-text-primary)',
-            letterSpacing: '-0.01em',
-            margin: 0,
-            lineHeight: 1.2
-        }}>
-              {title}
-            </h1>
-          </div>
-        </div>
+    return (
+        <>
+            <header
+                className="w-full sticky top-0 z-100 flex items-center justify-between px-3 sm:px-6 bg-[var(--color-surface-nav)] border-b border-[var(--color-border)] shadow-xs"
+                style={{ height: 'var(--header-height)' }}
+            >
+                {/* Left Section: Mobile Menu Trigger + Breadcrumb & Dynamic Title */}
+                <div className="flex items-center gap-2 sm:gap-3.5 min-w-0 flex-1 mr-2">
+                    <button
+                        type="button"
+                        onClick={() => setMobileNavOpen(true)}
+                        className="mobile-menu-btn flex lg:hidden items-center justify-center w-9 h-9 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 cursor-pointer shrink-0 transition"
+                        aria-label="Open mobile navigation menu"
+                    >
+                        <Menu size={18} />
+                    </button>
 
-        {/* Center / Search Bar */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div onClick={() => setShowSearchModal(true)} style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            backgroundColor: 'var(--color-surface-panel)',
-            border: '1px solid var(--color-border)',
-            borderRadius: 'var(--radius-md)',
-            padding: '6px 14px',
-            cursor: 'pointer',
-            minWidth: '220px',
-            transition: 'all 150ms ease',
-            boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
-        }}>
-            <Search size={14} color="var(--color-text-muted)"/>
-            <span style={{ fontSize: '12px', color: globalSearch ? 'var(--color-text-primary)' : 'var(--color-text-dim)', flex: 1 }}>
-              {globalSearch || 'Search projects, sectors...'}
-            </span>
-            <span style={{
-            fontSize: '10px',
-            fontWeight: 600,
-            backgroundColor: 'var(--color-surface-elevated)',
-            color: 'var(--color-text-muted)',
-            padding: '2px 5px',
-            borderRadius: '4px',
-            border: '1px solid var(--color-border)'
-        }}>
-              Ctrl+K
-            </span>
-          </div>
-        </div>
-
-        {/* Right Section: Notifications & User Profile */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', position: 'relative' }}>
-          {/* Public Portal Button */}
-          <button type="button" onClick={() => navigateTo('landing')} className="btn-secondary" style={{ fontSize: '11.5px', padding: '5px 10px', height: '32px' }} title="Go to Public PAIMANA Portal">
-            <Home size={13} color="var(--color-action-primary)"/>
-            <span>Public Portal</span>
-          </button>
-
-          {/* Reporting Period Badge */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '4px 10px',
-            background: 'var(--color-surface-panel)',
-            border: '1px solid var(--color-border)',
-            borderRadius: 'var(--radius-full)',
-            fontSize: '11.5px',
-            color: 'var(--color-text-secondary)',
-            fontWeight: 500
-        }}>
-            <Calendar size={13} color="var(--color-action-primary)"/>
-            <span>{reportingMonth}</span>
-          </div>
-
-          {/* Notifications Button */}
-          <button onClick={() => {
-            setShowNotifications(!showNotifications);
-            setShowUserMenu(false);
-        }} style={{
-            width: '34px',
-            height: '34px',
-            borderRadius: 'var(--radius-md)',
-            backgroundColor: showNotifications ? 'var(--color-surface-hover)' : 'var(--color-surface-panel)',
-            border: '1px solid var(--color-border)',
-            color: 'var(--color-text-primary)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            position: 'relative'
-        }} title="Early Warning Notifications">
-            <Bell size={16}/>
-            {activeAlertsCount > 0 && (<span style={{
-                position: 'absolute',
-                top: '-3px',
-                right: '-3px',
-                width: '16px',
-                height: '16px',
-                borderRadius: '50%',
-                backgroundColor: 'var(--status-critical)',
-                color: '#FFFFFF',
-                fontSize: '9.5px',
-                fontWeight: 700,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: '2px solid var(--color-surface-nav)'
-            }}>
-                {activeAlertsCount}
-              </span>)}
-          </button>
-
-          {/* Notifications Flyout */}
-          {showNotifications && (<div style={{
-                position: 'absolute',
-                top: '46px',
-                right: '48px',
-                width: '360px',
-                backgroundColor: 'var(--color-surface-elevated)',
-                border: '1px solid var(--color-border-subtle)',
-                borderRadius: 'var(--radius-lg)',
-                boxShadow: 'var(--shadow-elevated)',
-                zIndex: 200,
-                overflow: 'hidden'
-            }}>
-              <div style={{
-                padding: '12px 16px',
-                borderBottom: '1px solid var(--color-border)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between'
-            }}>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-text-primary)' }}>
-                  Early Warnings ({alerts.length})
-                </div>
-                <button onClick={() => {
-                navigateTo('alerts');
-                setShowNotifications(false);
-            }} style={{
-                fontSize: '11px',
-                color: 'var(--color-action-primary)',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                fontWeight: 500
-            }}>
-                  View All Signals
-                </button>
-              </div>
-
-              <div style={{ maxHeight: '280px', overflowY: 'auto' }}>
-                {alerts.slice(0, 4).map((alert) => (<div key={alert.id} onClick={() => {
-                    navigateTo('alerts');
-                    setShowNotifications(false);
-                }} style={{
-                    padding: '12px 16px',
-                    borderBottom: '1px solid var(--color-border)',
-                    cursor: 'pointer',
-                    transition: 'background 120ms ease'
-                }} onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-surface-hover)')} onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                      <span style={{
-                    fontSize: '10.5px',
-                    fontWeight: 700,
-                    color: alert.severity === 'critical' ? 'var(--status-critical-text)' : 'var(--status-high-text)',
-                    textTransform: 'uppercase'
-                }}>
-                        {alert.warningType || alert.severity}
-                      </span>
-                      <span style={{ fontSize: '10px', color: 'var(--color-text-dim)' }}>
-                        {alert.timestamp || 'Fresh Signal'}
-                      </span>
+                    <div className="min-w-0">
+                        <div className="text-[10.5px] font-semibold text-[var(--color-text-muted)] tracking-wider uppercase truncate">
+                            {breadcrumb}
+                        </div>
+                        <h1 className="text-sm sm:text-base font-bold text-[var(--color-text-primary)] tracking-tight m-0 leading-tight truncate">
+                            {title}
+                        </h1>
                     </div>
-                    <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: '3px' }}>
-                      {alert.projectName}
-                    </div>
-                    <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: 0, lineHeight: 1.3 }}>
-                      {alert.reason}
-                    </p>
-                  </div>))}
-              </div>
-            </div>)}
-
-          {/* User Profile Button & Menu */}
-          <div style={{ position: 'relative' }}>
-            <button onClick={() => {
-            setShowUserMenu(!showUserMenu);
-            setShowNotifications(false);
-        }} style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '4px 8px',
-            background: showUserMenu ? 'var(--color-surface-hover)' : 'var(--color-surface-panel)',
-            border: '1px solid var(--color-border)',
-            borderRadius: 'var(--radius-md)',
-            cursor: 'pointer',
-            color: 'var(--color-text-primary)'
-        }}>
-              <div style={{
-            width: '24px',
-            height: '24px',
-            borderRadius: '50%',
-            backgroundColor: 'var(--color-action-subtle)',
-            color: 'var(--color-action-primary)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '11px',
-            fontWeight: 700
-        }}>
-                {user.name ? user.name.charAt(0) : 'U'}
-              </div>
-              <ChevronDown size={14} color="var(--color-text-muted)"/>
-            </button>
-
-            {showUserMenu && (<div style={{
-                position: 'absolute',
-                top: '42px',
-                right: 0,
-                width: '240px',
-                backgroundColor: 'var(--color-surface-elevated)',
-                border: '1px solid var(--color-border-subtle)',
-                borderRadius: 'var(--radius-lg)',
-                boxShadow: 'var(--shadow-elevated)',
-                zIndex: 200,
-                padding: '12px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '8px'
-            }}>
-                <div style={{ borderBottom: '1px solid var(--color-border)', paddingBottom: '8px' }}>
-                  <div style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--color-text-primary)' }}>
-                    {user.name}
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
-                    {user.email}
-                  </div>
-                  <div style={{ fontSize: '10px', color: 'var(--color-accent-cyan)', marginTop: '2px', fontWeight: 500 }}>
-                    {user.role} · {user.badge}
-                  </div>
                 </div>
 
-                <button onClick={() => {
-                navigateTo('admin');
-                setShowUserMenu(false);
-            }} className="btn-ghost" style={{ width: '100%', justifyContent: 'flex-start', fontSize: '12px', padding: '6px 8px' }}>
-                  <ShieldCheck size={14}/> System Access & Roles
-                </button>
+                {/* Center / Search Bar (Responsive) */}
+                <div className="hidden md:flex items-center gap-3">
+                    <div
+                        onClick={() => setShowSearchModal(true)}
+                        className="flex items-center gap-2 bg-[var(--color-surface-panel)] border border-[var(--color-border)] rounded-[var(--radius-md)] px-3.5 py-1.5 cursor-pointer min-w-[200px] lg:min-w-[240px] transition shadow-2xs hover:border-slate-300"
+                    >
+                        <Search size={14} color="var(--color-text-muted)" />
+                        <span className="text-xs truncate flex-1" style={{ color: globalSearch ? 'var(--color-text-primary)' : 'var(--color-text-dim)' }}>
+                            {globalSearch || 'Search projects, sectors...'}
+                        </span>
+                        <span className="text-[10px] font-semibold bg-[var(--color-surface-elevated)] text-[var(--color-text-muted)] px-1.5 py-0.5 rounded border border-[var(--color-border)]">
+                            Ctrl+K
+                        </span>
+                    </div>
+                </div>
 
-                <button onClick={() => {
-                logoutUser();
-                setShowUserMenu(false);
-            }} className="btn-ghost" style={{ width: '100%', justifyContent: 'flex-start', fontSize: '12px', color: 'var(--status-critical-text)', padding: '6px 8px' }}>
-                  <LogOut size={14}/> End Session
-                </button>
-              </div>)}
-          </div>
-        </div>
-      </header>
+                {/* Right Section: Actions, Notifications & User Profile */}
+                <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 relative">
+                    {/* Mobile Search Trigger Icon */}
+                    <button
+                        type="button"
+                        onClick={() => setShowSearchModal(true)}
+                        className="flex md:hidden items-center justify-center w-8 h-8 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 cursor-pointer"
+                        aria-label="Search"
+                    >
+                        <Search size={15} />
+                    </button>
 
-      {/* Global Search Modal (Ctrl+K) */}
-      {showSearchModal && (<div className="drawer-backdrop" onClick={() => setShowSearchModal(false)} style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: '100px' }}>
-          <div onClick={(e) => e.stopPropagation()} style={{
-                width: '580px',
-                maxWidth: '92vw',
-                backgroundColor: 'var(--color-surface-elevated)',
-                border: '1px solid var(--color-border-subtle)',
-                borderRadius: 'var(--radius-xl)',
-                boxShadow: 'var(--shadow-elevated)',
-                overflow: 'hidden'
-            }}>
-            <div style={{
-                padding: '14px 18px',
-                borderBottom: '1px solid var(--color-border)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px'
-            }}>
-              <Search size={18} color="var(--color-action-primary)"/>
-              <input autoFocus type="text" placeholder="Search projects, corridors, ministries, or risk signals..." value={globalSearch} onChange={(e) => setGlobalSearch(e.target.value)} style={{
-                flex: 1,
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--color-text-primary)',
-                fontSize: '14px',
-                outline: 'none',
-                fontFamily: 'var(--font-sans)'
-            }}/>
-              <button onClick={() => setShowSearchModal(false)} style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer' }}>
-                <X size={16}/>
-              </button>
-            </div>
+                    {/* Public Portal Link */}
+                    <button
+                        type="button"
+                        onClick={() => navigateTo('landing')}
+                        className="btn-secondary text-[11.5px] px-2 sm:px-2.5 h-8 font-semibold flex items-center gap-1"
+                        title="Go to Public PAIMANA Portal"
+                    >
+                        <Home size={13} color="var(--color-action-primary)" />
+                        <span className="hidden sm:inline">Public Portal</span>
+                    </button>
 
-            <div style={{ padding: '12px 16px', maxHeight: '320px', overflowY: 'auto' }}>
-              <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-dim)', marginBottom: '8px' }}>
-                QUICK NAVIGATION
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                {[
-                { route: 'dashboard', label: 'National Overview Dashboard' },
-                { route: 'projects', label: 'Central Projects Explorer' },
-                { route: 'alerts', label: 'Active Early Warning Signals' },
-                { route: 'simulator', label: 'What-If Policy & Intervention Simulator' },
-                { route: 'map', label: 'India Geospatial Intelligence Map' }
-            ].map((item) => (<button key={item.route} onClick={() => {
-                    navigateTo(item.route);
-                    setShowSearchModal(false);
-                }} style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '8px 12px',
-                    background: 'var(--color-surface-panel)',
-                    border: '1px solid var(--color-border)',
-                    borderRadius: 'var(--radius-md)',
-                    color: 'var(--color-text-primary)',
-                    cursor: 'pointer',
-                    fontSize: '12.5px',
-                    textAlign: 'left'
-                }}>
-                    <span>{item.label}</span>
-                    <ExternalLink size={13} color="var(--color-text-muted)"/>
-                  </button>))}
-              </div>
-            </div>
-          </div>
-        </div>)}
-    </>);
+                    {/* Reporting Period Badge (hidden on extra small screens) */}
+                    <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1 bg-[var(--color-surface-panel)] border border-[var(--color-border)] rounded-full text-[11.5px] text-[var(--color-text-secondary)] font-medium">
+                        <Calendar size={13} color="var(--color-action-primary)" />
+                        <span>{reportingMonth}</span>
+                    </div>
+
+                    {/* Notifications Button */}
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setShowNotifications(!showNotifications);
+                            setShowUserMenu(false);
+                        }}
+                        className={`w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-[var(--radius-md)] border border-[var(--color-border)] flex items-center justify-center cursor-pointer relative transition ${
+                            showNotifications ? 'bg-[var(--color-surface-hover)]' : 'bg-[var(--color-surface-panel)]'
+                        }`}
+                        title="Early Warning Notifications"
+                        aria-label="Early Warning Notifications"
+                    >
+                        <Bell size={15} />
+                        {activeAlertsCount > 0 && (
+                            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[var(--status-critical)] text-white text-[9px] font-bold flex items-center justify-center border-2 border-[var(--color-surface-nav)]">
+                                {activeAlertsCount}
+                            </span>
+                        )}
+                    </button>
+
+                    {/* Notifications Flyout */}
+                    {showNotifications && (
+                        <div
+                            className="absolute top-11 right-0 w-[320px] sm:w-[360px] max-w-[calc(100vw-24px)] bg-white border border-slate-200 rounded-xl shadow-xl z-200 overflow-hidden animate-in fade-in duration-150"
+                        >
+                            <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                                <div className="text-xs font-bold text-slate-800">
+                                    Early Warnings ({alerts.length})
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        navigateTo('alerts');
+                                        setShowNotifications(false);
+                                    }}
+                                    className="text-[11px] text-sky-600 hover:text-sky-800 bg-none border-none cursor-pointer font-semibold"
+                                >
+                                    View All Signals
+                                </button>
+                            </div>
+
+                            <div className="max-h-[280px] overflow-y-auto divide-y divide-slate-100">
+                                {alerts.slice(0, 4).map((alert) => (
+                                    <div
+                                        key={alert.id}
+                                        onClick={() => {
+                                            navigateTo('alerts');
+                                            setShowNotifications(false);
+                                        }}
+                                        className="p-3.5 hover:bg-slate-50 cursor-pointer transition"
+                                    >
+                                        <div className="flex items-center justify-between mb-1">
+                                            <span className="text-[10px] font-bold text-red-700 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded uppercase">
+                                                {alert.warningType || alert.severity}
+                                            </span>
+                                            <span className="text-[10px] text-slate-400">
+                                                {alert.timestamp || 'Fresh Signal'}
+                                            </span>
+                                        </div>
+                                        <div className="text-xs font-semibold text-slate-900 mb-0.5 line-clamp-1">
+                                            {alert.projectName}
+                                        </div>
+                                        <p className="text-[11px] text-slate-600 m-0 line-clamp-2 leading-relaxed">
+                                            {alert.reason}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* User Profile Button & Dropdown Menu */}
+                    <div className="relative">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setShowUserMenu(!showUserMenu);
+                                setShowNotifications(false);
+                            }}
+                            className={`flex items-center gap-1.5 p-1 sm:px-2 sm:py-1 rounded-lg border border-[var(--color-border)] cursor-pointer text-[var(--color-text-primary)] transition ${
+                                showUserMenu ? 'bg-[var(--color-surface-hover)]' : 'bg-[var(--color-surface-panel)]'
+                            }`}
+                            aria-label="User Account Menu"
+                        >
+                            <div className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center text-[11px] font-bold">
+                                {user.name ? user.name.charAt(0) : 'U'}
+                            </div>
+                            <ChevronDown size={13} className="text-slate-500 hidden sm:block" />
+                        </button>
+
+                        {showUserMenu && (
+                            <div
+                                className="absolute top-11 right-0 w-[220px] max-w-[calc(100vw-24px)] bg-white border border-slate-200 rounded-xl shadow-xl z-200 p-3 flex flex-col gap-2 animate-in fade-in duration-150"
+                            >
+                                <div className="border-b border-slate-100 pb-2">
+                                    <div className="text-xs font-bold text-slate-900 truncate">
+                                        {user.name}
+                                    </div>
+                                    <div className="text-[11px] text-slate-500 truncate">
+                                        {user.email}
+                                    </div>
+                                    <div className="text-[10px] text-sky-600 mt-0.5 font-medium">
+                                        {user.role} · {user.badge}
+                                    </div>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        navigateTo('admin');
+                                        setShowUserMenu(false);
+                                    }}
+                                    className="btn-ghost w-full justify-start text-xs p-1.5 flex items-center gap-2"
+                                >
+                                    <ShieldCheck size={14} /> System Access & Roles
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        logoutUser();
+                                        setShowUserMenu(false);
+                                    }}
+                                    className="btn-ghost w-full justify-start text-xs text-red-600 hover:text-red-700 hover:bg-red-50 p-1.5 flex items-center gap-2"
+                                >
+                                    <LogOut size={14} /> End Session
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </header>
+
+            {/* Global Search Modal (Ctrl+K) */}
+            {showSearchModal && (
+                <div
+                    className="fixed inset-0 z-[350] bg-slate-900/60 backdrop-blur-xs flex items-start justify-center pt-16 sm:pt-24 px-3"
+                    onClick={() => setShowSearchModal(false)}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Global Search"
+                >
+                    <div
+                        onClick={(e) => e.stopPropagation()}
+                        className="w-[560px] max-w-[95vw] bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150"
+                    >
+                        <div className="p-3.5 sm:p-4 border-b border-slate-100 flex items-center gap-2.5">
+                            <Search size={17} className="text-slate-500" />
+                            <input
+                                autoFocus
+                                type="text"
+                                placeholder="Search projects, corridors, ministries, or risk signals..."
+                                value={globalSearch}
+                                onChange={(e) => setGlobalSearch(e.target.value)}
+                                className="flex-1 bg-transparent border-none text-slate-900 text-sm sm:text-base outline-none"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowSearchModal(false)}
+                                className="bg-none border-none text-slate-400 hover:text-slate-600 cursor-pointer p-1"
+                            >
+                                <X size={16} />
+                            </button>
+                        </div>
+
+                        <div className="p-3 sm:p-4 max-h-[300px] overflow-y-auto space-y-1">
+                            <div className="text-[10.5px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                                Quick Navigation
+                            </div>
+                            {[
+                                { route: 'dashboard', label: 'National Overview Dashboard' },
+                                { route: 'projects', label: 'Central Projects Explorer' },
+                                { route: 'alerts', label: 'Active Early Warning Signals' },
+                                { route: 'simulator', label: 'What-If Policy & Intervention Simulator' },
+                                { route: 'map', label: 'India Geospatial Intelligence Map' },
+                                { route: 'reports', label: 'Monthly Flash Reports & Dossiers' }
+                            ].map((item) => (
+                                <button
+                                    key={item.route}
+                                    type="button"
+                                    onClick={() => {
+                                        navigateTo(item.route);
+                                        setShowSearchModal(false);
+                                    }}
+                                    className="w-full flex items-center justify-between p-2.5 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-100 text-slate-800 text-xs sm:text-sm text-left transition cursor-pointer"
+                                >
+                                    <span>{item.label}</span>
+                                    <ExternalLink size={13} className="text-slate-400" />
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
+    );
 };
+;

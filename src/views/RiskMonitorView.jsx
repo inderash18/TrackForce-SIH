@@ -145,7 +145,7 @@ export const RiskMonitorView = () => {
       {/* 2. Top 4 High-Impact KPI Metric Cards */}
       <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))',
             gap: '16px'
         }}>
         {/* Card 1: Critical & High Risk Projects */}
@@ -598,7 +598,7 @@ export const RiskMonitorView = () => {
           {/* Interactive Search & Sector Filter Bar */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
             {/* Search Input */}
-            <div style={{ flex: '1 1 240px', position: 'relative' }}>
+            <div style={{ flex: '1 1 220px', position: 'relative', width: '100%' }}>
               <Search size={15} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }}/>
               <input type="text" placeholder="Search by project name, code, state, or ministry..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{
             width: '100%',
@@ -619,7 +619,8 @@ export const RiskMonitorView = () => {
             borderRadius: '6px',
             background: '#FFFFFF',
             color: '#1E293B',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            flex: '1 1 140px'
         }}>
               <option value="all">All Sectors</option>
               {sectorSummaryList.map((s) => (<option key={s.sector} value={s.sector}>
@@ -635,7 +636,8 @@ export const RiskMonitorView = () => {
             borderRadius: '6px',
             background: '#FFFFFF',
             color: '#1E293B',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            flex: '1 1 140px'
         }}>
               <option value="all">All Risk Tiers</option>
               <option value="critical">Critical Risk (Score &gt; 80)</option>
@@ -666,9 +668,9 @@ export const RiskMonitorView = () => {
 
         {/* Project Hotspot Cards Grid */}
         <div style={{
-            padding: '20px',
+            padding: '16px',
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))',
             gap: '16px',
             background: '#F8FAFC'
         }}>

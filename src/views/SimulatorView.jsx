@@ -71,18 +71,18 @@ export const SimulatorView = () => {
             flexWrap: 'wrap',
             gap: '12px'
         }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-text-secondary)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: '1 1 300px', minWidth: 0, width: '100%' }}>
+          <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>
             Target Project:
           </span>
-          <select className="gov-select" value={selectedProjectId} onChange={(e) => handleProjectSelect(e.target.value)} style={{ fontWeight: 600, minWidth: '320px' }}>
+          <select className="gov-select" value={selectedProjectId} onChange={(e) => handleProjectSelect(e.target.value)} style={{ fontWeight: 600, width: '100%', minWidth: 0 }}>
             {projects.map((proj) => (<option key={proj.id} value={proj.id}>
                 {proj.code} — {proj.name} ({proj.state})
               </option>))}
           </select>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
             Baseline Risk: <strong style={{ color: 'var(--status-critical-text)' }}>{p.riskScore}/100</strong>
           </span>
@@ -95,7 +95,7 @@ export const SimulatorView = () => {
       {/* Main Split Layout: Controls vs Side-by-Side Intelligence */}
       <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 340px), 1fr))',
             gap: '16px'
         }}>
         {/* Left Column: Input Sliders & Number Controls */}

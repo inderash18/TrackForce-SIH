@@ -55,9 +55,9 @@ export const BenchmarkingView = () => {
             flexWrap: 'wrap',
             gap: '14px'
         }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-text-secondary)' }}>Project A:</span>
-          <select className="gov-select" value={projectAId} onChange={(e) => setProjectAId(e.target.value)} style={{ fontWeight: 600, minWidth: '240px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: '1 1 240px', minWidth: 0, width: '100%' }}>
+          <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>Project A:</span>
+          <select className="gov-select" value={projectAId} onChange={(e) => setProjectAId(e.target.value)} style={{ fontWeight: 600, width: '100%', minWidth: 0 }}>
             {projects.map((p) => (<option key={p.id} value={p.id}>
                 {p.code} — {p.name.slice(0, 28)}...
               </option>))}
@@ -69,9 +69,9 @@ export const BenchmarkingView = () => {
           <span style={{ fontWeight: 700, fontSize: '11.5px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>COMPARE</span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-text-secondary)' }}>Project B:</span>
-          <select className="gov-select" value={projectBId} onChange={(e) => setProjectBId(e.target.value)} style={{ fontWeight: 600, minWidth: '240px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: '1 1 240px', minWidth: 0, width: '100%' }}>
+          <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>Project B:</span>
+          <select className="gov-select" value={projectBId} onChange={(e) => setProjectBId(e.target.value)} style={{ fontWeight: 600, width: '100%', minWidth: 0 }}>
             {projects.map((p) => (<option key={p.id} value={p.id}>
                 {p.code} — {p.name.slice(0, 28)}...
               </option>))}
@@ -82,7 +82,7 @@ export const BenchmarkingView = () => {
       {/* Radar Comparison Grid */}
       <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 340px), 1fr))',
             gap: '16px'
         }}>
         {/* Project A */}

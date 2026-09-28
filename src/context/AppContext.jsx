@@ -44,6 +44,7 @@ export const AppProvider = ({ children }) => {
     const [projects] = useState(mockProjects);
     const [alerts, setAlerts] = useState(mockEarlyWarnings);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [mobileNavOpen, setMobileNavOpen] = useState(false);
     const [notificationMessage, setNotificationMessage] = useState(null);
     // Global Filter State
     const [reportingMonth, setReportingMonth] = useState('September 2026');
@@ -120,12 +121,14 @@ export const AppProvider = ({ children }) => {
     const navigateToProject = (projectId) => {
         setSelectedProjectId(projectId);
         setActiveRoute('project-detail');
+        setMobileNavOpen(false);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
     const navigateTo = (route, projectId) => {
         if (projectId)
             setSelectedProjectId(projectId);
         setActiveRoute(route);
+        setMobileNavOpen(false);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
     const loginUser = (email) => {
@@ -230,7 +233,9 @@ export const AppProvider = ({ children }) => {
             notificationMessage,
             showNotification,
             sidebarCollapsed,
-            setSidebarCollapsed
+            setSidebarCollapsed,
+            mobileNavOpen,
+            setMobileNavOpen
         }}>
       {children}
     </AppContext.Provider>);

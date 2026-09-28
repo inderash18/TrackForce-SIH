@@ -21,7 +21,7 @@ export const AnalyticsView = () => {
       {/* Grid 1: Sector Risk vs State Risk */}
       <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 340px), 1fr))',
             gap: '16px'
         }}>
         {/* Risk by Sector */}
@@ -99,7 +99,7 @@ export const AnalyticsView = () => {
       {/* Grid 2: Cost Overrun Distribution & Top Risk Drivers */}
       <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 340px), 1fr))',
             gap: '16px'
         }}>
         {/* Cost & Delay Distributions */}
@@ -111,7 +111,7 @@ export const AnalyticsView = () => {
             </div>
           </div>
           <div className="gov-card-body">
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))', gap: '12px' }}>
               <div style={{ padding: '14px', background: 'var(--color-surface-elevated)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
                 <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>Severe Cost Overrun Risk (&gt;50%)</div>
                 <div className="tabular-nums" style={{ fontSize: '24px', fontWeight: 700, color: 'var(--status-critical-text)', margin: '4px 0' }}>

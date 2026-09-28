@@ -140,11 +140,6 @@
   --ui-page-pad: 24px;
 }
 
-/* Reset & Global Base
-   NOTE: this must live inside @layer base. Unlayered rules outrank every
-   Tailwind utility (which ships in @layer utilities), so an unlayered
-   `* { margin:0; padding:0 }` silently cancels p-*/px-*/py-*/mt-*/mb-*
-   across the whole app. */
 @layer base {
   *,
   *::before,
@@ -3593,10 +3588,21 @@ table,
 }
 
 /* --------------------------------------------------------------------------
-   RESPONSIVE BREAKPOINTS (360px, 390px, 768px, 1024px, 1366px, 1440px)
+   RESPONSIVE BREAKPOINTS (320px, 360px, 390px, 768px, 1024px, 1366px, 1440px)
    -------------------------------------------------------------------------- */
 @media (max-width: 1024px) {
   .paimana-macro-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .paimana-pastel-cards-grid,
+  .paimana-summary-cards-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .paimana-2col-analytics-grid,
+  .paimana-panels-grid-2x2 {
+    grid-template-columns: 1fr;
+  }
+  .paimana-filter-grid-5 {
     grid-template-columns: repeat(2, 1fr);
   }
   .paimana-showcase-grid {
@@ -3617,6 +3623,9 @@ table,
   .paimana-btn-orange-pill,
   .paimana-btn-navy-pill {
     display: none;
+  }
+  .paimana-filter-grid-5 {
+    grid-template-columns: 1fr;
   }
   .paimana-hero-container {
     height: 380px;
@@ -3650,6 +3659,12 @@ table,
     grid-template-columns: 1fr;
     gap: 24px;
   }
+  .paimana-project-overview-dialog,
+  .paimana-overview-modal-box {
+    width: calc(100% - 16px) !important;
+    max-height: calc(100dvh - 24px) !important;
+    border-radius: 12px !important;
+  }
 }
 
 @media (max-width: 480px) {
@@ -3659,7 +3674,12 @@ table,
   .paimana-brand-text .paimana-division-title {
     display: none;
   }
-  .paimana-macro-cards-grid {
+  .paimana-macro-cards-grid,
+  .paimana-pastel-cards-grid,
+  .paimana-summary-cards-grid-4 {
+    grid-template-columns: 1fr;
+  }
+  .paimana-state-donut-grid {
     grid-template-columns: 1fr;
   }
   .paimana-app-store-badges {
