@@ -56,42 +56,42 @@ export const Header: React.FC = () => {
   const getBreadcrumbs = () => {
     switch (activeRoute) {
       case 'dashboard':
-        return { title: 'National Infrastructure Intelligence', breadcrumb: 'Dashboard / Overview' };
+        return { title: 'Overview', breadcrumb: 'PAIMANA / Overview' };
       case 'projects':
-        return { title: 'Central Sector Projects Inventory', breadcrumb: 'Projects / Registry' };
+        return { title: 'Projects', breadcrumb: 'PAIMANA / Projects' };
       case 'project-detail':
         return {
-          title: selectedProject ? selectedProject.name : 'Project Dossier',
+          title: selectedProject ? selectedProject.name : 'Project Details',
           breadcrumb: `Projects / ${selectedProjectId}`
         };
       case 'risk-monitor':
-        return { title: 'National Risk Monitoring Center', breadcrumb: 'Surveillance / Risk Monitor' };
+        return { title: 'Risks & Actions', breadcrumb: 'PAIMANA / Risks' };
       case 'alerts':
-        return { title: 'Early Warning Intelligence Signals', breadcrumb: 'Early Warnings / Active Signals' };
+        return { title: 'Risks & Actions', breadcrumb: 'PAIMANA / Risks & Actions' };
       case 'analytics':
-        return { title: 'Portfolio Analytics', breadcrumb: 'Intelligence / Multi-Dimensional' };
+        return { title: 'Portfolio Analytics', breadcrumb: 'Intelligence / Analytics' };
       case 'benchmarking':
-        return { title: 'Project Peer Benchmarking Lab', breadcrumb: 'Decision Support / Benchmarking' };
+        return { title: 'Benchmarking', breadcrumb: 'Intelligence / Benchmarking' };
       case 'map':
-        return { title: 'Geospatial Infrastructure Intelligence', breadcrumb: 'Surveillance / India GIS Map' };
+        return { title: 'Project Map', breadcrumb: 'Surveillance / Map' };
       case 'simulator':
-        return { title: 'What-If Policy & Intervention Simulator', breadcrumb: 'Decision Support / Simulator' };
+        return { title: 'What-If Simulator', breadcrumb: 'Tools / Simulator' };
       case 'assistant':
-        return { title: 'Sentinel AI Intelligence Assistant', breadcrumb: 'AI Copilot / Qwen RAG' };
+        return { title: 'AI Assistant', breadcrumb: 'Tools / AI Assistant' };
       case 'reports':
-        return { title: 'Executive Dossiers & Statutory Reports', breadcrumb: 'Reports / Flash Reports' };
+        return { title: 'Reports', breadcrumb: 'PAIMANA / Reports' };
       case 'data':
-        return { title: 'Data Management & Confidence Audit', breadcrumb: 'Data Pipeline / Ingestion' };
+        return { title: 'Data Management', breadcrumb: 'PAIMANA / Data' };
       case 'model-performance':
-        return { title: 'Predictive ML Model Validation', breadcrumb: 'AI Architecture / Performance' };
+        return { title: 'Model Performance', breadcrumb: 'Tools / ML Models' };
       case 'admin':
-        return { title: 'System Administration & RBAC', breadcrumb: 'System / Governance' };
+        return { title: 'Settings & Access', breadcrumb: 'PAIMANA / Settings' };
       case 'landing':
-        return { title: 'PAIMANA Sentinel AI Platform', breadcrumb: 'Public / Portal' };
+        return { title: 'Public Portal', breadcrumb: 'PAIMANA / Portal' };
       case 'login':
-        return { title: 'Secure Official Login', breadcrumb: 'Auth / Sign In' };
+        return { title: 'Sign In', breadcrumb: 'Auth / Sign In' };
       default:
-        return { title: 'PAIMANA Sentinel AI', breadcrumb: 'System / Overview' };
+        return { title: 'Overview', breadcrumb: 'PAIMANA / Overview' };
     }
   };
 

@@ -128,9 +128,69 @@ class ApiClient {
     return this.request<any>('/models/metrics');
   }
 
-  // Data Ingestion Status
+  // Data Ingestion & Import Workflow
   async getDataStatus() {
     return this.request<any>('/data/status');
+  }
+
+  async downloadCufTemplate() {
+    const res = await fetch(`${API_BASE_URL}/data/template`);
+    if (!res.ok) throw new Error("Failed to download CUF template");
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'cuf_project_import_template.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async validateCufFile(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const headers: Record<string, string> = {};
+    if (this.token) headers['Authorization'] = `Bearer ${this.token}`;
+    const res = await fetch(`${API_BASE_URL}/data/validate`, {
+      method: 'POST',
+      headers,
+      body: formData
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Failed to validate CUF file');
+    }
+    return res.json();
+  }
+
+  async importCufFile(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const headers: Record<string, string> = {};
+    if (this.token) headers['Authorization'] = `Bearer ${this.token}`;
+    const res = await fetch(`${API_BASE_URL}/data/import`, {
+      method: 'POST',
+      headers,
+      body: formData
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Failed to import CUF file');
+    }
+    return res.json();
+  }
+
+  async createProject(projectData: any) {
+    return this.request<any>('/projects', {
+      method: 'POST',
+      body: JSON.stringify(projectData),
+    });
+  }
+
+  async updateProject(projectId: string, projectData: any) {
+    return this.request<any>(`/projects/${projectId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(projectData),
+    });
   }
 
   // Admin Health
@@ -140,3 +200,4 @@ class ApiClient {
 }
 
 export const apiClient = new ApiClient();
+

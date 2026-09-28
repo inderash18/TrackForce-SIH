@@ -52,18 +52,11 @@ export const IndiaRiskMap: React.FC<IndiaRiskMapProps> = ({
         attributionControl: false
       });
 
-      // CartoDB Dark Matter tiles for authentic government dark workspace
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      // OpenStreetMap standard tiles - reliable and key-free
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
-        subdomains: 'abcd'
+        attribution: '&copy; OpenStreetMap contributors'
       }).addTo(map);
-
-      L.control
-        .attribution({
-          position: 'bottomright',
-          prefix: 'PAIMANA GIS Sentinel • © OpenStreetMap contributors, © CARTO'
-        })
-        .addTo(map);
 
       const markersGroup = L.layerGroup().addTo(map);
       markersLayerRef.current = markersGroup;

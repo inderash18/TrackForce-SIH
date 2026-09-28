@@ -3,7 +3,6 @@ import { useApp } from '../context/AppContext';
 import { MetricCard } from '../components/common/MetricCard';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { IndiaRiskMap } from '../components/map/IndiaRiskMap';
-import { RiskDriverBarChart } from '../components/charts/RiskDriverBarChart';
 import {
   FolderGit2,
   AlertTriangle,
@@ -12,32 +11,30 @@ import {
   ShieldCheck,
   Download,
   Activity,
-  ArrowRight,
   ChevronRight,
-  Sparkles
+  Sparkles,
+  Calendar
 } from 'lucide-react';
 
 export const DashboardView: React.FC = () => {
-  const { projects, alerts, navigateToProject, navigateTo, showNotification, reportingMonth } = useApp();
+  const { projects, navigateToProject, navigateTo, showNotification, reportingMonth } = useApp();
 
-  const [tableSearch] = useState('');
-  const [selectedTableSector] = useState('all');
+  const [tableFilter, setTableFilter] = useState<'all' | 'critical' | 'high'>('all');
 
-  const filteredEmergingProjects = projects.filter((p) => {
-    if (selectedTableSector !== 'all' && p.sector !== selectedTableSector) return false;
-    if (
-      tableSearch &&
-      !p.name.toLowerCase().includes(tableSearch.toLowerCase()) &&
-      !p.code.toLowerCase().includes(tableSearch.toLowerCase()) &&
-      !p.state.toLowerCase().includes(tableSearch.toLowerCase())
-    ) {
-      return false;
-    }
-    return true;
-  });
+  // Filter top critical/high risk projects that need attention
+  const needsAttentionProjects = projects
+    .filter((p) => {
+      const r = (p.riskLevel || '').toLowerCase();
+      if (tableFilter === 'critical') return r === 'critical';
+      if (tableFilter === 'high') return r === 'high';
+      return r === 'critical' || r === 'high';
+    })
+    .sort((a, b) => b.riskScore - a.riskScore);
 
-  const criticalProjectsCount = projects.filter((p) => (p.riskLevel || '').toLowerCase() === 'critical').length;
-  const highRiskCount = projects.filter((p) => (p.riskLevel || '').toLowerCase() === 'high').length;
+  const criticalCount = projects.filter((p) => (p.riskLevel || '').toLowerCase() === 'critical').length;
+  const highCount = projects.filter((p) => (p.riskLevel || '').toLowerCase() === 'high').length;
+  const modCount = projects.filter((p) => (p.riskLevel || '').toLowerCase().includes('mod') || (p.riskLevel || '').toLowerCase().includes('med')).length;
+  const lowCount = projects.filter((p) => (p.riskLevel || '').toLowerCase() === 'low').length;
 
   const exportTableCSV = () => {
     const headers = [
@@ -45,22 +42,18 @@ export const DashboardView: React.FC = () => {
       'Project Name',
       'Sector',
       'Ministry',
-      'State',
       'Risk Score',
-      'Cost Risk %',
-      'Delay Risk %',
-      'Progress %',
-      'Status'
+      'Main Delay Driver',
+      'Physical Progress %',
+      'Risk Level'
     ];
-    const rows = filteredEmergingProjects.map((p) => [
+    const rows = needsAttentionProjects.map((p) => [
       p.code,
       `"${p.name}"`,
       p.sector,
       `"${p.ministry}"`,
-      p.state,
       p.riskScore,
-      `${p.costOverrunProbability}%`,
-      `${p.scheduleDelayProbability}%`,
+      `"${p.mainRiskReason || 'Milestone Slippage'}"`,
       `${p.physicalProgress}%`,
       p.riskLevel
     ]);
@@ -68,322 +61,307 @@ export const DashboardView: React.FC = () => {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `PAIMANA_Emerging_Risks_${reportingMonth.replace(' ', '_')}.csv`);
+    link.setAttribute('download', `PAIMANA_Needs_Attention_${reportingMonth.replace(' ', '_')}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    showNotification('Exported Emerging Risk table as CSV.');
+    showNotification('Exported Needs Attention list as CSV.');
   };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Top Section Header */}
-      <div className="page-hero-section">
+      {/* Top Header: Single Clean Heading + Cycle Badge */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b border-slate-200/80">
         <div>
-          <h1 className="page-title">
-            National Infrastructure Intelligence
-          </h1>
-          <p className="page-subtitle">
-            Predictive risk monitoring, delay forecasting, and early warning surveillance across Central Sector Projects (MoSPI IPMD)
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Overview</h1>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-50 text-sky-800 border border-sky-200">
+              <Calendar size={11} className="text-sky-600" />
+              <span>{reportingMonth}</span>
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 mt-1">
+            Central Sector Projects (₹150 Cr+) · Real-time portfolio monitoring & predictive risk surveillance
           </p>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <button className="btn-secondary" onClick={() => navigateTo('simulator')}>
-            <Activity size={14} color="var(--color-accent-cyan)" />
-            <span>Open Decision Simulator</span>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className="btn-secondary text-xs px-3 py-1.5 flex items-center gap-1.5"
+            onClick={() => navigateTo('simulator')}
+          >
+            <Activity size={13} className="text-sky-600" />
+            <span>What-If Simulator</span>
           </button>
-          <button className="btn-primary" onClick={() => navigateTo('reports')}>
-            <Download size={14} />
-            <span>Monthly Cabinet Brief</span>
+          <button
+            type="button"
+            className="btn-primary text-xs px-3.5 py-1.5 flex items-center gap-1.5"
+            onClick={() => navigateTo('reports')}
+          >
+            <Download size={13} />
+            <span>Monthly Flash Report</span>
           </button>
         </div>
       </div>
 
-      {/* Top KPI Cards */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-          gap: '14px'
-        }}
-      >
+      {/* 4 Compact Summary Metrics (~110-120px) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
         <MetricCard
-          label="Total Monitored Projects"
+          label="Monitored Projects"
           value={projects.length}
-          explanation="Active mega & major projects monitored in PAIMANA registry"
-          trend={{ direction: 'neutral', text: '100% data coverage', isGood: true }}
+          explanation="Active mega & major projects in registry"
+          trend={{ direction: 'neutral', text: '100% active coverage', isGood: true }}
           icon={<FolderGit2 size={16} />}
           indicatorColor="primary"
           onClick={() => navigateTo('projects')}
         />
+
         <MetricCard
-          label="Cumulative Expenditure"
-          value="₹48.2 L Cr"
-          explanation="Against ₹138.5 Lakh Cr sanctioned revised outlay"
-          subtitleBadge="Revised: ₹138.5 L Cr"
-          trend={{ direction: 'up', text: '+₹1.4 L Cr this cycle', isGood: true }}
-          icon={<Coins size={16} />}
-          indicatorColor="primary"
-        />
-        <MetricCard
-          label="Critical Risk Hotspots"
-          value={criticalProjectsCount}
-          explanation="Packages exhibiting acute milestone & RoW bottlenecks"
-          subtitleBadge="Requires Cabinet Review"
-          trend={{ direction: 'down', text: 'Down from 5 last cycle', isGood: true }}
+          label="Needs Attention"
+          value={criticalCount + highCount}
+          explanation={`${criticalCount} critical, ${highCount} high risk`}
+          subtitleBadge="Action Required"
+          trend={{ direction: 'down', text: 'Top priority review', isGood: false }}
           icon={<AlertTriangle size={16} />}
           indicatorColor="critical"
           onClick={() => navigateTo('alerts')}
         />
+
         <MetricCard
-          label="Predicted Delay Exposure"
-          value="34 Months"
-          explanation="Weighted cumulative schedule slippage across high-risk corridors"
-          trend={{ direction: 'up', text: '+4 mos variance', isGood: false }}
+          label="Avg Schedule Delay"
+          value="34.2 Mos"
+          explanation="Weighted cumulative delay across portfolio"
+          trend={{ direction: 'up', text: '+2.1 mos vs baseline', isGood: false }}
           icon={<Clock size={16} />}
           indicatorColor="prediction"
         />
+
+        <MetricCard
+          label="Cost Escalation"
+          value="21.4%"
+          explanation="₹48.2 L Cr cumulative expenditure"
+          trend={{ direction: 'neutral', text: 'Within revised envelope', isGood: true }}
+          icon={<Coins size={16} />}
+          indicatorColor="primary"
+        />
       </div>
 
-      {/* National Risk Map & Portfolio Distribution */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))',
-          gap: '16px'
-        }}
-      >
-        {/* Geospatial Map */}
-        <div style={{ minHeight: '440px' }}>
-          <IndiaRiskMap height="440px" />
+      {/* Main Grid: Geospatial Map + Risk Distribution Bar */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        {/* Project Spatial Map (7 cols) */}
+        <div className="lg:col-span-7 gov-card p-0 overflow-hidden flex flex-col">
+          <div className="p-3.5 border-b border-slate-100 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <h2 className="text-sm font-semibold text-slate-900">Project Map</h2>
+            </div>
+            <span className="text-xs text-slate-400">Click any marker to inspect</span>
+          </div>
+          <div className="flex-1" style={{ minHeight: '380px' }}>
+            <IndiaRiskMap height="380px" showFiltersBar={false} />
+          </div>
         </div>
 
-        {/* National Risk Index & Portfolio Breakdown */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          {/* Risk Gauge Card */}
+        {/* Portfolio Risk Distribution & Early Warning Summary (5 cols) */}
+        <div className="lg:col-span-5 flex flex-col gap-3.5">
+          {/* Portfolio Risk Distribution Card */}
           <div className="gov-card">
-            <div className="gov-card-header">
-              <div className="gov-card-title">
-                <ShieldCheck size={15} color="var(--color-action-primary)" />
-                National Project Risk Index (NPRI)
+            <div className="gov-card-header pb-2.5">
+              <div className="flex items-center gap-2">
+                <ShieldCheck size={16} className="text-sky-600" />
+                <h3 className="text-sm font-semibold text-slate-900">Portfolio Risk Distribution</h3>
               </div>
-              <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
-                Reporting Cycle: {reportingMonth}
+              <span className="text-xs font-semibold px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">
+                Score: 58.4 / 100
               </span>
             </div>
-            <div className="gov-card-body">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                <div>
-                  <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--status-high-text)', letterSpacing: '-0.02em' }}>
-                    58.4 <span style={{ fontSize: '14px', color: 'var(--color-text-muted)', fontWeight: 500 }}>/ 100</span>
-                  </div>
-                  <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
-                    Portfolio composite risk classified under <strong style={{ color: 'var(--status-high-text)' }}>Moderate-to-High</strong> surveillance tier.
-                  </div>
-                </div>
 
-                <StatusBadge level="high" customLabel="Moderate-High" />
+            <div className="gov-card-body pt-1">
+              <div className="flex items-center justify-between text-xs text-slate-500 mb-1.5">
+                <span>Risk Tiers ({projects.length} Total)</span>
+                <span className="font-medium text-slate-700">{criticalCount + highCount} Critical/High</span>
               </div>
 
-              {/* Segmented Risk Bar */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11.5px', color: 'var(--color-text-secondary)' }}>
-                  <span>Portfolio Risk Breakdown</span>
-                  <span className="tabular-nums">{projects.length} Total Projects</span>
-                </div>
+              {/* Segmented Distribution Bar */}
+              <div className="h-3 w-full rounded-full bg-slate-100 flex overflow-hidden mb-3">
+                <div style={{ width: `${(criticalCount / projects.length) * 100}%` }} className="bg-red-500" title={`Critical: ${criticalCount}`} />
+                <div style={{ width: `${(highCount / projects.length) * 100}%` }} className="bg-orange-500" title={`High: ${highCount}`} />
+                <div style={{ width: `${(modCount / projects.length) * 100 || 30}%` }} className="bg-amber-400" title={`Moderate: ${modCount}`} />
+                <div style={{ width: `${(lowCount / projects.length) * 100 || 40}%` }} className="bg-emerald-500" title={`Low: ${lowCount}`} />
+              </div>
 
-                <div
-                  style={{
-                    height: '10px',
-                    width: '100%',
-                    display: 'flex',
-                    borderRadius: 'var(--radius-full)',
-                    overflow: 'hidden',
-                    backgroundColor: 'var(--color-surface-hover)'
-                  }}
-                >
-                  <div style={{ width: `${(criticalProjectsCount / projects.length) * 100}%`, backgroundColor: 'var(--status-critical)' }} title="Critical" />
-                  <div style={{ width: `${(highRiskCount / projects.length) * 100}%`, backgroundColor: 'var(--status-high)' }} title="High" />
-                  <div style={{ width: '35%', backgroundColor: 'var(--status-medium)' }} title="Moderate" />
-                  <div style={{ width: '40%', backgroundColor: 'var(--status-low)' }} title="Low" />
+              {/* Legend */}
+              <div className="grid grid-cols-4 gap-2 text-center text-xs">
+                <div className="p-1.5 rounded bg-red-50/60 border border-red-100">
+                  <div className="font-bold text-red-700">{criticalCount}</div>
+                  <div className="text-[10px] text-red-600">Critical</div>
                 </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11px', color: 'var(--color-text-dim)', marginTop: '4px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--status-critical)' }} />
-                    <span>Critical ({criticalProjectsCount})</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--status-high)' }} />
-                    <span>High ({highRiskCount})</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--status-medium)' }} />
-                    <span>Moderate</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--status-low)' }} />
-                    <span>Low</span>
-                  </div>
+                <div className="p-1.5 rounded bg-orange-50/60 border border-orange-100">
+                  <div className="font-bold text-orange-700">{highCount}</div>
+                  <div className="text-[10px] text-orange-600">High</div>
+                </div>
+                <div className="p-1.5 rounded bg-amber-50/60 border border-amber-100">
+                  <div className="font-bold text-amber-700">{modCount || 1}</div>
+                  <div className="text-[10px] text-amber-600">Moderate</div>
+                </div>
+                <div className="p-1.5 rounded bg-emerald-50/60 border border-emerald-100">
+                  <div className="font-bold text-emerald-700">{lowCount || 2}</div>
+                  <div className="text-[10px] text-emerald-600">Low</div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Key Risk Drivers */}
-          <div className="gov-card" style={{ flex: 1 }}>
-            <div className="gov-card-header">
-              <div className="gov-card-title">
-                <Sparkles size={15} color="var(--color-accent-cyan)" />
-                Top Root-Cause Delay Drivers (SHAP)
+          {/* Quick Intelligence Summary */}
+          <div className="gov-card flex-1">
+            <div className="gov-card-header pb-2">
+              <div className="flex items-center gap-2">
+                <Sparkles size={15} className="text-sky-600" />
+                <h3 className="text-sm font-semibold text-slate-900">Primary Risk Triggers</h3>
               </div>
-              <button onClick={() => navigateTo('analytics')} className="btn-ghost" style={{ fontSize: '11px', padding: '2px 6px' }}>
-                Full Analytics <ChevronRight size={12} />
+              <button
+                type="button"
+                onClick={() => navigateTo('analytics')}
+                className="text-xs text-sky-600 hover:text-sky-800 flex items-center gap-0.5"
+              >
+                Analytics <ChevronRight size={12} />
               </button>
             </div>
-            <div className="gov-card-body" style={{ padding: '14px 18px' }}>
-              <RiskDriverBarChart />
+
+            <div className="gov-card-body space-y-2 pt-1 text-xs text-slate-600">
+              <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100 flex items-start justify-between">
+                <div>
+                  <span className="font-semibold text-slate-800">Right of Way & Land Acquisition</span>
+                  <p className="text-[11px] text-slate-500 mt-0.5">Affects 62% of delayed railway & highway packages</p>
+                </div>
+                <span className="px-1.5 py-0.5 rounded bg-red-100 text-red-700 font-bold text-[10px] shrink-0">
+                  38% SHAP
+                </span>
+              </div>
+
+              <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100 flex items-start justify-between">
+                <div>
+                  <span className="font-semibold text-slate-800">Environmental & Forest Clearances</span>
+                  <p className="text-[11px] text-slate-500 mt-0.5">Key constraint across thermal, hydro & mining projects</p>
+                </div>
+                <span className="px-1.5 py-0.5 rounded bg-orange-100 text-orange-700 font-bold text-[10px] shrink-0">
+                  27% SHAP
+                </span>
+              </div>
+
+              <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100 flex items-start justify-between">
+                <div>
+                  <span className="font-semibold text-slate-800">Contractor & EPC Bottlenecks</span>
+                  <p className="text-[11px] text-slate-500 mt-0.5">Equipment mobilization & multi-agency coordination</p>
+                </div>
+                <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 font-bold text-[10px] shrink-0">
+                  19% SHAP
+                </span>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Critical Projects Table & Early Warnings Stream */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(460px, 1fr))',
-          gap: '16px'
-        }}
-      >
-        {/* Critical & High Risk Projects Watchlist */}
-        <div className="gov-card">
-          <div className="gov-card-header">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <AlertTriangle size={15} color="var(--status-critical)" />
-              <div>
-                <div className="gov-card-title">High Risk Watchlist</div>
-                <div className="gov-card-subtitle">Packages with acute delay and cost overrun probabilities</div>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <button onClick={exportTableCSV} className="btn-secondary" style={{ fontSize: '11.5px', padding: '4px 10px' }}>
-                <Download size={12} /> CSV
-              </button>
-              <button onClick={() => navigateTo('projects')} className="btn-ghost" style={{ fontSize: '11.5px', padding: '4px 8px' }}>
-                View All <ArrowRight size={12} />
-              </button>
+      {/* Prioritized "Needs Attention" Table (Top 5 Critical/High Risk Projects) */}
+      <div className="gov-card">
+        <div className="gov-card-header flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <AlertTriangle size={16} className="text-red-500" />
+            <div>
+              <h2 className="text-sm font-bold text-slate-900">Projects Needing Attention</h2>
+              <p className="text-xs text-slate-500">Top prioritized projects exhibiting acute milestone or expenditure variance</p>
             </div>
           </div>
 
-          <div className="gov-table-wrapper" style={{ border: 'none' }}>
-            <table className="gov-table">
-              <thead>
-                <tr>
-                  <th>Project</th>
-                  <th>Sector</th>
-                  <th>Physical %</th>
-                  <th>Delay Risk</th>
-                  <th>Risk Index</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredEmergingProjects.slice(0, 5).map((project) => (
-                  <tr key={project.id}>
-                    <td>
-                      <div style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>
-                        {project.name}
-                      </div>
-                      <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
-                        {project.code} · {project.state}
-                      </div>
-                    </td>
-                    <td>
-                      <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
-                        {project.sector}
-                      </span>
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{ width: '45px', height: '5px', borderRadius: '3px', background: 'var(--color-surface-hover)', overflow: 'hidden' }}>
-                          <div style={{ width: `${project.physicalProgress}%`, height: '100%', background: 'var(--color-action-primary)' }} />
-                        </div>
-                        <span className="tabular-nums" style={{ fontSize: '12px', fontWeight: 600 }}>
-                          {project.physicalProgress}%
-                        </span>
-                      </div>
-                    </td>
-                    <td>
-                      <span className="tabular-nums" style={{ fontSize: '12px', fontWeight: 600, color: project.scheduleDelayProbability > 70 ? 'var(--status-critical-text)' : 'var(--status-high-text)' }}>
-                        {project.scheduleDelayProbability}%
-                      </span>
-                    </td>
-                    <td>
-                      <StatusBadge level={project.riskLevel} customLabel={`${project.riskScore}/100`} size="sm" />
-                    </td>
-                    <td>
-                      <button
-                        onClick={() => navigateToProject(project.id)}
-                        className="btn-ghost"
-                        style={{ fontSize: '11.5px', padding: '3px 8px', color: 'var(--color-action-primary)' }}
-                      >
-                        Inspect <ChevronRight size={13} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="flex items-center gap-2">
+            <div className="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-50 text-xs">
+              <button
+                type="button"
+                className={`px-2.5 py-1 rounded-md font-medium transition ${tableFilter === 'all' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+                onClick={() => setTableFilter('all')}
+              >
+                All Attention ({needsAttentionProjects.length})
+              </button>
+              <button
+                type="button"
+                className={`px-2.5 py-1 rounded-md font-medium transition ${tableFilter === 'critical' ? 'bg-white text-red-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+                onClick={() => setTableFilter('critical')}
+              >
+                Critical ({criticalCount})
+              </button>
+              <button
+                type="button"
+                className={`px-2.5 py-1 rounded-md font-medium transition ${tableFilter === 'high' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+                onClick={() => setTableFilter('high')}
+              >
+                High ({highCount})
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={exportTableCSV}
+              className="btn-secondary text-xs px-2.5 py-1 flex items-center gap-1"
+            >
+              <Download size={12} /> CSV
+            </button>
           </div>
         </div>
 
-        {/* Live Early Warning Signals */}
-        <div className="gov-card">
-          <div className="gov-card-header">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Activity size={15} color="var(--status-high)" />
-              <div>
-                <div className="gov-card-title">Early Warning Surveillance</div>
-                <div className="gov-card-subtitle">Algorithmic risk triggers from recent monthly updates</div>
-              </div>
-            </div>
-            <button onClick={() => navigateTo('alerts')} className="btn-ghost" style={{ fontSize: '11.5px', padding: '4px 8px' }}>
-              All Signals ({alerts.length}) <ArrowRight size={12} />
-            </button>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '14px' }}>
-            {alerts.slice(0, 4).map((alert) => (
-              <div
-                key={alert.id}
-                onClick={() => navigateTo('alerts')}
-                style={{
-                  padding: '12px 14px',
-                  backgroundColor: 'var(--color-surface-elevated)',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: 'var(--radius-md)',
-                  cursor: 'pointer',
-                  transition: 'border-color 120ms ease'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <StatusBadge level={alert.severity} size="sm" />
-                  <span style={{ fontSize: '10.5px', color: 'var(--color-text-dim)' }}>
-                    {alert.timestamp || 'Fresh update'}
-                  </span>
-                </div>
-                <div style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: '3px' }}>
-                  {alert.projectName}
-                </div>
-                <p style={{ margin: 0, fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: 1.35 }}>
-                  {alert.reason || alert.aiExplanation}
-                </p>
-              </div>
-            ))}
-          </div>
+        <div className="gov-table-wrapper" style={{ border: 'none' }}>
+          <table className="gov-table">
+            <thead>
+              <tr>
+                <th>Project</th>
+                <th>Sector / Ministry</th>
+                <th>Main Issue / Trigger</th>
+                <th>Risk Level</th>
+                <th>Implementing Agency</th>
+                <th style={{ textAlign: 'right' }}>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {needsAttentionProjects.slice(0, 5).map((project) => (
+                <tr key={project.id} className="hover:bg-slate-50/80 transition-colors">
+                  <td>
+                    <div className="font-semibold text-slate-900 text-xs">
+                      {project.name}
+                    </div>
+                    <div className="text-[11px] text-slate-400">
+                      {project.code} · {project.state}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="text-xs text-slate-700 font-medium">{project.sector}</div>
+                    <div className="text-[10px] text-slate-400 truncate max-w-[140px]">{project.ministry}</div>
+                  </td>
+                  <td>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-700 border border-slate-200">
+                      {project.mainRiskReason || 'Right of Way / Clearance Bottleneck'}
+                    </span>
+                  </td>
+                  <td>
+                    <StatusBadge level={project.riskLevel} customLabel={`${project.riskScore}/100`} size="sm" />
+                  </td>
+                  <td>
+                    <div className="text-xs text-slate-700 font-medium">{project.implementingAgency || 'NHAI / MoRTH'}</div>
+                    <div className="text-[10px] text-slate-400">Escalate to IPMD Taskforce</div>
+                  </td>
+                  <td style={{ textAlign: 'right' }}>
+                    <button
+                      type="button"
+                      onClick={() => navigateToProject(project.id)}
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-sky-600 hover:text-sky-800 bg-sky-50 hover:bg-sky-100 px-2.5 py-1 rounded transition"
+                    >
+                      View Details <ChevronRight size={13} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

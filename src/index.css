@@ -3565,6 +3565,8 @@ table,
   .paimana-hero-nav-btn {
     display: none;
   }
+}
+
 /* Utility classes for layout & spacing */
 .flex { display: flex; }
 .flex-col { flex-direction: column; }
@@ -3600,3 +3602,570 @@ table,
 .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
 .border { border-width: 1px; }
 .tnum { font-variant-numeric: tabular-nums; }
+
+/* --------------------------------------------------------------------------
+   UNIFIED UNIQUE NAVBAR & SIMPLE FOOTER STYLING
+   -------------------------------------------------------------------------- */
+.paimana-header-unified {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid #E2E8F0;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+}
+
+.paimana-topbar-subtle {
+  background: #0F172A;
+  color: #94A3B8;
+  font-size: 11px;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.paimana-topbar-inner {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.paimana-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.paimana-gov-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #F8FAFC;
+  font-weight: 600;
+}
+
+.paimana-flag-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #F59E0B;
+}
+
+.paimana-topbar-tagline {
+  color: #64748B;
+  font-size: 10.5px;
+}
+
+.paimana-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.paimana-top-font-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.top-font-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #CBD5E1;
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  cursor: pointer;
+  line-height: 1.2;
+}
+
+.top-font-btn.active, .top-font-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #FFFFFF;
+}
+
+.topbar-divider {
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 10px;
+}
+
+.top-util-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  color: #94A3B8;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.top-util-link:hover, .top-util-link.active {
+  color: #38BDF8;
+}
+
+.top-util-link.lang-pill {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 1px 7px;
+  border-radius: 9999px;
+  color: #E2E8F0;
+}
+
+.paimana-navbar-main {
+  background: transparent;
+}
+
+.paimana-navbar-inner {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 8px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 58px;
+}
+
+.paimana-nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.paimana-nav-emblem {
+  flex-shrink: 0;
+}
+
+.paimana-nav-titlegroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.paimana-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.paimana-brand-name {
+  font-size: 17px;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.02em;
+}
+
+.paimana-brand-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #0284C7;
+  background: #E0F2FE;
+  border: 1px solid #BAE6FD;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  letter-spacing: 0.02em;
+}
+
+.paimana-brand-sub {
+  font-size: 10.5px;
+  color: #64748B;
+  font-weight: 500;
+}
+
+.paimana-nav-center {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.paimana-nav-item {
+  background: transparent;
+  border: none;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #475569;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.paimana-nav-item:hover {
+  color: #0284C7;
+  background: #F0F9FF;
+}
+
+.paimana-nav-item.active {
+  color: #0284C7;
+  background: #E0F2FE;
+  font-weight: 600;
+}
+
+.paimana-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.paimana-action-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 150ms ease;
+  border: 1px solid transparent;
+}
+
+.paimana-action-pill.orange-glow {
+  background: #EA580C;
+  color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(234, 88, 12, 0.25);
+}
+
+.paimana-action-pill.orange-glow:hover {
+  background: #C2410C;
+}
+
+.paimana-action-pill.charcoal-pill {
+  background: #0F172A;
+  color: #FFFFFF;
+}
+
+.paimana-action-pill.charcoal-pill:hover {
+  background: #1E293B;
+}
+
+.paimana-hamburger-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: #334155;
+  cursor: pointer;
+  padding: 4px;
+}
+
+/* Mobile Overlay & Drawer */
+.paimana-mobile-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 300;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.paimana-mobile-sheet {
+  background: #FFFFFF;
+  width: 80%;
+  max-width: 320px;
+  height: 100%;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+}
+
+.paimana-mobile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.paimana-mobile-actions-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.paimana-mobile-nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+}
+
+.mobile-nav-link {
+  background: transparent;
+  border: none;
+  text-align: left;
+  padding: 9px 12px;
+  border-radius: 6px;
+  font-size: 13.5px;
+  color: #334155;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.mobile-nav-link:hover {
+  background: #F0F9FF;
+  color: #0284C7;
+}
+
+/* Simple Footer */
+.paimana-simple-footer {
+  background: #0F172A;
+  color: #94A3B8;
+  border-top: 1px solid #1E293B;
+  padding: 40px 0 24px;
+}
+
+.paimana-footer-container {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.paimana-footer-grid-simple {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr 1.5fr;
+  gap: 36px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.footer-brand-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.footer-brand-paimana {
+  font-size: 18px;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: -0.01em;
+}
+
+.footer-brand-tag {
+  font-size: 11px;
+  font-weight: 600;
+  color: #38BDF8;
+  background: rgba(56, 189, 248, 0.12);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.footer-desc {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #94A3B8;
+  max-width: 440px;
+  margin-bottom: 12px;
+}
+
+.footer-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #E2E8F0;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 3px 10px;
+  border-radius: 9999px;
+}
+
+.footer-col-header {
+  font-size: 13px;
+  font-weight: 700;
+  color: #FFFFFF;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 12px;
+}
+
+.footer-links-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.footer-links-list button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: #94A3B8;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 0;
+  transition: color 120ms;
+}
+
+.footer-links-list button:hover {
+  color: #38BDF8;
+}
+
+.footer-contact-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+  color: #94A3B8;
+}
+
+.footer-contact-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.paimana-footer-bottom-bar {
+  padding-top: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11.5px;
+  color: #64748B;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.footer-bottom-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bottom-link {
+  background: none;
+  border: none;
+  color: #64748B;
+  font-size: 11.5px;
+  cursor: pointer;
+}
+
+.bottom-link:hover {
+  color: #94A3B8;
+}
+
+/* --------------------------------------------------------------------------
+   COMPACT & SIMPLE FOOTER STYLING
+   -------------------------------------------------------------------------- */
+.paimana-compact-footer {
+  background: #0F172A;
+  color: #94A3B8;
+  border-top: 1px solid #1E293B;
+  padding: 14px 0;
+  font-size: 12px;
+}
+
+.paimana-compact-footer-inner {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.compact-footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.compact-footer-logo {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: -0.01em;
+}
+
+.compact-footer-divider {
+  color: #334155;
+  font-size: 11px;
+}
+
+.compact-footer-sub {
+  color: #94A3B8;
+  font-size: 11.5px;
+}
+
+.compact-footer-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.compact-nav-link {
+  background: transparent;
+  border: none;
+  color: #94A3B8;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 2px 4px;
+  transition: color 120ms ease;
+}
+
+.compact-nav-link:hover {
+  color: #38BDF8;
+}
+
+.compact-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  color: #64748B;
+}
+
+.compact-legal-link {
+  background: transparent;
+  border: none;
+  color: #64748B;
+  font-size: 11.5px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.compact-legal-link:hover {
+  color: #94A3B8;
+}
+
+.dot {
+  color: #334155;
+  font-size: 10px;
+}
+
+@media (max-width: 768px) {
+  .paimana-compact-footer-inner {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 10px;
+  }
+  .compact-footer-nav {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+
