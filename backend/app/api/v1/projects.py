@@ -5,7 +5,8 @@ from sqlalchemy import or_, desc, asc
 from app.core.database import get_db
 from app.models.project import Project
 from app.schemas.project import ProjectBase, ProjectDetail, PaginatedProjects
-from app.auth.rbac import get_optional_current_user
+from app.models.user import User
+from app.auth.rbac import get_optional_current_user, is_national_oversight_user, get_user_authorized_ministries, enforce_user_ministry_access
 
 router = APIRouter(prefix="/projects", tags=["Projects"])
 
@@ -16,14 +17,26 @@ def list_projects(
     sector: Optional[str] = None,
     state: Optional[str] = None,
     risk_level: Optional[str] = None,
-    status: Optional[str] = None,
+    project_status: Optional[str] = Query(None, alias="status"),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     sort_by: str = "risk_score",
     sort_order: str = "desc",
+    current_user: Optional[User] = Depends(get_optional_current_user),
     db: Session = Depends(get_db)
 ):
     query = db.query(Project)
+
+    # Enforce server-side ministry scoping
+    if current_user and not is_national_oversight_user(current_user):
+        user_mins = get_user_authorized_ministries(current_user)
+        if user_mins and user_mins != ["ALL"]:
+            if ministry and ministry != "All Ministries" and not any(m.lower() in ministry.lower() or ministry.lower() in m.lower() for m in user_mins):
+                raise HTTPException(status_code=403, detail="Access denied: Not authorized for requested ministry")
+            ministry_filters = [Project.ministry.ilike(f"%{m}%") for m in user_mins]
+            query = query.filter(or_(*ministry_filters))
+    elif ministry and ministry != "All Ministries":
+        query = query.filter(Project.ministry == ministry)
 
     if search:
         search_filter = or_(
@@ -33,16 +46,14 @@ def list_projects(
         )
         query = query.filter(search_filter)
 
-    if ministry and ministry != "All Ministries":
-        query = query.filter(Project.ministry == ministry)
     if sector and sector != "All Sectors":
         query = query.filter(Project.sector == sector)
     if state and state != "All States":
         query = query.filter(Project.state.ilike(f"%{state}%"))
     if risk_level and risk_level != "All":
         query = query.filter(Project.risk_level == risk_level)
-    if status and status != "All":
-        query = query.filter(Project.status == status)
+    if project_status and project_status != "All":
+        query = query.filter(Project.status == project_status)
 
     # Sorting
     sort_column = getattr(Project, sort_by, Project.risk_score)
@@ -67,17 +78,39 @@ def list_projects(
     )
 
 @router.get("/{project_id}", response_model=ProjectDetail)
-def get_project(project_id: str, db: Session = Depends(get_db)):
+def get_project(
+    project_id: str,
+    current_user: Optional[User] = Depends(get_optional_current_user),
+    db: Session = Depends(get_db)
+):
     project = db.query(Project).filter(or_(Project.id == project_id, Project.code == project_id)).first()
     if not project:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Project {project_id} not found")
+    
+    if current_user and not enforce_user_ministry_access(current_user, project.ministry):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Access denied: Project is outside your authorized ministry scope"
+        )
+
     return ProjectDetail.model_validate(project) if hasattr(ProjectDetail, "model_validate") else ProjectDetail.from_orm(project)
 
 @router.post("", response_model=ProjectDetail, status_code=status.HTTP_201_CREATED)
-def create_project(payload: dict, db: Session = Depends(get_db)):
+def create_project(
+    payload: dict,
+    current_user: Optional[User] = Depends(get_optional_current_user),
+    db: Session = Depends(get_db)
+):
     from app.ml.inference import predict_project_risk
     from app.models.alert import EarlyWarningAlert
     import uuid
+
+    target_ministry = payload.get("ministry", "Ministry of Road Transport and Highways")
+    if current_user and not enforce_user_ministry_access(current_user, target_ministry):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: Cannot create project for unauthorized ministry"
+        )
 
     code = payload.get("code") or f"PRJ-{uuid.uuid4().hex[:6].upper()}"
     existing = db.query(Project).filter(Project.code == code).first()
@@ -91,7 +124,7 @@ def create_project(payload: dict, db: Session = Depends(get_db)):
         id=project_id,
         name=payload.get("name", "Untitled Infrastructure Project"),
         code=code,
-        ministry=payload.get("ministry", "Ministry of Road Transport and Highways"),
+        ministry=target_ministry,
         sector=payload.get("sector", "Roads & Highways"),
         state=payload.get("state", "National"),
         district=payload.get("district", "Multiple"),
@@ -154,12 +187,24 @@ def create_project(payload: dict, db: Session = Depends(get_db)):
     return ProjectDetail.model_validate(new_project) if hasattr(ProjectDetail, "model_validate") else ProjectDetail.from_orm(new_project)
 
 @router.patch("/{project_id}", response_model=ProjectDetail)
-def update_project(project_id: str, payload: dict, db: Session = Depends(get_db)):
+def update_project(
+    project_id: str,
+    payload: dict,
+    current_user: Optional[User] = Depends(get_optional_current_user),
+    db: Session = Depends(get_db)
+):
     from app.ml.inference import predict_project_risk
 
     project = db.query(Project).filter(or_(Project.id == project_id, Project.code == project_id)).first()
     if not project:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Project {project_id} not found")
+
+    if current_user and not enforce_user_ministry_access(current_user, project.ministry):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: Cannot modify project outside your authorized ministry scope"
+        )
+
 
     for key, value in payload.items():
         if hasattr(project, key) and value is not None and key not in ["id", "created_at"]:

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { StatusBadge } from '../components/common/StatusBadge';
 import {
@@ -15,7 +15,7 @@ import {
 import type { EarlyWarningAlert } from '../types/project';
 
 export const EarlyWarningsView: React.FC = () => {
-  const { alerts, updateAlertStatus, navigateToProject, user, showNotification } = useApp();
+  const { scopedAlerts, updateAlertStatus, navigateToProject, user, showNotification, reportingMonth } = useApp();
 
   const [activeMainTab, setActiveMainTab] = useState<'needs_review' | 'actions'>('needs_review');
   const [search, setSearch] = useState('');
@@ -27,9 +27,29 @@ export const EarlyWarningsView: React.FC = () => {
   const [actionNote, setActionNote] = useState('');
   const [assignedOwner, setAssignedOwner] = useState('');
 
+  // Lock background scroll when modal is open & listen for Escape key
+  useEffect(() => {
+    if (!selectedReviewAlert) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setSelectedReviewAlert(null);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [selectedReviewAlert]);
+
   // 1. "Needs Review" List (unresolved alerts)
   const needsReviewList = useMemo(() => {
-    return alerts.filter((a) => {
+    return scopedAlerts.filter((a) => {
       const isResolved = (a.status || '').toLowerCase() === 'resolved';
       if (isResolved) return false;
       if (severityFilter !== 'all' && a.severity.toLowerCase() !== severityFilter) return false;
@@ -43,11 +63,11 @@ export const EarlyWarningsView: React.FC = () => {
       }
       return true;
     });
-  }, [alerts, severityFilter, search]);
+  }, [scopedAlerts, severityFilter, search]);
 
   // 2. "Actions" List (assigned interventions & reviewed items)
   const actionsList = useMemo(() => {
-    return alerts
+    return scopedAlerts
       .filter((a) => {
         const isAssignedOrActioned =
           (a.status || '').toLowerCase() === 'reviewed' ||
@@ -85,7 +105,7 @@ export const EarlyWarningsView: React.FC = () => {
         severity: a.severity,
         rawAlert: a
       }));
-  }, [alerts, actionsFilter, search, user]);
+  }, [scopedAlerts, actionsFilter, search, user]);
 
   const handleAcknowledge = (alertId: string) => {
     updateAlertStatus(alertId, 'reviewed' as any, 'Acknowledged by monitoring analyst');
@@ -111,8 +131,8 @@ export const EarlyWarningsView: React.FC = () => {
     setSelectedReviewAlert(null);
   };
 
-  const criticalCount = alerts.filter(
-    (a) => a.severity.toLowerCase() === 'critical' && (a.status || '').toLowerCase() !== 'resolved'
+  const criticalCount = scopedAlerts.filter(
+    (a: EarlyWarningAlert) => a.severity.toLowerCase() === 'critical' && (a.status || '').toLowerCase() !== 'resolved'
   ).length;
 
   return (
@@ -367,159 +387,212 @@ export const EarlyWarningsView: React.FC = () => {
         </div>
       )}
 
-      {/* FOCUSED DETAIL REVIEW DRAWER */}
+      {/* FOCUSED DETAIL REVIEW DIALOG (ACCESSIBLE, SOLID OPAQUE CONTAINER) */}
       {selectedReviewAlert && (
-        <div className="paimana-modal-backdrop" onClick={() => setSelectedReviewAlert(null)}>
+        <div
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[250] flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-150"
+          onClick={() => setSelectedReviewAlert(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="review-dialog-title"
+        >
           <div
-            className="paimana-modal-card max-w-xl max-h-[90vh] overflow-y-auto"
+            className="w-full max-w-[720px] max-h-[calc(100dvh-32px)] bg-white rounded-2xl border border-slate-200 shadow-2xl z-[260] flex flex-col overflow-hidden relative text-slate-800"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Drawer Header */}
-            <div className="paimana-modal-header border-b border-slate-100 pb-3">
-              <div>
+            {/* Header */}
+            <div className="px-5 sm:px-6 py-4 sm:py-5 border-b border-slate-100 flex items-start justify-between gap-4 bg-white shrink-0">
+              <div className="space-y-1.5">
                 <div className="flex items-center gap-2">
                   <StatusBadge level={selectedReviewAlert.severity} size="sm" />
-                  <span className="text-xs text-slate-400">{selectedReviewAlert.projectId}</span>
+                  <span className="text-xs font-mono font-bold text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded">
+                    {selectedReviewAlert.projectId}
+                  </span>
                 </div>
-                <h3 className="text-base font-bold text-slate-900 mt-1">{selectedReviewAlert.projectName}</h3>
+                <h2
+                  id="review-dialog-title"
+                  className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight leading-snug m-0"
+                >
+                  {selectedReviewAlert.projectName}
+                </h2>
               </div>
               <button
                 type="button"
-                className="text-slate-400 hover:text-slate-700"
+                aria-label="Close review dialog"
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition shrink-0 cursor-pointer"
                 onClick={() => setSelectedReviewAlert(null)}
               >
-                ✕
+                <X size={16} />
               </button>
             </div>
 
-            {/* Drawer Body */}
-            <div className="p-4 space-y-3.5 text-xs text-slate-700">
-              {/* 1. What Happened */}
-              <div className="p-3 rounded-lg bg-slate-50 border border-slate-200/80">
-                <span className="font-semibold text-slate-900 block mb-1">What Happened</span>
-                <p className="text-slate-600 m-0 leading-relaxed">
+            {/* Scrollable Body */}
+            <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-5 space-y-5 text-sm text-slate-700 bg-white">
+              {/* 1. Issue: What Happened */}
+              <div>
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">What happened</h4>
+                <p className="text-slate-800 text-sm leading-relaxed m-0 font-normal">
                   {selectedReviewAlert.reason ||
                     selectedReviewAlert.aiExplanation ||
                     'Physical milestone progress velocity slowed significantly below schedule expectations.'}
                 </p>
               </div>
 
-              {/* 2. Supporting Evidence */}
-              <div className="p-3 rounded-lg bg-slate-50 border border-slate-200/80">
-                <span className="font-semibold text-slate-900 block mb-1">Supporting Evidence</span>
-                <ul className="list-disc pl-4 space-y-1 text-slate-600">
-                  <li>Observed reporting period: {selectedReviewAlert.timestamp || 'Recent Monthly Cycle'}</li>
-                  <li>Responsible Agency: {selectedReviewAlert.responsibleAgency || 'Nodal Implementing Agency'}</li>
-                  <li>Status: {selectedReviewAlert.status || 'Active Surveillance'}</li>
-                </ul>
+              {/* 2. Evidence: Aligned Label/Value Pairs */}
+              <div className="border-t border-slate-100 pt-4">
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5">
+                  Supporting Evidence
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2.5 gap-x-6 text-xs">
+                  <div className="flex justify-between sm:justify-start sm:gap-4 py-1 border-b border-slate-100/80">
+                    <span className="text-slate-500 min-w-[120px]">Reporting period:</span>
+                    <strong className="text-slate-800">{reportingMonth || 'September 2026'}</strong>
+                  </div>
+                  <div className="flex justify-between sm:justify-start sm:gap-4 py-1 border-b border-slate-100/80">
+                    <span className="text-slate-500 min-w-[120px]">Last updated:</span>
+                    <span className="text-slate-700 font-medium">{selectedReviewAlert.timestamp || '2 hours ago'}</span>
+                  </div>
+                  <div className="flex justify-between sm:justify-start sm:gap-4 py-1 border-b border-slate-100/80">
+                    <span className="text-slate-500 min-w-[120px]">Responsible agency:</span>
+                    <strong className="text-slate-800 truncate max-w-[200px]" title={selectedReviewAlert.responsibleAgency}>
+                      {selectedReviewAlert.responsibleAgency || 'Nodal Implementing Agency'}
+                    </strong>
+                  </div>
+                  <div className="flex justify-between sm:justify-start sm:gap-4 py-1 border-b border-slate-100/80">
+                    <span className="text-slate-500 min-w-[120px]">Status:</span>
+                    <span className="font-semibold text-amber-700">
+                      {selectedReviewAlert.status || 'Active Surveillance'}
+                    </span>
+                  </div>
+                </div>
               </div>
 
-              {/* 3. Suggested Next Step */}
-              <div className="p-3 rounded-lg bg-sky-50/70 border border-sky-200">
-                <span className="font-semibold text-sky-900 block mb-1">Suggested Next Step</span>
-                <p className="text-sky-800 m-0 leading-relaxed">
+              {/* 3. Next Step: Lightly Tinted Sky Panel */}
+              <div className="p-4 rounded-xl bg-sky-50/80 border border-sky-200/90 text-sky-950">
+                <span className="text-xs font-bold text-sky-900 uppercase tracking-wider block mb-1">
+                  Suggested next step
+                </span>
+                <p className="text-sky-900 text-sm leading-relaxed m-0 font-normal">
                   {selectedReviewAlert.recommendedAction ||
                     'Convene inter-ministerial review desk with state authorities to resolve Right-of-Way and forest clearance hurdles.'}
                 </p>
               </div>
 
-              {/* 4. Expandable Technical Assessment & SHAP Drivers */}
-              <div className="border border-slate-200 rounded-lg overflow-hidden">
+              {/* 4. Collapsible Technical Details (SHAP) */}
+              <div className="border border-slate-200 rounded-xl overflow-hidden">
                 <button
                   type="button"
                   onClick={() => setShowShapDetails(!showShapDetails)}
-                  className="w-full p-2.5 bg-slate-50 text-left font-medium text-slate-700 flex items-center justify-between hover:bg-slate-100 transition"
+                  aria-expanded={showShapDetails}
+                  className="w-full p-3.5 bg-slate-50 hover:bg-slate-100 flex items-center justify-between text-left transition font-semibold text-xs text-slate-800 cursor-pointer"
                 >
-                  <span className="flex items-center gap-1.5">
-                    <Sparkles size={13} className="text-sky-600" />
-                    <span>Technical Assessment & ML Feature Attribution (SHAP)</span>
+                  <span className="flex items-center gap-2">
+                    <Sparkles size={14} className="text-sky-600" />
+                    <span>Technical details & ML attribution (SHAP)</span>
                   </span>
                   <ChevronDown
-                    size={14}
-                    className={`transform transition-transform ${showShapDetails ? 'rotate-180' : ''}`}
+                    size={15}
+                    className={`transform transition-transform text-slate-500 ${showShapDetails ? 'rotate-180' : ''}`}
                   />
                 </button>
 
                 {showShapDetails && (
-                  <div className="p-3 bg-white space-y-2 text-[11.5px] border-t border-slate-100">
+                  <div className="p-4 bg-white space-y-2.5 text-xs border-t border-slate-200">
                     <p className="text-slate-500 m-0">
-                      Model feature contribution breakdown based on XGBoost / LightGBM inference:
+                      TreeSHAP feature contribution breakdown based on predictive delay models:
                     </p>
-                    <div className="space-y-1.5 pt-1">
-                      <div className="flex justify-between items-center p-1.5 rounded bg-slate-50">
-                        <span>Land Acquisition & RoW Delay</span>
-                        <span className="font-bold text-red-600">+34% Risk SHAP</span>
+                    <div className="space-y-2 pt-1">
+                      <div className="flex justify-between items-center p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                        <span className="font-medium text-slate-700">Land Acquisition & RoW Delay</span>
+                        <span className="font-bold text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded text-[11px]">
+                          +34% Risk SHAP
+                        </span>
                       </div>
-                      <div className="flex justify-between items-center p-1.5 rounded bg-slate-50">
-                        <span>Contractor Mobilization Index</span>
-                        <span className="font-bold text-orange-600">+22% Risk SHAP</span>
+                      <div className="flex justify-between items-center p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                        <span className="font-medium text-slate-700">Contractor Mobilization Index</span>
+                        <span className="font-bold text-orange-600 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded text-[11px]">
+                          +22% Risk SHAP
+                        </span>
                       </div>
-                      <div className="flex justify-between items-center p-1.5 rounded bg-slate-50">
-                        <span>Expenditure / Physical Progress Gap</span>
-                        <span className="font-bold text-amber-600">+15% Risk SHAP</span>
+                      <div className="flex justify-between items-center p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                        <span className="font-medium text-slate-700">Expenditure / Physical Progress Gap</span>
+                        <span className="font-bold text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded text-[11px]">
+                          +15% Risk SHAP
+                        </span>
                       </div>
                     </div>
                   </div>
                 )}
               </div>
 
-              {/* Action Assignment Inputs */}
-              <div className="space-y-2 pt-1 border-t border-slate-100">
-                <span className="font-semibold text-slate-900 block">Take Action</span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {/* 5. Action Form */}
+              <div className="pt-2 border-t border-slate-100 space-y-3.5">
+                <div className="space-y-1">
+                  <label htmlFor="assign-owner-input" className="block text-xs font-semibold text-slate-800">
+                    Assign to
+                  </label>
                   <input
+                    id="assign-owner-input"
                     type="text"
-                    placeholder="Assign to Officer / Agency (e.g. NHAI Desk)"
+                    placeholder="e.g. NHAI Technical Desk / Project Director"
                     value={assignedOwner}
                     onChange={(e) => setAssignedOwner(e.target.value)}
-                    className="gov-input w-full py-1 text-xs"
+                    className="gov-input w-full h-11 text-sm bg-slate-50 focus:bg-white border border-slate-200 rounded-lg px-3.5"
                   />
-                  <input
-                    type="text"
-                    placeholder="Action or review note..."
+                </div>
+
+                <div className="space-y-1">
+                  <label htmlFor="review-note-input" className="block text-xs font-semibold text-slate-800">
+                    Review note
+                  </label>
+                  <textarea
+                    id="review-note-input"
+                    rows={3}
+                    placeholder="Provide intervention directive, milestone adjustment note, or meeting outcome..."
                     value={actionNote}
                     onChange={(e) => setActionNote(e.target.value)}
-                    className="gov-input w-full py-1 text-xs"
+                    className="gov-input w-full text-sm bg-slate-50 focus:bg-white border border-slate-200 rounded-lg p-3 leading-relaxed resize-none"
                   />
                 </div>
               </div>
+            </div>
 
-              {/* Action Buttons */}
-              <div className="flex items-center justify-between pt-2 border-t border-slate-100 flex-wrap gap-2">
+            {/* Pinned Footer */}
+            <div className="px-5 sm:px-6 py-4 border-t border-slate-200 bg-slate-50/80 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  navigateToProject(selectedReviewAlert.projectId);
+                  setSelectedReviewAlert(null);
+                }}
+                className="text-xs font-semibold text-sky-700 hover:text-sky-900 hover:underline flex items-center gap-1.5 p-1 self-start sm:self-auto"
+              >
+                <ExternalLink size={13} />
+                <span>View full project dossier</span>
+              </button>
+
+              <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end flex-wrap">
                 <button
                   type="button"
-                  onClick={() => {
-                    navigateToProject(selectedReviewAlert.projectId);
-                    setSelectedReviewAlert(null);
-                  }}
-                  className="btn-ghost text-xs text-sky-600 hover:text-sky-800 flex items-center gap-1 p-0"
+                  onClick={() => handleAcknowledge(selectedReviewAlert.id)}
+                  className="btn-secondary text-xs h-9 px-4 font-semibold"
                 >
-                  <ExternalLink size={12} /> Open Full Project Dossier
+                  Acknowledge
                 </button>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleAcknowledge(selectedReviewAlert.id)}
-                    className="btn-secondary text-xs px-3 py-1.5"
-                  >
-                    Acknowledge
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleAssignAction(selectedReviewAlert.id)}
-                    className="btn-primary text-xs px-3.5 py-1.5"
-                  >
-                    Assign Action
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleMarkResolved(selectedReviewAlert.id)}
-                    className="btn-secondary text-xs px-3 py-1.5 text-emerald-700 hover:bg-emerald-50 border-emerald-300"
-                  >
-                    Mark Resolved
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => handleAssignAction(selectedReviewAlert.id)}
+                  className="btn-primary text-xs h-9 px-4.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold"
+                >
+                  Assign Action
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleMarkResolved(selectedReviewAlert.id)}
+                  className="btn-secondary text-xs h-9 px-4 text-emerald-700 hover:bg-emerald-50 border-emerald-300 font-semibold"
+                >
+                  Mark Resolved
+                </button>
               </div>
             </div>
           </div>

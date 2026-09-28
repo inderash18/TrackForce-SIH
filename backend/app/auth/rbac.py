@@ -94,3 +94,41 @@ def require_permission(permission: str):
             )
         return current_user
     return permission_checker
+
+def is_national_oversight_user(user: Optional[User]) -> bool:
+    if not user:
+        return False
+    role = (user.role or "").upper()
+    # National oversight strictly requires administrative oversight roles or explicit "ALL" assignment
+    if role in ["SUPER_ADMIN", "MOSPI_ADMIN"]:
+        return True
+    if user.ministry and user.ministry.strip().lower() in ["all", "national", "all ministries"]:
+        return True
+    return False
+
+def get_user_authorized_ministries(user: Optional[User]) -> List[str]:
+    if not user:
+        return []
+    if is_national_oversight_user(user):
+        return ["ALL"]
+    if user.ministry:
+        return [m.strip() for m in user.ministry.split(",") if m.strip()]
+    return []
+
+def enforce_user_ministry_access(user: Optional[User], target_ministry: Optional[str]) -> bool:
+    if not user:
+        return True
+    if is_national_oversight_user(user):
+        return True
+    if not target_ministry:
+        return False
+    user_mins = [m.lower() for m in get_user_authorized_ministries(user)]
+    if not user_mins:
+        return False
+    target_lower = target_ministry.lower()
+    for um in user_mins:
+        if um in target_lower or target_lower in um:
+            return True
+    return False
+
+

@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 
 export const ReportsView: React.FC = () => {
-  const { showNotification, reportingMonth, projects } = useApp();
+  const { showNotification, reportingMonth, scopedProjects, user } = useApp();
 
   const [activeTab, setActiveTab] = useState<'current' | 'archive'>('current');
   const [search, setSearch] = useState('');
@@ -23,7 +23,7 @@ export const ReportsView: React.FC = () => {
   const [generateForm, setGenerateForm] = useState({
     type: 'Monthly Flash Report',
     period: reportingMonth || 'September 2026',
-    scope: 'All Central Sector Projects (₹150 Cr+)',
+    scope: user.isNationalOversight ? 'All Central Sector Projects (₹150 Cr+)' : `${user.ministry || 'Ministry'} Projects (₹150 Cr+)`,
     format: 'PDF'
   });
   const [isGenerating, setIsGenerating] = useState(false);
@@ -53,7 +53,8 @@ export const ReportsView: React.FC = () => {
   const handleDownload = (rep: ReportItem, format: 'PDF' | 'CSV') => {
     // Generate actual file download
     const filename = `${rep.title.replace(/\s+/g, '_')}_${(reportingMonth || '2026').replace(/\s+/g, '_')}.${format.toLowerCase()}`;
-    const content = `PAIMANA Infrastructure Intelligence Report\nTitle: ${rep.title}\nReporting Period: ${reportingMonth}\nGenerated: ${new Date().toLocaleDateString()}\nScope: All Central Sector Projects (>150 Cr)\nTotal Projects Monitored: ${projects.length}\nClassification: ${rep.classification}\n`;
+    const scopeLabel = user.isNationalOversight ? 'All Central Sector Projects (>150 Cr)' : `${user.ministry} Monitored Projects`;
+    const content = `PAIMANA Infrastructure Intelligence Report\nTitle: ${rep.title}\nReporting Period: ${reportingMonth}\nGenerated: ${new Date().toLocaleDateString()}\nScope: ${scopeLabel}\nTotal Projects Monitored: ${scopedProjects.length}\nClassification: ${rep.classification}\n`;
     const blob = new Blob([content], { type: format === 'PDF' ? 'application/pdf' : 'text/csv' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -264,7 +265,7 @@ export const ReportsView: React.FC = () => {
               <div className="grid grid-cols-3 gap-2.5 bg-slate-50 p-3 rounded-lg border border-slate-200/80 text-center">
                 <div>
                   <span className="text-[11px] text-slate-400 block">Total Coverage</span>
-                  <strong className="text-sm text-slate-900">{projects.length} Projects</strong>
+                  <strong className="text-sm text-slate-900">{scopedProjects.length} Projects</strong>
                 </div>
                 <div>
                   <span className="text-[11px] text-slate-400 block">Reporting Cycle</span>

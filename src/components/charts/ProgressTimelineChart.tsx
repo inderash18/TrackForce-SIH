@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { MonthlyProgressPoint } from '../../types/project';
-import { TrendingDown, Calendar, AlertCircle, Sparkles } from 'lucide-react';
+import { TrendingDown, TrendingUp, Calendar, CircleAlert, Sparkles } from 'lucide-react';
 
 interface ProgressTimelineChartProps {
   history: MonthlyProgressPoint[];
@@ -9,227 +9,201 @@ interface ProgressTimelineChartProps {
   aiPredictedDate: string;
 }
 
+const NOT_AVAILABLE = 'Not available';
+const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
+
+const METRICS = [
+  { id: 'progress', label: 'Physical progress' },
+  { id: 'expenditure', label: 'Expenditure' },
+  { id: 'risk', label: 'Risk score' }
+] as const;
+
+type MetricId = (typeof METRICS)[number]['id'];
+
+/** Draws one value series on the shared 0-100 scale. */
+const seriesFor = (history: MonthlyProgressPoint[], metric: MetricId) =>
+  history.map((h) => {
+    if (metric === 'expenditure') return h.expenditure;
+    if (metric === 'risk') return h.riskScore;
+    return h.actualProgress;
+  });
+
 export const ProgressTimelineChart: React.FC<ProgressTimelineChartProps> = ({
   history,
   originalDate,
   revisedDate,
   aiPredictedDate
 }) => {
-  const [activeMetric, setActiveMetric] = useState<'progress' | 'expenditure' | 'risk'>('progress');
+  const [activeMetric, setActiveMetric] = useState<MetricId>('progress');
 
   if (!history || history.length === 0) return null;
 
-  const maxExp = Math.max(...history.map((h) => h.expenditure || 1000)) * 1.2;
+  const maxExpenditure = Math.max(...history.map((h) => (isNum(h.expenditure) ? h.expenditure : 0)), 1);
+  const scaleMax = activeMetric === 'expenditure' ? maxExpenditure : 100;
+
+  // Chart geometry - the SVG is a fixed viewBox that scales to its container.
+  const W = 620;
+  const H = 220;
+  const padL = 46;
+  const padR = 12;
+  const padT = 14;
+  const padB = 34;
+  const plotW = W - padL - padR;
+  const plotH = H - padT - padB;
+  const baseY = padT + plotH;
+
+  const xAt = (i: number) => padL + (i / Math.max(history.length - 1, 1)) * plotW;
+  const yAt = (v: number) => baseY - (Math.max(0, Math.min(scaleMax, v)) / scaleMax) * plotH;
+  const toPoints = (values: number[]) => values.map((v, i) => `${xAt(i).toFixed(1)},${yAt(v).toFixed(1)}`).join(' ');
+
+  const ticks = [0, 0.25, 0.5, 0.75, 1].map((f) => f * scaleMax);
+  const tickLabel = (v: number) =>
+    activeMetric === 'expenditure' ? `\u20B9${Math.round(v).toLocaleString('en-IN')}` : `${Math.round(v)}%`;
+
+  // Live progress gap, derived from the recorded returns (never a hard-coded figure).
+  const last = history[history.length - 1];
+  const gap = isNum(last.actualProgress) && isNum(last.expectedProgress) ? last.expectedProgress - last.actualProgress : null;
+
+  const actualValues = seriesFor(history, activeMetric);
+  const stroke = activeMetric === 'risk' ? '#B42318' : '#0284C7';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      {/* Metric Selector Tabs */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
-        <div style={{ display: 'flex', gap: '6px' }}>
-          <button
-            className={activeMetric === 'progress' ? 'btn-primary' : 'btn-secondary'}
-            style={{ fontSize: '12px', padding: '5px 12px' }}
-            onClick={() => setActiveMetric('progress')}
-          >
-            Physical Progress (% vs Target)
-          </button>
-          <button
-            className={activeMetric === 'expenditure' ? 'btn-primary' : 'btn-secondary'}
-            style={{ fontSize: '12px', padding: '5px 12px' }}
-            onClick={() => setActiveMetric('expenditure')}
-          >
-            Monthly Expenditure (₹ Cr)
-          </button>
-          <button
-            className={activeMetric === 'risk' ? 'btn-primary' : 'btn-secondary'}
-            style={{ fontSize: '12px', padding: '5px 12px' }}
-            onClick={() => setActiveMetric('risk')}
-          >
-            Risk Score Velocity
-          </button>
+    <div className="ptc">
+      <div className="ptc-head">
+        <div className="ptc-seg" role="group" aria-label="Chart metric">
+          {METRICS.map((m) => (
+            <button
+              key={m.id}
+              type="button"
+              className={`ui-btn ${activeMetric === m.id ? 'ui-btn-primary' : 'ui-btn-secondary'}`}
+              aria-pressed={activeMetric === m.id}
+              onClick={() => setActiveMetric(m.id)}
+            >
+              {m.label}
+            </button>
+          ))}
         </div>
 
-        {/* Milestone Badge */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '4px 10px',
-            borderRadius: 'var(--radius-md)',
-            backgroundColor: 'var(--status-critical-bg)',
-            border: '1px solid var(--status-critical-border)',
-            color: 'var(--status-critical-text)',
-            fontSize: '11.5px',
-            fontWeight: 600
-          }}
+        {gap !== null && (
+          <span className="ptc-gap" data-tone={gap > 0 ? 'alert' : 'ok'}>
+            {gap > 0 ? <TrendingDown size={14} aria-hidden="true" /> : <TrendingUp size={14} aria-hidden="true" />}
+            {gap > 0
+              ? `${gap.toFixed(1)} pts behind the scheduled milestone`
+              : gap < 0
+                ? `${Math.abs(gap).toFixed(1)} pts ahead of schedule`
+                : 'On the scheduled milestone'}
+          </span>
+        )}
+      </div>
+
+      <div className="ptc-plot">
+        <svg
+          viewBox={`0 0 ${W} ${H}`}
+          role="img"
+          aria-label={`${activeMetric === 'risk' ? 'Risk score' : activeMetric === 'expenditure' ? 'Expenditure' : 'Physical progress'} trend from ${history[0]?.month ?? ''} to ${last?.month ?? ''}`}
         >
-          <TrendingDown size={14} />
-          <span>Physical progress lags scheduled milestone target by 17.5%</span>
-        </div>
-      </div>
-
-      {/* SVG Chart Area */}
-      <div
-        style={{
-          width: '100%',
-          height: '240px',
-          backgroundColor: 'var(--color-surface-panel)',
-          border: '1px solid var(--color-border)',
-          borderRadius: 'var(--radius-md)',
-          padding: '16px 20px 8px 10px',
-          position: 'relative'
-        }}
-      >
-        <svg viewBox="0 0 600 200" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
-          {/* Horizontal Grid lines */}
-          {[0, 25, 50, 75, 100].map((val, idx) => {
-            const y = 170 - (val / 100) * 140;
-            return (
-              <g key={idx}>
-                <line x1="45" y1={y} x2="580" y2={y} stroke="var(--color-border)" strokeDasharray="3,3" />
-                <text x="40" y={y + 4} textAnchor="end" fontSize="10" fill="var(--color-text-dim)" fontFamily="Inter">
-                  {activeMetric === 'expenditure' ? Math.round((val / 100) * maxExp) : `${val}%`}
-                </text>
-              </g>
-            );
-          })}
-
-          {/* Progress Paths */}
-          {activeMetric === 'progress' && (
-            <>
-              {/* Expected Target Line */}
-              <polyline
-                fill="none"
-                stroke="var(--color-text-muted)"
-                strokeWidth="2"
-                strokeDasharray="4,4"
-                points={history
-                  .map((h, i) => {
-                    const x = 60 + (i / Math.max(history.length - 1, 1)) * 500;
-                    const y = 170 - ((h.expectedProgress || 0) / 100) * 140;
-                    return `${x},${y}`;
-                  })
-                  .join(' ')}
+          {ticks.map((v, i) => (
+            <g key={i}>
+              <line
+                x1={padL}
+                y1={yAt(v)}
+                x2={W - padR}
+                y2={yAt(v)}
+                stroke="var(--ui-divider)"
+                strokeWidth={1}
+                strokeDasharray="3 3"
               />
-
-              {/* Actual Progress Line */}
-              <polyline
-                fill="none"
-                stroke="var(--color-action-primary)"
-                strokeWidth="3"
-                points={history
-                  .map((h, i) => {
-                    const x = 60 + (i / Math.max(history.length - 1, 1)) * 500;
-                    const y = 170 - ((h.actualProgress || 0) / 100) * 140;
-                    return `${x},${y}`;
-                  })
-                  .join(' ')}
-              />
-
-              {/* Data points */}
-              {history.map((h, i) => {
-                const x = 60 + (i / Math.max(history.length - 1, 1)) * 500;
-                const y = 170 - ((h.actualProgress || 0) / 100) * 140;
-                return (
-                  <circle
-                    key={i}
-                    cx={x}
-                    cy={y}
-                    r="4"
-                    fill="var(--color-action-primary)"
-                    stroke="var(--color-surface-panel)"
-                    strokeWidth="2"
-                  />
-                );
-              })}
-            </>
-          )}
-
-          {/* Risk Score Path */}
-          {activeMetric === 'risk' && (
-            <>
-              <polyline
-                fill="none"
-                stroke="var(--status-critical)"
-                strokeWidth="3"
-                points={history
-                  .map((h, i) => {
-                    const x = 60 + (i / Math.max(history.length - 1, 1)) * 500;
-                    const y = 170 - ((h.riskScore || 50) / 100) * 140;
-                    return `${x},${y}`;
-                  })
-                  .join(' ')}
-              />
-              {history.map((h, i) => {
-                const x = 60 + (i / Math.max(history.length - 1, 1)) * 500;
-                const y = 170 - ((h.riskScore || 50) / 100) * 140;
-                return (
-                  <circle
-                    key={i}
-                    cx={x}
-                    cy={y}
-                    r="4"
-                    fill="var(--status-critical)"
-                    stroke="var(--color-surface-panel)"
-                    strokeWidth="2"
-                  />
-                );
-              })}
-            </>
-          )}
-
-          {/* X Axis Labels */}
-          {history.map((h, i) => {
-            const x = 60 + (i / Math.max(history.length - 1, 1)) * 500;
-            return (
-              <text key={i} x={x} y="190" textAnchor="middle" fontSize="10.5" fill="var(--color-text-muted)" fontFamily="Inter">
-                {h.month}
+              <text
+                x={padL - 8}
+                y={yAt(v) + 4}
+                textAnchor="end"
+                fontSize={10.5}
+                fill="var(--ui-text-2)"
+                fontFamily="var(--font-sans)"
+              >
+                {tickLabel(v)}
               </text>
-            );
-          })}
+            </g>
+          ))}
+
+          <line
+            x1={padL}
+            y1={baseY}
+            x2={W - padR}
+            y2={baseY}
+            stroke="var(--ui-border)"
+            strokeWidth={1}
+          />
+
+          {/* Expected milestone baseline - only meaningful for the progress view */}
+          {activeMetric === 'progress' && (
+            <polyline
+              fill="none"
+              stroke="#94A3B8"
+              strokeWidth={2}
+              strokeDasharray="5 4"
+              points={toPoints(history.map((h) => (isNum(h.expectedProgress) ? h.expectedProgress : 0)))}
+            />
+          )}
+
+          <polyline fill="none" stroke={stroke} strokeWidth={2.5} strokeLinejoin="round" points={toPoints(actualValues)} />
+
+          {actualValues.map((v, i) => (
+            <circle key={i} cx={xAt(i)} cy={yAt(v)} r={3.5} fill={stroke} stroke="#FFFFFF" strokeWidth={1.5} />
+          ))}
+
+          {history.map((h, i) => (
+            <text
+              key={`${h.month}-${i}`}
+              x={xAt(i)}
+              y={H - 12}
+              textAnchor="middle"
+              fontSize={10.5}
+              fill="var(--ui-text-2)"
+              fontFamily="var(--font-sans)"
+            >
+              {h.month}
+            </text>
+          ))}
         </svg>
-      </div>
 
-      {/* Completion Date Milestones Comparison */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-          gap: '12px',
-          background: 'var(--color-surface-panel)',
-          border: '1px solid var(--color-border)',
-          borderRadius: 'var(--radius-md)',
-          padding: '14px 18px'
-        }}
-      >
-        <div>
-          <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginBottom: '3px' }}>
-            Original Sanction Date
-          </div>
-          <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Calendar size={13} /> {originalDate}
-          </div>
-        </div>
-
-        <div>
-          <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginBottom: '3px' }}>
-            Official Revised Target
-          </div>
-          <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--status-high-text)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <AlertCircle size={13} /> {revisedDate}
-          </div>
-        </div>
-
-        <div>
-          <div style={{ fontSize: '11px', color: 'var(--status-prediction-text)', marginBottom: '3px', fontWeight: 600 }}>
-            AI Predicted Completion
-          </div>
-          <div style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--status-prediction-text)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Sparkles size={14} color="var(--status-prediction)" /> {aiPredictedDate}
-          </div>
+        <div className="ptc-legend">
+          <span style={{ color: stroke }}>
+            <i />
+            {activeMetric === 'risk' ? 'Recorded risk score' : activeMetric === 'expenditure' ? 'Cumulative expenditure' : 'Recorded physical progress'}
+          </span>
+          {activeMetric === 'progress' && (
+            <span style={{ color: '#94A3B8' }}>
+              <i className="dashed" />
+              Scheduled milestone
+            </span>
+          )}
         </div>
       </div>
+
+      <dl className="ptc-milestones">
+        <div>
+          <dt>Original sanctioned target</dt>
+          <dd>
+            <Calendar size={14} aria-hidden="true" style={{ color: 'var(--ui-text-2)' }} />
+            {originalDate || NOT_AVAILABLE}
+          </dd>
+        </div>
+        <div>
+          <dt>Official revised target</dt>
+          <dd style={{ color: '#B42318' }}>
+            <CircleAlert size={14} aria-hidden="true" />
+            {revisedDate || NOT_AVAILABLE}
+          </dd>
+        </div>
+        <div>
+          <dt>Model predicted completion</dt>
+          <dd style={{ color: 'var(--ui-accent-hover)' }}>
+            <Sparkles size={14} aria-hidden="true" />
+            {aiPredictedDate || NOT_AVAILABLE}
+          </dd>
+        </div>
+      </dl>
     </div>
   );
 };

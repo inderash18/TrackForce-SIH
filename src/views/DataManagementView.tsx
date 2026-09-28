@@ -32,7 +32,7 @@ interface DataQualityIssue {
 }
 
 export const DataManagementView: React.FC = () => {
-  const { showNotification, projects, navigateToProject } = useApp();
+  const { showNotification, scopedProjects, navigateToProject } = useApp();
 
   const [activeTab, setActiveTab] = useState<'imports' | 'quality'>('imports');
   const [showImportModal, setShowImportModal] = useState(false);
@@ -80,17 +80,17 @@ export const DataManagementView: React.FC = () => {
   const qualityIssues: DataQualityIssue[] = [
     {
       id: 'DQ-101',
-      projectId: projects[0]?.id || 'PRJ-602096',
-      projectName: projects[0]?.name || 'Mumbai-Ahmedabad High Speed Rail',
+      projectId: scopedProjects[0]?.id || 'PRJ-602096',
+      projectName: scopedProjects[0]?.name || 'Mumbai-Ahmedabad High Speed Rail',
       issue: 'Milestone target date missing for Track Superstructure package',
       severity: 'high',
       field: 'Milestones Table',
-      suggestedAction: 'Request target milestone update from NHSRCL'
+      suggestedAction: 'Request target milestone update from implementing agency'
     },
     {
       id: 'DQ-102',
-      projectId: projects[1]?.id || 'PRJ-602102',
-      projectName: projects[1]?.name || 'Western Dedicated Freight Corridor',
+      projectId: scopedProjects[1]?.id || 'PRJ-602102',
+      projectName: scopedProjects[1]?.name || 'Western Dedicated Freight Corridor',
       issue: 'Cumulative expenditure exceeds approved sanction by >15% without revised cabinet note',
       severity: 'high',
       field: 'Expenditure / Sanction',
@@ -98,8 +98,8 @@ export const DataManagementView: React.FC = () => {
     },
     {
       id: 'DQ-103',
-      projectId: projects[2]?.id || 'PRJ-602118',
-      projectName: projects[2]?.name || 'Delhi-Meerut Regional Rapid Transit',
+      projectId: scopedProjects[2]?.id || 'PRJ-602118',
+      projectName: scopedProjects[2]?.name || 'Delhi-Meerut Regional Rapid Transit',
       issue: 'Physical progress reported unchanged for consecutive 3 cycles',
       severity: 'medium',
       field: 'Physical Progress Velocity',

@@ -1,13 +1,22 @@
 import csv
 import io
+from typing import Optional
 from fastapi import APIRouter, Depends, Response, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from app.core.database import get_db
 from app.models.project import Project
 from app.models.user import User
 from app.models.alert import EarlyWarningAlert
 from app.schemas.user import UserResponse
-from app.auth.rbac import require_permission, get_current_user
+from app.auth.rbac import (
+    require_permission,
+    get_current_user,
+    get_optional_current_user,
+    is_national_oversight_user,
+    get_user_authorized_ministries,
+    enforce_user_ministry_access
+)
 
 reports_router = APIRouter(prefix="/reports", tags=["Reports"])
 data_router = APIRouter(prefix="/data", tags=["Data Management"])
@@ -15,8 +24,18 @@ admin_router = APIRouter(prefix="/admin", tags=["Administration"])
 
 # --- REPORTS ---
 @reports_router.get("/export/csv")
-def export_projects_csv(db: Session = Depends(get_db)):
-    projects = db.query(Project).all()
+def export_projects_csv(
+    current_user: Optional[User] = Depends(get_optional_current_user),
+    db: Session = Depends(get_db)
+):
+    query = db.query(Project)
+    if current_user and not is_national_oversight_user(current_user):
+        user_mins = get_user_authorized_ministries(current_user)
+        if user_mins and user_mins != ["ALL"]:
+            ministry_filters = [Project.ministry.ilike(f"%{m}%") for m in user_mins]
+            query = query.filter(or_(*ministry_filters))
+
+    projects = query.all()
     output = io.StringIO()
     writer = csv.writer(output)
     writer.writerow([
@@ -38,6 +57,7 @@ def export_projects_csv(db: Session = Depends(get_db)):
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=paimana_projects_export.csv"}
     )
+
 
 @reports_router.get("/list")
 def list_available_reports():
@@ -129,7 +149,10 @@ def download_cuf_template():
     )
 
 @data_router.post("/validate")
-async def validate_cuf_data(file: UploadFile = File(...)):
+async def validate_cuf_data(
+    file: UploadFile = File(...),
+    current_user: Optional[User] = Depends(get_optional_current_user)
+):
     content = await file.read()
     try:
         decoded = content.decode("utf-8")
@@ -153,6 +176,11 @@ async def validate_cuf_data(file: UploadFile = File(...)):
             if not row.get(rf) or str(row.get(rf)).strip() == "":
                 row_errors.append(f"Missing required field: '{rf}'")
         
+        # Check ministry authorization if authenticated as ministry officer
+        row_ministry = row.get("ministry", "").strip()
+        if current_user and row_ministry and not enforce_user_ministry_access(current_user, row_ministry):
+            row_errors.append(f"Ministry '{row_ministry}' is outside your authorized scope")
+
         # Numeric validations
         try:
             orig = float(row.get("original_cost", 0))
@@ -183,7 +211,11 @@ async def validate_cuf_data(file: UploadFile = File(...)):
     }
 
 @data_router.post("/import")
-async def import_cuf_data(file: UploadFile = File(...), db: Session = Depends(get_db)):
+async def import_cuf_data(
+    file: UploadFile = File(...),
+    current_user: Optional[User] = Depends(get_optional_current_user),
+    db: Session = Depends(get_db)
+):
     from app.ml.inference import predict_project_risk
     from app.models.alert import EarlyWarningAlert
     import uuid
@@ -206,6 +238,11 @@ async def import_cuf_data(file: UploadFile = File(...), db: Session = Depends(ge
     for row in rows:
         code = row.get("code", "").strip()
         if not code:
+            continue
+
+        row_ministry = row.get("ministry", "").strip()
+        if current_user and row_ministry and not enforce_user_ministry_access(current_user, row_ministry):
+            # Reject records targeting unauthorized ministries
             continue
 
         orig_cost = float(row.get("original_cost", 1000.0) or 1000.0)

@@ -1,37 +1,177 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useApp } from '../context/AppContext';
 import { StatusBadge } from '../components/common/StatusBadge';
-import { MetricCard } from '../components/common/MetricCard';
 import { SHAPExplanationChart } from '../components/charts/SHAPExplanationChart';
 import { ProgressTimelineChart } from '../components/charts/ProgressTimelineChart';
+import { MilestoneAuditPanel } from '../components/milestones/MilestoneAuditPanel';
 import {
   Building2,
   Clock,
   Sparkles,
-  Sliders,
+  SlidersHorizontal,
   FileText,
   MapPin,
-  ArrowLeft,
-  ShieldCheck
+  ChevronRight,
+  AlertTriangle,
+  Send,
+  Bot,
+  User,
+  X,
+  MoreHorizontal,
+  Gauge,
+  Wallet,
+  IndianRupee,
+  Target,
+  ClipboardList,
+  Cpu,
+  ArrowLeft
 } from 'lucide-react';
 import type { RecommendedIntervention } from '../types/project';
 
+const NOT_AVAILABLE = 'Not available';
+
+const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
+const inr = (v: unknown): string => (isNum(v) ? `\u20B9${v.toLocaleString('en-IN')} Cr` : NOT_AVAILABLE);
+const pct = (v: unknown): string => (isNum(v) ? `${v}%` : NOT_AVAILABLE);
+const text = (v: unknown): string => {
+  const s = typeof v === 'string' ? v.trim() : '';
+  return s.length > 0 ? s : NOT_AVAILABLE;
+};
+
+const TAB_IDS = ['overview', 'milestones', 'costs', 'explainability', 'interventions'] as const;
+type TabId = (typeof TAB_IDS)[number];
+
+const TABS: { id: TabId; label: string; hint: string }[] = [
+  { id: 'overview', label: 'Summary & Baseline', hint: 'Project identifiers, delivery signal and risk indicators' },
+  { id: 'milestones', label: 'Progress & Milestones', hint: 'Monthly progress timeline and recorded monthly returns' },
+  { id: 'costs', label: 'Costs & Outlay', hint: 'Sanctioned, revised and predicted financial outlay' },
+  { id: 'explainability', label: 'Risk Explainability', hint: 'SHAP feature attribution behind the risk score' },
+  { id: 'interventions', label: 'Actions & Interventions', hint: 'Suggested interventions and their modelled impact' }
+];
+
 export const ProjectDetailView: React.FC = () => {
   const { selectedProject, navigateTo, setSimulationParams, showNotification } = useApp();
-  const [activeTab, setActiveTab] = useState<'overview' | 'milestones' | 'costs' | 'explainability' | 'interventions'>('overview');
 
-  if (!selectedProject) {
-    return (
-      <div style={{ padding: '40px', textAlign: 'center' }}>
-        <p style={{ color: 'var(--color-text-secondary)', marginBottom: '14px' }}>Project not found.</p>
-        <button className="btn-primary" onClick={() => navigateTo('projects')}>
-          Back to Projects Registry
-        </button>
-      </div>
-    );
-  }
+  const [activeTab, setActiveTab] = useState<TabId>('overview');
+  const [showOverflow, setShowOverflow] = useState(false);
+
+  const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const overflowRef = useRef<HTMLDivElement>(null);
+  const aiTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const aiCloseRef = useRef<HTMLButtonElement | null>(null);
+
+  // AI Assistant on-demand drawer state (never open by default)
+  const [showAiDrawer, setShowAiDrawer] = useState(false);
+  const [aiChatMessages, setAiChatMessages] = useState<
+    Array<{ sender: 'ai' | 'user'; text: string; citations?: string[] }>
+  >([]);
+  const [aiInputText, setAiInputText] = useState('');
+  const [isAiLoading, setIsAiLoading] = useState(false);
+
+  const closeAiDrawer = useCallback(() => {
+    setShowAiDrawer(false);
+    aiTriggerRef.current?.focus();
+  }, []);
+
+  // Scroll lock + Escape + focus restore while the AI drawer is open
+  useEffect(() => {
+    if (!showAiDrawer) return;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        closeAiDrawer();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    const t = window.setTimeout(() => aiCloseRef.current?.focus(), 0);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener('keydown', onKeyDown);
+      window.clearTimeout(t);
+    };
+  }, [showAiDrawer, closeAiDrawer]);
+
+  // Overflow menu: dismiss on outside click or Escape
+  useEffect(() => {
+    if (!showOverflow) return;
+    const onPointerDown = (e: MouseEvent) => {
+      if (overflowRef.current && !overflowRef.current.contains(e.target as Node)) setShowOverflow(false);
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowOverflow(false);
+    };
+    document.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [showOverflow]);
 
   const p = selectedProject;
+
+  const handleTabKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
+    let next = -1;
+    if (e.key === 'ArrowRight') next = (index + 1) % TAB_IDS.length;
+    else if (e.key === 'ArrowLeft') next = (index - 1 + TAB_IDS.length) % TAB_IDS.length;
+    else if (e.key === 'Home') next = 0;
+    else if (e.key === 'End') next = TAB_IDS.length - 1;
+    if (next < 0) return;
+    e.preventDefault();
+    const id = TAB_IDS[next];
+    setActiveTab(id);
+    tabRefs.current[id]?.focus();
+  };
+
+  const handleAskAiQuestion = (prompt: string) => {
+    setAiChatMessages((prev) => [...prev, { sender: 'user', text: prompt }]);
+    setIsAiLoading(true);
+
+    window.setTimeout(() => {
+      let reply = '';
+      const citations = [`${p.code} CUF Monthly Return`, `MoSPI IPMD Risk Engine v2.4`];
+
+      if (prompt.includes('Summarise')) {
+        reply = `${p.name} (${p.code}) is a ${inr(p.revisedCost)} ${p.sector} project by ${p.implementingAgency}. Physical progress stands at ${pct(p.physicalProgress)} against expected target ${pct(p.expectedProgress)}. Expected completion is ${text(p.aiPredictedCompletionDate)}.`;
+      } else if (prompt.includes('attention') || prompt.includes('Why')) {
+        reply = `Project flagged as ${p.riskLevel.toUpperCase()} priority due to: 1) ${text(p.mainRiskReason)}, 2) Progress gap of ${isNum(p.progressGap) ? Math.round(p.progressGap) + ' pts' : NOT_AVAILABLE} vs baseline, and 3) ${pct(p.scheduleDelayProbability)} calculated schedule overrun probability.`;
+      } else if (prompt.includes('changed')) {
+        reply = `Since the last monthly return: physical progress is ${pct(p.physicalProgress)}, cumulative expenditure reached ${inr(p.expenditure)} (${isNum(p.expenditure) && isNum(p.revisedCost) && p.revisedCost > 0 ? Math.round((p.expenditure / p.revisedCost) * 100) + '%' : NOT_AVAILABLE} of outlay), and clearance status reads ${text(p.cuf?.clearanceStatus)}.`;
+      } else if (prompt.includes('milestones')) {
+        const last = (p.monthlyHistory || [])[p.monthlyHistory.length - 1];
+        reply = `Most recent recorded month ${text(last?.month)}: physical progress ${pct(last?.actualProgress)} against ${pct(last?.expectedProgress)} expected, risk score ${isNum(last?.riskScore) ? last.riskScore : NOT_AVAILABLE}/100.`;
+      } else {
+        reply = `Recommended action: ${p.recommendedInterventions?.[0]?.title || p.interventions?.[0]?.title || 'escalate to the inter-ministerial taskforce desk for clearance resolution'}.`;
+      }
+
+      setAiChatMessages((prev) => [...prev, { sender: 'ai', text: reply, citations }]);
+      setIsAiLoading(false);
+    }, 600);
+  };
+
+  const handleCustomAiSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!aiInputText.trim()) return;
+    const q = aiInputText;
+    setAiInputText('');
+    handleAskAiQuestion(q);
+  };
+
+  const openSimulator = () => {
+    setShowOverflow(false);
+    setSimulationParams({
+      physicalProgress: p.physicalProgress,
+      monthlyProgressRate: 0.8,
+      fundingAvailability: 70,
+      contractorCapacity: p.cuf?.contractorCapacity || 60,
+      landAcquisitionPct: p.cuf?.landAcquisitionPct || 70,
+      clearanceSpeed: 50,
+      resourceDeployment: 50
+    });
+    navigateTo('simulator');
+  };
 
   const handleSimulateIntervention = (intItem: RecommendedIntervention) => {
     setSimulationParams({
@@ -39,7 +179,7 @@ export const ProjectDetailView: React.FC = () => {
       monthlyProgressRate: 2.5,
       fundingAvailability: 90,
       contractorCapacity: 80,
-      landAcquisitionPct: Math.min(100, p.cuf.landAcquisitionPct + 15),
+      landAcquisitionPct: Math.min(100, (p.cuf?.landAcquisitionPct || 70) + 15),
       clearanceSpeed: 85,
       resourceDeployment: 75
     });
@@ -47,378 +187,669 @@ export const ProjectDetailView: React.FC = () => {
     showNotification(`Loaded scenario for ${p.code}: "${intItem.title}" into What-If Simulator.`);
   };
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Top Header & Actions */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-        <button
-          className="btn-secondary"
-          onClick={() => navigateTo('projects')}
-          style={{ fontSize: '12px', padding: '6px 12px' }}
-        >
-          <ArrowLeft size={13} /> Back to Projects Registry
+  const openAiDrawer = () => {
+    setShowAiDrawer(true);
+    if (aiChatMessages.length === 0) {
+      setAiChatMessages([
+        {
+          sender: 'ai',
+          text: `Sentinel AI Copilot active for ${p.name} (${p.code}). Ask any inquiry regarding this project's latest CUF monthly return, milestones, or risk drivers.`
+        }
+      ]);
+    }
+  };
+
+  if (!p) {
+    return (
+      <div className="pd-panel">
+        <p style={{ fontSize: 14, color: 'var(--ui-text-2)', marginBottom: 16 }}>
+          No project is currently selected.
+        </p>
+        <button type="button" className="ui-btn ui-btn-primary" onClick={() => navigateTo('projects')}>
+          <ArrowLeft size={14} />
+          <span>Back to Projects Directory</span>
         </button>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <button
-            className="btn-secondary"
-            style={{ fontSize: '12px', padding: '6px 12px' }}
-            onClick={() => {
-              setSimulationParams({
-                physicalProgress: p.physicalProgress,
-                monthlyProgressRate: 0.8,
-                fundingAvailability: 70,
-                contractorCapacity: p.cuf.contractorCapacity,
-                landAcquisitionPct: p.cuf.landAcquisitionPct,
-                clearanceSpeed: 50,
-                resourceDeployment: 50
-              });
-              navigateTo('simulator');
-            }}
-          >
-            <Sliders size={13} color="var(--color-accent-cyan)" />
-            <span>Simulate Interventions</span>
-          </button>
-          <button
-            className="btn-primary"
-            style={{ fontSize: '12px', padding: '6px 14px' }}
-            onClick={() => {
-              showNotification(`Generating MoSPI Executive Briefing for ${p.code}...`);
-              navigateTo('reports');
-            }}
-          >
-            <FileText size={13} />
-            <span>Export Executive Dossier</span>
-          </button>
-        </div>
       </div>
+    );
+  }
 
-      {/* Project Master Intelligence Banner */}
-      <div className="gov-card" style={{ padding: '20px 24px' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
-          <div style={{ flex: 1, minWidth: '320px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-              <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-accent-cyan)', background: 'var(--color-action-subtle)', padding: '2px 8px', borderRadius: '4px', border: '1px solid var(--color-border-subtle)' }}>
-                {p.code}
-              </span>
-              <span style={{ fontSize: '11.5px', color: 'var(--color-text-muted)' }}>
-                {p.sector} · {p.implementingAgency}
-              </span>
-            </div>
+  const isUrgent =
+    p.riskLevel.toLowerCase() === 'critical' ||
+    p.riskLevel.toLowerCase() === 'high' ||
+    p.status === 'Critical Delay' ||
+    p.status === 'Critical Review' ||
+    p.status === 'Delayed';
 
-            <h1 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '6px', letterSpacing: '-0.01em' }}>
-              {p.name}
-            </h1>
+  const targetCompletion = text(p.revisedCompletionDate || p.originalCompletionDate);
+  const slippage = isNum(p.expectedDelayMonths) && p.expectedDelayMonths > 0 ? `+${p.expectedDelayMonths} months slippage` : 'On planned schedule';
+  const utilisation =
+    isNum(p.expenditure) && isNum(p.revisedCost) && p.revisedCost > 0
+      ? `${Math.round((p.expenditure / p.revisedCost) * 100)}% of revised cost`
+      : NOT_AVAILABLE;
+  const escalation = isNum(p.revisedCost) && isNum(p.originalCost) ? p.revisedCost - p.originalCost : null;
+  const interventions = p.interventions || p.recommendedInterventions || [];
+  const history = p.monthlyHistory || [];
+  const activeTabMeta = TABS.find((t) => t.id === activeTab)!;
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '12px', color: 'var(--color-text-secondary)', flexWrap: 'wrap' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <Building2 size={13} color="var(--color-text-muted)" /> {p.ministry}
-              </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <MapPin size={13} color="var(--color-text-muted)" /> {p.state}
-              </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <Clock size={13} color="var(--color-text-muted)" /> Status: <strong>{p.status}</strong>
-              </span>
-            </div>
+  return (
+    <div className="pd-page">
+      {/* 1. Breadcrumb */}
+      <nav className="pd-breadcrumb" aria-label="Breadcrumb">
+        <button type="button" className="pd-breadcrumb-link" onClick={() => navigateTo('projects')}>
+          <ArrowLeft size={13} aria-hidden="true" />
+          <span>Projects</span>
+        </button>
+        <span className="pd-breadcrumb-sep" aria-hidden="true">
+          <ChevronRight size={14} />
+        </span>
+        <span className="pd-breadcrumb-current" aria-current="page">
+          {p.code}
+        </span>
+      </nav>
+
+      {/* 2. Page header: identity + compact status + action group */}
+      <header className="pd-header">
+        <div className="pd-header-main">
+          <div className="pd-eyebrow">
+            <span className="ui-chip ui-chip-mono">{p.code}</span>
+            <span className="pd-eyebrow-meta">
+              {text(p.sector)} &middot; {text(p.implementingAgency)}
+            </span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>Risk Index</div>
-              <div className="tabular-nums" style={{ fontSize: '26px', fontWeight: 800, color: p.riskLevel.toLowerCase() === 'critical' ? 'var(--status-critical-text)' : 'var(--status-high-text)' }}>
-                {p.riskScore} <span style={{ fontSize: '12px', color: 'var(--color-text-dim)', fontWeight: 500 }}>/ 100</span>
-              </div>
-            </div>
-            <StatusBadge level={p.riskLevel} size="md" />
-          </div>
+          <h1 className="pd-title">{p.name}</h1>
+
+          <ul className="pd-meta-row">
+            <li>
+              <Building2 size={14} aria-hidden="true" />
+              <span>{text(p.ministry)}</span>
+            </li>
+            <li>
+              <MapPin size={14} aria-hidden="true" />
+              <span>{[text(p.state), p.district ? text(p.district) : ''].filter(Boolean).join(', ')}</span>
+            </li>
+            <li>
+              <Clock size={14} aria-hidden="true" />
+              <span>Target completion {targetCompletion}</span>
+            </li>
+          </ul>
         </div>
-      </div>
 
-      {/* Key Predictive Metrics Cards */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: '12px'
-        }}
-      >
-        <MetricCard
-          label="Sanctioned vs Revised Outlay"
-          value={`₹${p.revisedCost.toLocaleString('en-IN')} Cr`}
-          explanation={`Original sanction: ₹${p.originalCost.toLocaleString('en-IN')} Cr (+${Math.round(((p.revisedCost - p.originalCost) / p.originalCost) * 100)}% cost growth)`}
-          subtitleBadge={`Exp: ₹${p.expenditure.toLocaleString('en-IN')} Cr`}
-          indicatorColor="primary"
-        />
-        <MetricCard
-          label="Physical Completion"
-          value={`${p.physicalProgress}%`}
-          explanation={`Target was ${p.monthlyHistory[p.monthlyHistory.length - 1]?.expectedProgress || 70}% (gap of ${Math.round((p.monthlyHistory[p.monthlyHistory.length - 1]?.expectedProgress || 70) - p.physicalProgress)}%)`}
-          trend={{ direction: 'down', text: 'Velocity 0.85%/mo', isGood: false }}
-          indicatorColor={p.physicalProgress < 50 ? 'high' : 'medium'}
-        />
-        <MetricCard
-          label="Predicted Delay Probability"
-          value={`${p.scheduleDelayProbability}%`}
-          explanation={`Model estimates approx ${p.expectedDelayMonths} months delay past revised completion`}
-          indicatorColor="prediction"
-        />
-        <MetricCard
-          label="Forecasted Final Cost"
-          value={`₹${Math.round(p.revisedCost * 1.08).toLocaleString('en-IN')} Cr`}
-          explanation={`Predicted cost escalation probability: ${p.costOverrunProbability}%`}
-          indicatorColor="critical"
-        />
-      </div>
-
-      {/* Navigation Tabs */}
-      <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid var(--color-border)', paddingBottom: '2px', flexWrap: 'wrap' }}>
-        {[
-          { id: 'overview', label: 'Summary' },
-          { id: 'milestones', label: 'Progress & Milestones' },
-          { id: 'costs', label: 'Costs & CUF Parameters' },
-          { id: 'explainability', label: 'Risk & SHAP Explanation' },
-          { id: 'interventions', label: 'Actions & History' }
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
-            style={{
-              padding: '9px 18px',
-              background: activeTab === tab.id ? '#E0F2FE' : 'transparent',
-              borderRadius: '8px 8px 0 0',
-              border: 'none',
-              borderBottom: activeTab === tab.id ? '2px solid #0284C7' : '2px solid transparent',
-              color: activeTab === tab.id ? '#0F172A' : '#64748B',
-              fontSize: '13px',
-              fontWeight: activeTab === tab.id ? 700 : 500,
-              cursor: 'pointer',
-              transition: 'all 120ms ease'
-            }}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Tab 1: Summary */}
-      {activeTab === 'overview' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div className="gov-card">
-            <div className="gov-card-header" style={{ background: '#F8FAFC', padding: '14px 20px', borderBottom: '1px solid #E2E8F0' }}>
-              <div className="gov-card-title" style={{ color: '#0F172A', fontWeight: 700, fontSize: '15px' }}>
-                <Clock size={16} color="#0284C7" />
-                Physical & Financial Progress Trajectory
-              </div>
-            </div>
-            <div className="gov-card-body" style={{ padding: '20px' }}>
-              <ProgressTimelineChart
-                history={p.monthlyHistory}
-                originalDate={p.originalCompletionDate}
-                revisedDate={p.revisedCompletionDate}
-                aiPredictedDate={p.aiPredictedCompletionDate}
-              />
-            </div>
+        <div className="pd-header-aside">
+          <div className="pd-status-cluster">
+            <StatusBadge level={p.riskLevel} customLabel={p.status} size="sm" />
+            <span className="pd-risk-chip">
+              Risk score <b>{isNum(p.riskScore) ? p.riskScore : NOT_AVAILABLE}</b>
+              {isNum(p.riskScore) ? <span>/100</span> : null}
+            </span>
           </div>
-        </div>
-      )}
 
-      {/* Tab 2: Progress & Milestones */}
-      {activeTab === 'milestones' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div className="gov-card">
-            <div className="gov-card-header" style={{ background: '#F8FAFC', padding: '14px 20px', borderBottom: '1px solid #E2E8F0' }}>
-              <div className="gov-card-title" style={{ color: '#0F172A', fontWeight: 700, fontSize: '15px' }}>
-                <Clock size={16} color="#0284C7" />
-                Physical Work Breakdown & Critical Path Milestones
-              </div>
-            </div>
-            <div className="gov-table-wrapper" style={{ border: 'none' }}>
-              <table className="gov-table">
-                <thead>
-                  <tr style={{ background: '#F8FAFC', borderBottom: '2px solid #E2E8F0', color: '#475569' }}>
-                    <th>Milestone Name</th>
-                    <th>Scheduled Baseline</th>
-                    <th>Actual / Revised Date</th>
-                    <th>Variance / Slippage</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[
-                    { name: 'Right-of-Way Land Handover (Phase 1)', target: '2023-06-30', actual: '2023-09-15', variance: '+2.5 Mo', status: 'Completed' },
-                    { name: 'Civil Viaduct & Pier Foundation Casting', target: '2024-03-31', actual: '2024-08-20', variance: '+4.7 Mo', status: 'Completed' },
-                    { name: 'Superstructure Girders & Track Laying', target: '2025-06-30', actual: '2025-11-30', variance: '+5.0 Mo', status: 'Delayed' },
-                    { name: 'Signalling & Traction Power Substation', target: '2026-03-31', actual: '2026-09-30', variance: '+6.0 Mo', status: 'In Progress' },
-                    { name: 'Integrated Trial Runs & Safety Commissioner Inspection', target: '2026-08-31', actual: '2027-02-28', variance: '+6.0 Mo', status: 'Pending' }
-                  ].map((m, idx) => (
-                    <tr key={idx} style={{ borderBottom: '1px solid #F1F5F9' }}>
-                      <td style={{ fontWeight: 600, color: '#0F172A' }}>{m.name}</td>
-                      <td className="tabular-nums" style={{ fontSize: '12px', color: '#64748B' }}>{m.target}</td>
-                      <td className="tabular-nums" style={{ fontSize: '12px', color: '#0F172A', fontWeight: 600 }}>{m.actual}</td>
-                      <td>
-                        <span style={{ fontSize: '11.5px', color: '#DC2626', background: '#FEE2E2', padding: '2px 8px', borderRadius: '4px', fontWeight: 700 }}>
-                          {m.variance}
-                        </span>
-                      </td>
-                      <td>
-                        <span style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          fontSize: '11px',
-                          fontWeight: 700,
-                          padding: '3px 8px',
-                          borderRadius: '4px',
-                          background: m.status === 'Completed' ? '#DCFCE7' : m.status === 'Delayed' ? '#FEE2E2' : '#FEF3C7',
-                          color: m.status === 'Completed' ? '#166534' : m.status === 'Delayed' ? '#991B1B' : '#92400E'
-                        }}>
-                          {m.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Tab 3: Costs & CUF Parameters */}
-      {activeTab === 'costs' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div className="gov-card">
-            <div className="gov-card-header" style={{ background: '#F8FAFC', padding: '14px 20px', borderBottom: '1px solid #E2E8F0' }}>
-              <div className="gov-card-title" style={{ color: '#0F172A', fontWeight: 700, fontSize: '15px' }}>
-                <ShieldCheck size={16} color="#0284C7" />
-                Central Upload Format (CUF) Financial & Statutory Compliance
-              </div>
-            </div>
-            <div className="gov-card-body" style={{ padding: '20px' }}>
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-                  gap: '14px'
-                }}
-              >
-                <div style={{ padding: '16px', background: '#F8FAFC', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
-                  <div style={{ fontSize: '11.5px', color: '#64748B', fontWeight: 600 }}>Land Acquisition Status</div>
-                  <div className="tabular-nums" style={{ fontSize: '22px', fontWeight: 800, color: '#0F172A', margin: '4px 0' }}>
-                    {p.cuf.landAcquisitionPct}%
-                  </div>
-                  <span style={{ fontSize: '11px', color: p.cuf.landAcquisitionPct >= 90 ? '#16A34A' : '#DC2626', fontWeight: 600 }}>
-                    {p.cuf.landAcquisitionPct >= 90 ? '● Unrestricted Site Possession' : '▲ RoW Handover Pending'}
-                  </span>
-                </div>
-
-                <div style={{ padding: '16px', background: '#F8FAFC', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
-                  <div style={{ fontSize: '11.5px', color: '#64748B', fontWeight: 600 }}>Forest Clearance (MoEFCC)</div>
-                  <div style={{ fontSize: '18px', fontWeight: 700, color: p.cuf.forestClearance === 'Approved' ? '#16A34A' : '#DC2626', margin: '4px 0' }}>
-                    {p.cuf.forestClearance}
-                  </div>
-                  <span style={{ fontSize: '11px', color: '#64748B' }}>Stage-II clearance order logged</span>
-                </div>
-
-                <div style={{ padding: '16px', background: '#F8FAFC', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
-                  <div style={{ fontSize: '11.5px', color: '#64748B', fontWeight: 600 }}>Contractor Capacity Index</div>
-                  <div className="tabular-nums" style={{ fontSize: '22px', fontWeight: 800, color: '#0F172A', margin: '4px 0' }}>
-                    {p.cuf.contractorCapacity} <span style={{ fontSize: '12px', color: '#64748B', fontWeight: 500 }}>/ 100</span>
-                  </div>
-                  <span style={{ fontSize: '11px', color: '#0284C7', fontWeight: 600 }}>Tier-1 EPC consortium rating</span>
-                </div>
-
-                <div style={{ padding: '16px', background: '#F8FAFC', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
-                  <div style={{ fontSize: '11.5px', color: '#64748B', fontWeight: 600 }}>Environment & Coastal Reg.</div>
-                  <div style={{ fontSize: '18px', fontWeight: 700, color: '#16A34A', margin: '4px 0' }}>
-                    {p.cuf.environmentClearance}
-                  </div>
-                  <span style={{ fontSize: '11px', color: '#16A34A', fontWeight: 600 }}>● All environmental consents active</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Tab 4: Risk & SHAP Explanation */}
-      {activeTab === 'explainability' && (
-        <div className="gov-card">
-          <div className="gov-card-header" style={{ background: '#F8FAFC', padding: '16px 20px', borderBottom: '1px solid #E2E8F0' }}>
-            <div>
-              <div className="gov-card-title" style={{ color: '#0F172A', fontWeight: 700, fontSize: '15px' }}>
-                <Sparkles size={16} color="#0284C7" />
-                Why is this project classified as {p.riskLevel} Risk?
-              </div>
-              <div className="gov-card-subtitle" style={{ fontSize: '12px', color: '#64748B' }}>
-                TreeSHAP decomposition of exact feature weights influencing the composite risk score
-              </div>
-            </div>
-          </div>
-          <div className="gov-card-body" style={{ padding: '20px' }}>
-            <SHAPExplanationChart contributors={p.shapContributors} projectRiskScore={p.riskScore} />
-          </div>
-        </div>
-      )}
-
-      {/* Tab 5: Actions & History */}
-      {activeTab === 'interventions' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          {(p.recommendedInterventions || []).map((intItem) => (
-            <div
-              key={intItem.id}
-              className="gov-card"
-              style={{
-                padding: '18px 22px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                flexWrap: 'wrap',
-                gap: '14px',
-                borderLeft: intItem.priority === 'Critical' ? '4px solid #DC2626' : '4px solid #F97316'
+          <div className="pd-actions">
+            <button
+              type="button"
+              className="ui-btn ui-btn-ghost"
+              onClick={openAiDrawer}
+              ref={(el) => {
+                aiTriggerRef.current = el;
               }}
             >
-              <div style={{ flex: 1, minWidth: '280px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                  <StatusBadge level={intItem.priority} size="sm" />
-                  <span style={{ fontSize: '11.5px', color: '#64748B', fontWeight: 600 }}>{intItem.pillar}</span>
-                </div>
-                <div style={{ fontSize: '14px', fontWeight: 700, color: '#0F172A', marginBottom: '3px' }}>
-                  {intItem.title}
-                </div>
-                <p style={{ margin: 0, fontSize: '12.5px', color: '#475569', lineHeight: 1.45 }}>
-                  {intItem.description}
-                </p>
-                <div style={{ fontSize: '12px', color: '#16A34A', fontWeight: 600, marginTop: '6px' }}>
-                  Expected Outcome: {intItem.expectedImpact}
-                </div>
-              </div>
+              <Sparkles size={14} aria-hidden="true" />
+              <span>Ask AI</span>
+            </button>
+            <button
+              type="button"
+              className="ui-btn ui-btn-primary"
+              onClick={() => {
+                showNotification(`Exporting executive dossier for ${p.code}...`);
+                navigateTo('reports');
+              }}
+            >
+              <FileText size={14} aria-hidden="true" />
+              <span>Export Dossier</span>
+            </button>
 
+            <div className="ui-menu-anchor" ref={overflowRef}>
               <button
-                className="btn-secondary"
-                onClick={() => handleSimulateIntervention(intItem)}
-                style={{
-                  fontSize: '12px',
-                  padding: '8px 14px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  borderRadius: '8px',
-                  background: '#0F172A',
-                  color: '#FFFFFF',
-                  border: 'none',
-                  boxShadow: '0 2px 6px rgba(15, 23, 42, 0.15)',
-                  cursor: 'pointer'
-                }}
+                type="button"
+                className="ui-btn ui-btn-secondary"
+                aria-haspopup="menu"
+                aria-expanded={showOverflow}
+                aria-controls="pd-overflow-menu"
+                onClick={() => setShowOverflow((v) => !v)}
               >
-                <Sliders size={13} color="#38BDF8" />
-                <span>Simulate Policy Action</span>
+                <MoreHorizontal size={14} aria-hidden="true" />
+                <span>More</span>
               </button>
+              {showOverflow && (
+                <div className="ui-menu-panel" id="pd-overflow-menu" role="menu">
+                  <button type="button" role="menuitem" className="ui-menu-item" onClick={openSimulator}>
+                    <SlidersHorizontal size={15} aria-hidden="true" />
+                    <span>
+                      What-If Simulator
+                      <small>Run counterfactual delivery scenarios for this project</small>
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className="ui-menu-item"
+                    onClick={() => {
+                      setShowOverflow(false);
+                      setActiveTab('explainability');
+                    }}
+                  >
+                    <Cpu size={15} aria-hidden="true" />
+                    <span>
+                      Risk attribution
+                      <small>Inspect SHAP drivers behind the risk score</small>
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className="ui-menu-item"
+                    onClick={() => {
+                      setShowOverflow(false);
+                      navigateTo('projects');
+                    }}
+                  >
+                    <ClipboardList size={15} aria-hidden="true" />
+                    <span>
+                      Back to projects
+                      <small>Return to the projects directory</small>
+                    </span>
+                  </button>
+                </div>
+              )}
             </div>
-          ))}
+          </div>
+        </div>
+      </header>
+
+      {/* 3. Concise alert - only when an existing urgent / delayed condition applies */}
+      {isUrgent && (
+        <div className="pd-alert" role="status">
+          <AlertTriangle size={17} className="pd-alert-icon" aria-hidden="true" />
+          <div className="pd-alert-text">
+            <strong>Attention required &mdash; {p.status}</strong>
+            <span>{text(p.mainRiskReason)}</span>
+          </div>
+          <button type="button" className="ui-btn" onClick={() => setActiveTab('interventions')}>
+            Review interventions
+          </button>
         </div>
       )}
+
+      {/* 4. Compact summary of existing project metrics */}
+      <section className="pd-metrics" aria-label="Project summary">
+        <div className="pd-metric">
+          <span className="pd-metric-label">
+            <Gauge size={13} aria-hidden="true" />
+            Physical progress
+          </span>
+          <p className="pd-metric-value">
+            {isNum(p.physicalProgress) ? (
+              <>
+                {p.physicalProgress}
+                <small>%</small>
+              </>
+            ) : (
+              <span className="ui-na">{NOT_AVAILABLE}</span>
+            )}
+          </p>
+          <p className="pd-metric-foot">Schedule target {pct(p.expectedProgress)}</p>
+          {isNum(p.physicalProgress) && (
+            <div
+              className="pd-meter"
+              data-tone={isNum(p.expectedProgress) && p.physicalProgress < p.expectedProgress ? 'warn' : 'ok'}
+              role="img"
+              aria-label={`Physical progress ${p.physicalProgress} percent`}
+            >
+              <i style={{ width: `${Math.max(0, Math.min(100, p.physicalProgress))}%` }} />
+            </div>
+          )}
+        </div>
+
+        <div className="pd-metric">
+          <span className="pd-metric-label">
+            <Wallet size={13} aria-hidden="true" />
+            Approved cost
+          </span>
+          <p className="pd-metric-value">{inr(p.revisedCost)}</p>
+          <p className="pd-metric-foot">Original sanction {inr(p.originalCost)}</p>
+        </div>
+
+        <div className="pd-metric">
+          <span className="pd-metric-label">
+            <IndianRupee size={13} aria-hidden="true" />
+            Expenditure
+          </span>
+          <p className="pd-metric-value">{inr(p.expenditure)}</p>
+          <p className="pd-metric-foot">Utilisation {utilisation}</p>
+        </div>
+
+        <div className="pd-metric">
+          <span className="pd-metric-label">
+            <Target size={13} aria-hidden="true" />
+            Target completion
+          </span>
+          <p className="pd-metric-value">{targetCompletion}</p>
+          <p className="pd-metric-foot">{slippage}</p>
+        </div>
+      </section>
+
+      {/* 5. Tabs */}
+      <div className="pd-tabs">
+        <div className="pd-tablist" role="tablist" aria-label="Project detail sections">
+          {TABS.map((tab, index) => (
+            <button
+              key={tab.id}
+              type="button"
+              role="tab"
+              id={`pd-tab-${tab.id}`}
+              aria-selected={activeTab === tab.id}
+              aria-controls={`pd-panel-${tab.id}`}
+              tabIndex={activeTab === tab.id ? 0 : -1}
+              ref={(el) => {
+                tabRefs.current[tab.id] = el;
+              }}
+              className="pd-tab"
+              onClick={() => setActiveTab(tab.id)}
+              onKeyDown={(e) => handleTabKeyDown(e, index)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div
+        role="tabpanel"
+        id={`pd-panel-${activeTab}`}
+        aria-labelledby={`pd-tab-${activeTab}`}
+        tabIndex={0}
+        className="pd-panel"
+      >
+        <div className="pd-panel-head">
+          <div>
+            <h2 className="pd-panel-title">{activeTabMeta.label}</h2>
+            <p className="pd-panel-sub">{activeTabMeta.hint}</p>
+          </div>
+        </div>
+
+        {/* ---- Summary & Baseline ---- */}
+        {activeTab === 'overview' && (
+          <div className="pd-grid-2">
+            <section className="pd-panel" style={{ boxShadow: 'none' }}>
+              <h3 className="pd-panel-title" style={{ fontSize: 14, marginBottom: 12 }}>
+                Project baseline
+              </h3>
+              <dl className="pd-dl">
+                <div>
+                  <dt>Implementing agency</dt>
+                  <dd>{text(p.implementingAgency)}</dd>
+                </div>
+                <div>
+                  <dt>Ministry</dt>
+                  <dd>{text(p.ministry)}</dd>
+                </div>
+                <div>
+                  <dt>Sector</dt>
+                  <dd>{text(p.sector)}</dd>
+                </div>
+                <div>
+                  <dt>Location</dt>
+                  <dd>{[text(p.state), p.district ? text(p.district) : ''].filter(Boolean).join(', ')}</dd>
+                </div>
+                <div>
+                  <dt>Original sanctioned cost</dt>
+                  <dd>{inr(p.originalCost)}</dd>
+                </div>
+                <div>
+                  <dt>Revised approved cost</dt>
+                  <dd>{inr(p.revisedCost)}</dd>
+                </div>
+                <div>
+                  <dt>Original completion</dt>
+                  <dd>{text(p.originalCompletionDate)}</dd>
+                </div>
+              </dl>
+            </section>
+
+            <section className="pd-panel" style={{ boxShadow: 'none' }}>
+              <h3 className="pd-panel-title" style={{ fontSize: 14, marginBottom: 12 }}>
+                Monthly progress signal
+              </h3>
+              <dl className="pd-dl">
+                <div>
+                  <dt>Physical progress</dt>
+                  <dd>{pct(p.physicalProgress)}</dd>
+                </div>
+                <div>
+                  <dt>Expected progress</dt>
+                  <dd>{pct(p.expectedProgress)}</dd>
+                </div>
+                <div>
+                  <dt>Progress gap</dt>
+                  <dd>{isNum(p.progressGap) ? `${p.progressGap} pts behind target` : NOT_AVAILABLE}</dd>
+                </div>
+                <div>
+                  <dt>Land acquisition (RoW)</dt>
+                  <dd>{isNum(p.cuf?.landAcquisitionPct) ? `${p.cuf.landAcquisitionPct}% complete` : NOT_AVAILABLE}</dd>
+                </div>
+                <div>
+                  <dt>Contractor capacity index</dt>
+                  <dd>
+                    {isNum(p.cuf?.contractorCapacity) ? `${p.cuf.contractorCapacity} / 100` : NOT_AVAILABLE}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Statutory clearance</dt>
+                  <dd>{text(p.cuf?.clearanceStatus)}</dd>
+                </div>
+                <div>
+                  <dt>Funding availability</dt>
+                  <dd>{text(p.cuf?.fundingAvailability)}</dd>
+                </div>
+              </dl>
+            </section>
+
+            <section className="pd-panel pd-span-2" style={{ boxShadow: 'none' }}>
+              <h3 className="pd-panel-title" style={{ fontSize: 14, marginBottom: 12 }}>
+                Schedule &amp; risk indicators
+              </h3>
+              <dl className="pd-dl">
+                <div>
+                  <dt>Delivery status</dt>
+                  <dd>{text(p.status)}</dd>
+                </div>
+                <div>
+                  <dt>Risk score</dt>
+                  <dd>
+                    {isNum(p.riskScore) ? `${p.riskScore} / 100` : NOT_AVAILABLE}
+                    {isNum(p.confidenceScore) ? ` (${p.confidenceScore}% model confidence)` : ''}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Risk trend</dt>
+                  <dd>{text(p.riskTrend)}</dd>
+                </div>
+                <div>
+                  <dt>Schedule overrun probability</dt>
+                  <dd>{pct(p.scheduleDelayProbability)}</dd>
+                </div>
+                <div>
+                  <dt>Cost overrun probability</dt>
+                  <dd>{pct(p.costOverrunProbability)}</dd>
+                </div>
+                <div>
+                  <dt>Revised / predicted completion</dt>
+                  <dd>
+                    {text(p.revisedCompletionDate)} &middot; {text(p.aiPredictedCompletionDate)}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Primary risk reason</dt>
+                  <dd>{text(p.mainRiskReason)}</dd>
+                </div>
+              </dl>
+            </section>
+          </div>
+        )}
+
+        {/* ---- Progress & Milestones ---- */}
+        {activeTab === 'milestones' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            {history.length > 0 ? (
+              <ProgressTimelineChart
+                history={history}
+                originalDate={p.originalCompletionDate || ''}
+                revisedDate={p.revisedCompletionDate || ''}
+                aiPredictedDate={p.aiPredictedCompletionDate || ''}
+              />
+            ) : (
+              <p className="pd-empty">No monthly progress returns are recorded for this project yet.</p>
+            )}
+
+            {history.length > 0 && (
+              <div>
+                <h3 className="pd-panel-title" style={{ fontSize: 14, marginBottom: 10 }}>
+                  Recorded monthly returns
+                </h3>
+                <div className="pd-table-scroll" tabIndex={0} role="group" aria-label="Recorded monthly returns, scrollable">
+                  <table>
+                    <caption className="sr-only">Physical progress, expenditure and risk score by month</caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">Reporting month</th>
+                        <th scope="col" className="num">Physical progress</th>
+                        <th scope="col" className="num">Expected</th>
+                        <th scope="col" className="num">Gap</th>
+                        <th scope="col" className="num">Expenditure</th>
+                        <th scope="col" className="num">Risk score</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[...history].reverse().map((h, i) => (
+                        <tr key={`${h.month}-${i}`}>
+                          <th scope="row" style={{ textTransform: 'none', letterSpacing: 0, background: 'transparent', borderBottom: '1px solid var(--ui-divider)', fontWeight: 600 }}>
+                            {text(h.month)}
+                          </th>
+                          <td className="num">{pct(h.actualProgress)}</td>
+                          <td className="num">{pct(h.expectedProgress)}</td>
+                          <td className="num">
+                            {isNum(h.actualProgress) && isNum(h.expectedProgress)
+                              ? `${(h.actualProgress - h.expectedProgress).toFixed(1)}`
+                              : NOT_AVAILABLE}
+                          </td>
+                          <td className="num">{inr(h.expenditure)}</td>
+                          <td className="num">{isNum(h.riskScore) ? h.riskScore : NOT_AVAILABLE}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="pd-scroll-hint">Scroll the table sideways to see all columns.</p>
+              </div>
+            )}
+
+            <div className="mt-6 pt-6 border-t border-slate-200">
+              <div className="mb-4">
+                <h3 className="text-base font-bold text-[#172033]">Milestone Execution &amp; Statutory Audit</h3>
+                <p className="text-xs text-[#526176]">Package-level delivery tracking, delay analysis, and statutory audit verification</p>
+              </div>
+              <MilestoneAuditPanel project={p} />
+            </div>
+          </div>
+        )}
+
+        {/* ---- Costs & Outlay ---- */}
+        {activeTab === 'costs' && (
+          <div className="pd-stat-grid">
+            <div className="pd-stat">
+              <span>Cost escalation vs sanction</span>
+              <strong style={{ color: escalation !== null && escalation > 0 ? '#B42318' : 'var(--ui-text)' }}>
+                {escalation === null ? NOT_AVAILABLE : `${escalation > 0 ? '+' : ''}\u20B9${Math.abs(escalation).toLocaleString('en-IN')} Cr`}
+              </strong>
+              <em>
+                {escalation === null || !isNum(p.originalCost) || p.originalCost === 0
+                  ? NOT_AVAILABLE
+                  : `${Math.abs(Math.round((escalation / p.originalCost) * 100))}% ${escalation >= 0 ? 'above' : 'below'} the sanctioned baseline`}
+              </em>
+            </div>
+            <div className="pd-stat">
+              <span>Fund utilisation</span>
+              <strong>{utilisation}</strong>
+              <em>{inr(p.expenditure)} spent of {inr(p.revisedCost)} revised outlay</em>
+            </div>
+            <div className="pd-stat">
+              <span>Cost overrun probability</span>
+              <strong>{pct(p.costOverrunProbability)}</strong>
+              <em>Modelled probability of exceeding the revised outlay</em>
+            </div>
+            <div className="pd-stat">
+              <span>Predicted final cost</span>
+              <strong>{inr(p.predictedFinalCost)}</strong>
+              <em>Forecast escalation {inr(p.costEscalationAmount)} above revised cost</em>
+            </div>
+          </div>
+        )}
+
+        {/* ---- Risk Explainability (advanced analysis, not shown by default) ---- */}
+        {activeTab === 'explainability' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <p className="pd-panel-sub" style={{ margin: 0 }}>
+              Additive feature importance from the TreeSHAP risk model. Positive contributions increase the predicted
+              risk score, negative contributions reduce it.
+            </p>
+            {(p.shapContributors || []).length > 0 ? (
+              <SHAPExplanationChart contributors={p.shapContributors} projectRiskScore={p.riskScore} />
+            ) : (
+              <p className="pd-empty">No model attribution has been published for this project yet.</p>
+            )}
+          </div>
+        )}
+
+        {/* ---- Actions & Interventions ---- */}
+        {activeTab === 'interventions' && (
+          <div>
+            {interventions.length > 0 ? (
+              <>
+                <p className="pd-panel-sub" style={{ margin: '0 0 14px' }}>
+                  These are suggested interventions from the monitoring model. Use &ldquo;Simulate impact&rdquo; to load
+                  the scenario into the What-If Simulator before recording an approved action.
+                </p>
+                {interventions.map((item, idx) => (
+                  <article className="pd-intervention" key={item.id || idx}>
+                    <div className="pd-intervention-head">
+                      <div style={{ minWidth: 0 }}>
+                        <h4 className="pd-intervention-title">
+                          {text(item.title)}{' '}
+                          <span className="ui-chip" style={{ verticalAlign: 'middle' }}>
+                            {text(item.priority)} priority
+                          </span>
+                        </h4>
+                        <p>{text(item.reason || item.description)}</p>
+                      </div>
+                      <button
+                        type="button"
+                        className="ui-btn ui-btn-secondary"
+                        onClick={() => handleSimulateIntervention(item)}
+                      >
+                        <SlidersHorizontal size={14} aria-hidden="true" />
+                        <span>Simulate impact</span>
+                      </button>
+                    </div>
+                    <dl className="pd-dl">
+                      <div>
+                        <dt>Expected impact</dt>
+                        <dd>{text(item.expectedImpact)}</dd>
+                      </div>
+                      <div>
+                        <dt>Assigned agency</dt>
+                        <dd>{text(item.assignedAgency)}</dd>
+                      </div>
+                    </dl>
+                  </article>
+                ))}
+              </>
+            ) : (
+              <p className="pd-empty">
+                No interventions are currently suggested for this project. Review the monthly returns and clearances in
+                the Summary tab, or open the What-If Simulator to model a scenario manually.
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* 6. On-demand AI copilot drawer (opaque panel, separate backdrop) */}
+      {showAiDrawer && (
+        <div className="pd-ai-overlay">
+          <div className="pd-ai-backdrop" onClick={closeAiDrawer} />
+          <div
+            className="pd-ai-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Sentinel AI Copilot for this project"
+          >
+            <div className="pd-ai-header">
+              <div style={{ minWidth: 0 }}>
+                <div className="pd-ai-title">
+                  <Sparkles size={16} aria-hidden="true" />
+                  <span>Sentinel AI Copilot</span>
+                </div>
+                <div className="pd-ai-project">{p.name}</div>
+              </div>
+              <button
+                type="button"
+                className="pd-ai-close"
+                onClick={closeAiDrawer}
+                aria-label="Close AI copilot"
+                ref={aiCloseRef}
+              >
+                <X size={15} aria-hidden="true" />
+              </button>
+            </div>
+
+            <div className="pd-ai-chips">
+              {[
+                'Summarise this project',
+                'Why does this project need attention?',
+                'What changed since last update?',
+                'Which milestones need review?'
+              ].map((chip) => (
+                <button key={chip} type="button" className="pd-ai-chip" onClick={() => handleAskAiQuestion(chip)}>
+                  {chip}
+                </button>
+              ))}
+            </div>
+
+            <div className="pd-ai-body">
+              {aiChatMessages.map((msg, idx) => (
+                <div key={idx} className={`pd-ai-msg pd-ai-msg-${msg.sender}`}>
+                  {msg.text}
+                  {msg.citations && (
+                    <div className="pd-ai-cite">
+                      <strong style={{ fontWeight: 700 }}>Sources</strong>
+                      <br />
+                      {msg.citations.map((c, i) => (
+                        <span key={i}>{c}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {isAiLoading && (
+                <div className="pd-ai-thinking">
+                  <Bot size={14} aria-hidden="true" />
+                  <span>Grounding the answer in {p.code} monthly records&hellip;</span>
+                </div>
+              )}
+            </div>
+
+            <form className="pd-ai-form" onSubmit={handleCustomAiSubmit}>
+              <label className="sr-only" htmlFor="pd-ai-input">
+                Ask a question about {p.code}
+              </label>
+              <User size={15} aria-hidden="true" style={{ alignSelf: 'center', color: 'var(--ui-text-2)' }} />
+              <input
+                id="pd-ai-input"
+                type="text"
+                placeholder={`Ask about ${p.code} milestones, costs, or delays...`}
+                value={aiInputText}
+                onChange={(e) => setAiInputText(e.target.value)}
+              />
+              <button type="submit" className="pd-ai-send" aria-label="Send question" disabled={isAiLoading}>
+                <Send size={14} aria-hidden="true" />
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showAiDrawer && <span className="sr-only" role="status">AI copilot panel opened</span>}
     </div>
   );
 };

@@ -1,15 +1,30 @@
-from collections import defaultdict
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from app.core.database import get_db
+from typing import Optional, List, Dict, Any
+from collections import defaultdict
+from app.db.session import get_db
 from app.models.project import Project
+from app.models.user import User
 from app.schemas.alert import NationalMetrics
+from app.auth.rbac import get_optional_current_user, is_national_oversight_user, get_user_authorized_ministries
+from sqlalchemy import or_
 
 router = APIRouter(prefix="/analytics", tags=["Analytics"])
 
+
 @router.get("/overview", response_model=NationalMetrics)
-def get_national_analytics_overview(db: Session = Depends(get_db)):
-    projects = db.query(Project).all()
+def get_national_analytics_overview(
+    current_user: Optional[User] = Depends(get_optional_current_user),
+    db: Session = Depends(get_db)
+):
+    query = db.query(Project)
+    if current_user and not is_national_oversight_user(current_user):
+        user_mins = get_user_authorized_ministries(current_user)
+        if user_mins and user_mins != ["ALL"]:
+            ministry_filters = [Project.ministry.ilike(f"%{m}%") for m in user_mins]
+            query = query.filter(or_(*ministry_filters))
+
+    projects = query.all()
     total = len(projects)
     
     if total == 0:

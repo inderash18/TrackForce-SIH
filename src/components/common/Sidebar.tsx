@@ -12,333 +12,461 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  UserCheck,
   ExternalLink
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
-  const { activeRoute, navigateTo, sidebarCollapsed, setSidebarCollapsed, alerts } = useApp();
+  const { activeRoute, navigateTo, sidebarCollapsed, setSidebarCollapsed, scopedAlerts, user } = useApp();
 
-  const criticalAlertsCount = alerts.filter(
-    (a) => a.severity === 'critical' && (a.status === 'active' || a.status === 'Active')
+  const criticalAlertsCount = (scopedAlerts || []).filter(
+    (a) => a.severity.toLowerCase() === 'critical' && (a.status || '').toLowerCase() !== 'resolved'
   ).length;
 
   const primaryNavItems: {
     id: ActiveNavRoute;
     label: string;
-    icon: React.ReactNode;
+    icon: (isActive: boolean) => React.ReactNode;
     badge?: string;
-    badgeColor?: string;
   }[] = [
-    { id: 'dashboard', label: 'Overview', icon: <LayoutDashboard size={18} /> },
-    { id: 'projects', label: 'Projects', icon: <FolderGit2 size={18} /> },
+    {
+      id: 'dashboard',
+      label: 'Overview',
+      icon: (isActive) => (
+        <LayoutDashboard size={17} color={isActive ? '#38BDF8' : '#475569'} />
+      )
+    },
+    {
+      id: 'projects',
+      label: 'Projects',
+      icon: (isActive) => (
+        <FolderGit2 size={17} color={isActive ? '#38BDF8' : '#475569'} />
+      )
+    },
     {
       id: 'alerts',
       label: 'Risks & Actions',
-      icon: <ShieldAlert size={18} />,
-      badge: criticalAlertsCount > 0 ? `${criticalAlertsCount}` : undefined,
-      badgeColor: '#EF4444'
+      icon: (isActive) => (
+        <ShieldAlert size={17} color={isActive ? '#F59E0B' : '#475569'} />
+      ),
+      badge: criticalAlertsCount > 0 ? `${criticalAlertsCount}` : undefined
     },
-    { id: 'reports', label: 'Reports', icon: <FileText size={18} /> },
-    { id: 'data', label: 'Data', icon: <Database size={18} /> }
+    {
+      id: 'reports',
+      label: 'Reports',
+      icon: (isActive) => (
+        <FileText size={17} color={isActive ? '#38BDF8' : '#475569'} />
+      )
+    },
+    {
+      id: 'data',
+      label: 'Data',
+      icon: (isActive) => (
+        <Database size={17} color={isActive ? '#38BDF8' : '#475569'} />
+      )
+    }
   ];
 
-  const secondaryNavItems: {
+  const toolsNavItems: {
     id: ActiveNavRoute;
     label: string;
-    icon: React.ReactNode;
+    icon: (isActive: boolean) => React.ReactNode;
     badge?: string;
   }[] = [
-    { id: 'simulator', label: 'What-If Simulator', icon: <Sliders size={16} />, badge: 'Sim' },
-    { id: 'assistant', label: 'AI Assistant', icon: <Sparkles size={16} />, badge: 'Qwen' },
-    { id: 'admin', label: 'Settings & Access', icon: <Settings size={16} /> }
+    {
+      id: 'simulator',
+      label: 'What-If Simulator',
+      icon: (isActive) => (
+        <Sliders size={16} color={isActive ? '#38BDF8' : '#64748B'} />
+      ),
+      badge: 'Sim'
+    },
+    {
+      id: 'assistant',
+      label: 'AI Assistant',
+      icon: (isActive) => (
+        <Sparkles size={16} color={isActive ? '#38BDF8' : '#64748B'} />
+      ),
+      badge: 'Qwen'
+    }
   ];
 
   return (
     <aside
+      className={`floating-sidebar ${sidebarCollapsed ? 'collapsed' : 'expanded'}`}
       style={{
-        width: sidebarCollapsed ? 'var(--sidebar-collapsed-width)' : 'var(--sidebar-width)',
-        backgroundColor: 'var(--color-surface-nav)',
-        color: 'var(--color-text-primary)',
+        width: sidebarCollapsed ? '68px' : '236px',
+        margin: '12px 0 12px 14px',
+        height: 'calc(100vh - 24px)',
+        backgroundColor: '#FFFFFF',
+        borderRadius: '22px',
+        border: '1px solid rgba(226, 232, 240, 0.9)',
+        boxShadow: '0 4px 24px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.03)',
         display: 'flex',
         flexDirection: 'column',
-        transition: 'width 180ms ease',
+        justifyContent: 'space-between',
+        padding: sidebarCollapsed ? '18px 8px 14px' : '18px 12px 14px',
+        transition: 'width 220ms cubic-bezier(0.4, 0, 0.2, 1)',
         flexShrink: 0,
         position: 'sticky',
-        top: 0,
-        height: '100vh',
+        top: '12px',
         zIndex: 110,
-        borderRight: '1px solid var(--color-border)',
-        overflowY: 'auto',
-        overflowX: 'hidden'
+        overflow: 'hidden',
+        userSelect: 'none'
       }}
     >
-      {/* Brand Header */}
-      <div
-        style={{
-          padding: sidebarCollapsed ? '16px 8px' : '18px 16px',
-          borderBottom: '1px solid var(--color-border)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          justifyContent: sidebarCollapsed ? 'center' : 'flex-start',
-          cursor: 'pointer',
-          background: 'var(--color-bg-app)'
-        }}
-        onClick={() => navigateTo('dashboard')}
-      >
+      {/* Top Section: Brand Emblem & Header */}
+      <div>
         <div
+          onClick={() => navigateTo('dashboard')}
           style={{
-            width: '36px',
-            height: '36px',
-            borderRadius: 'var(--radius-md)',
-            backgroundColor: 'var(--color-action-primary)',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: 800,
-            fontSize: '15px',
-            color: '#FFFFFF',
-            boxShadow: '0 2px 8px rgba(59, 130, 246, 0.4)',
-            flexShrink: 0
+            gap: '11px',
+            padding: sidebarCollapsed ? '4px 0 14px' : '4px 6px 14px',
+            borderBottom: '1px solid #F1F5F9',
+            cursor: 'pointer',
+            justifyContent: sidebarCollapsed ? 'center' : 'flex-start'
           }}
+          title="PAIMANA Sentinel AI"
         >
-          P
-        </div>
-
-        {!sidebarCollapsed && (
-          <div style={{ overflow: 'hidden', whiteSpace: 'nowrap' }}>
-            <div
-              style={{
-                fontSize: '14.5px',
-                fontWeight: 700,
-                color: 'var(--color-text-primary)',
-                letterSpacing: '-0.01em',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}
-            >
-              PAIMANA{' '}
-              <span
-                style={{
-                  fontSize: '10.5px',
-                  background: 'var(--color-action-subtle)',
-                  color: 'var(--color-accent-cyan)',
-                  border: '1px solid var(--color-border-subtle)',
-                  padding: '1px 5px',
-                  borderRadius: '4px'
-                }}
-              >
-                AI
-              </span>
-            </div>
-            <div
-              style={{
-                fontSize: '10.5px',
-                color: 'var(--color-text-muted)',
-                fontWeight: 500,
-                letterSpacing: '0.02em'
-              }}
-            >
-              MoSPI IPMD
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Primary Navigation Items */}
-      <div
-        style={{
-          flex: 1,
-          padding: sidebarCollapsed ? '14px 6px' : '16px 10px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '4px'
-        }}
-      >
-        {!sidebarCollapsed && (
+          {/* PAIMANA Sentinel National Tech Emblem */}
           <div
             style={{
-              fontSize: '10px',
-              fontWeight: 700,
-              color: 'var(--color-text-dim)',
-              letterSpacing: '0.08em',
-              padding: '0 10px 8px',
-              textTransform: 'uppercase'
+              width: '38px',
+              height: '38px',
+              borderRadius: '12px',
+              backgroundColor: '#0F172A',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 2px 8px rgba(15, 23, 42, 0.25)',
+              flexShrink: 0
             }}
           >
-            Navigation
-          </div>
-        )}
-
-        {primaryNavItems.map((item) => {
-          const isActive =
-            activeRoute === item.id ||
-            (item.id === 'projects' && activeRoute === 'project-detail') ||
-            (item.id === 'alerts' && activeRoute === 'risk-monitor');
-
-          return (
-            <button
-              key={item.id}
-              type="button"
-              title={sidebarCollapsed ? item.label : undefined}
+            <span
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: sidebarCollapsed ? '10px 0' : '9px 12px',
-                justifyContent: sidebarCollapsed ? 'center' : 'flex-start',
-                borderRadius: '8px',
-                backgroundColor: isActive ? '#E0F2FE' : 'transparent',
-                color: isActive ? '#0284C7' : '#334155',
-                border: 'none',
-                borderLeft: isActive ? '3px solid #0284C7' : '3px solid transparent',
-                cursor: 'pointer',
-                fontSize: '13.5px',
-                fontWeight: isActive ? 600 : 500,
-                width: '100%',
-                textAlign: 'left',
-                transition: 'all 120ms ease'
+                color: '#FFFFFF',
+                fontWeight: 900,
+                fontSize: '17px',
+                letterSpacing: '-0.5px'
               }}
-              onClick={() => navigateTo(item.id)}
             >
-              <span
+              P
+            </span>
+          </div>
+
+          {!sidebarCollapsed && (
+            <div style={{ overflow: 'hidden', whiteSpace: 'nowrap' }}>
+              <div
                 style={{
-                  color: isActive ? '#0284C7' : '#64748B',
+                  fontSize: '14.5px',
+                  fontWeight: 800,
+                  color: '#0F172A',
+                  letterSpacing: '-0.02em',
                   display: 'flex',
                   alignItems: 'center',
-                  flexShrink: 0
+                  gap: '5px'
                 }}
               >
-                {item.icon}
-              </span>
-
-              {!sidebarCollapsed && (
-                <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {item.label}
-                </span>
-              )}
-
-              {!sidebarCollapsed && item.badge && (
+                PAIMANA
                 <span
                   style={{
-                    backgroundColor: item.badgeColor || '#0284C7',
-                    color: '#FFFFFF',
-                    fontSize: '10.5px',
+                    fontSize: '9.5px',
                     fontWeight: 700,
-                    padding: '1px 6px',
-                    borderRadius: '10px',
-                    lineHeight: '1.2'
+                    backgroundColor: '#0284C7',
+                    color: '#FFFFFF',
+                    padding: '1px 5px',
+                    borderRadius: '5px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.04em'
                   }}
                 >
-                  {item.badge}
+                  AI
                 </span>
-              )}
-            </button>
-          );
-        })}
+              </div>
+              <div
+                style={{
+                  fontSize: '10px',
+                  color: '#64748B',
+                  fontWeight: 500,
+                  letterSpacing: '0.01em',
+                  marginTop: '1px'
+                }}
+              >
+                MoSPI IPMD Sentinel
+              </div>
+            </div>
+          )}
+        </div>
 
-        {/* Secondary / Tools Section */}
-        <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid var(--color-border-subtle)' }}>
+        {/* Primary Navigation Stack */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginTop: '14px' }}>
           {!sidebarCollapsed && (
             <div
               style={{
-                fontSize: '10px',
+                fontSize: '9.5px',
                 fontWeight: 700,
-                color: 'var(--color-text-dim)',
+                color: '#94A3B8',
                 letterSpacing: '0.08em',
-                padding: '0 10px 8px',
+                padding: '0 8px 4px',
                 textTransform: 'uppercase'
               }}
             >
-              Decision Tools
+              Navigation
             </div>
           )}
 
-          {secondaryNavItems.map((item) => {
-            const isActive = activeRoute === item.id;
+          {primaryNavItems.map((item) => {
+            const isActive =
+              activeRoute === item.id ||
+              (item.id === 'projects' && activeRoute === 'project-detail') ||
+              (item.id === 'alerts' && activeRoute === 'risk-monitor');
+
             return (
               <button
                 key={item.id}
                 type="button"
+                onClick={() => navigateTo(item.id)}
                 title={sidebarCollapsed ? item.label : undefined}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '10px',
-                  padding: sidebarCollapsed ? '8px 0' : '7px 12px',
-                  justifyContent: sidebarCollapsed ? 'center' : 'flex-start',
-                  borderRadius: '6px',
-                  backgroundColor: isActive ? '#E0F2FE' : 'transparent',
-                  color: isActive ? '#0284C7' : '#64748B',
+                  gap: '11px',
+                  padding: sidebarCollapsed ? '10px 0' : '9px 12px',
+                  justifyContent: sidebarCollapsed ? 'center' : 'space-between',
+                  borderRadius: '12px',
+                  backgroundColor: isActive ? '#1E293B' : 'transparent',
+                  color: isActive ? '#FFFFFF' : '#334155',
                   border: 'none',
                   cursor: 'pointer',
-                  fontSize: '12.5px',
+                  fontSize: '13px',
                   fontWeight: isActive ? 600 : 500,
                   width: '100%',
                   textAlign: 'left',
-                  transition: 'all 120ms ease'
+                  transition: 'all 120ms ease',
+                  boxShadow: isActive ? '0 2px 8px rgba(30, 41, 59, 0.22)' : 'none',
+                  position: 'relative'
                 }}
-                onClick={() => navigateTo(item.id)}
               >
-                <span style={{ color: isActive ? '#0284C7' : '#94A3B8', display: 'flex', alignItems: 'center' }}>
-                  {item.icon}
-                </span>
-
-                {!sidebarCollapsed && (
-                  <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {item.label}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '11px' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                    {item.icon(isActive)}
                   </span>
-                )}
+                  {!sidebarCollapsed && (
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {item.label}
+                    </span>
+                  )}
+                </div>
 
-                {!sidebarCollapsed && item.badge && (
+                {/* Red exception pill badge */}
+                {item.badge && (
                   <span
                     style={{
-                      backgroundColor: 'var(--color-surface-hover)',
-                      color: 'var(--color-text-muted)',
-                      fontSize: '9.5px',
-                      fontWeight: 600,
-                      padding: '1px 5px',
-                      borderRadius: '4px'
+                      backgroundColor: '#EF4444',
+                      color: '#FFFFFF',
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      padding: sidebarCollapsed ? '0' : '1px 6px',
+                      borderRadius: '9999px',
+                      minWidth: sidebarCollapsed ? '8px' : 'auto',
+                      height: sidebarCollapsed ? '8px' : 'auto',
+                      position: sidebarCollapsed ? 'absolute' : 'static',
+                      top: sidebarCollapsed ? '6px' : 'auto',
+                      right: sidebarCollapsed ? '8px' : 'auto'
                     }}
                   >
-                    {item.badge}
+                    {!sidebarCollapsed && item.badge}
                   </span>
                 )}
               </button>
             );
           })}
+
+          {/* Decision Tools Section */}
+          <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid #F1F5F9' }}>
+            {!sidebarCollapsed && (
+              <div
+                style={{
+                  fontSize: '9.5px',
+                  fontWeight: 700,
+                  color: '#94A3B8',
+                  letterSpacing: '0.08em',
+                  padding: '0 8px 4px',
+                  textTransform: 'uppercase'
+                }}
+              >
+                Decision Tools
+              </div>
+            )}
+
+            {toolsNavItems.map((item) => {
+              const isActive = activeRoute === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => navigateTo(item.id)}
+                  title={sidebarCollapsed ? item.label : undefined}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    padding: sidebarCollapsed ? '9px 0' : '8px 12px',
+                    justifyContent: sidebarCollapsed ? 'center' : 'space-between',
+                    borderRadius: '10px',
+                    backgroundColor: isActive ? '#1E293B' : 'transparent',
+                    color: isActive ? '#FFFFFF' : '#475569',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: isActive ? 600 : 500,
+                    width: '100%',
+                    textAlign: 'left',
+                    transition: 'all 120ms ease',
+                    boxShadow: isActive ? '0 2px 6px rgba(30, 41, 59, 0.2)' : 'none'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                      {item.icon(isActive)}
+                    </span>
+                    {!sidebarCollapsed && (
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {item.label}
+                      </span>
+                    )}
+                  </div>
+
+                  {!sidebarCollapsed && item.badge && (
+                    <span
+                      style={{
+                        backgroundColor: isActive ? '#334155' : '#F1F5F9',
+                        color: isActive ? '#94A3B8' : '#64748B',
+                        fontSize: '9px',
+                        fontWeight: 600,
+                        padding: '1px 5px',
+                        borderRadius: '4px'
+                      }}
+                    >
+                      {item.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      {/* User Info & Portal Link at Bottom */}
+      {/* Pinned Bottom Section: Officer Profile, Settings, & Collapse Button */}
       <div
         style={{
-          padding: sidebarCollapsed ? '12px 6px' : '14px 12px',
-          borderTop: '1px solid var(--color-border)',
-          backgroundColor: 'var(--color-surface-elevated)'
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '4px',
+          paddingTop: '12px',
+          borderTop: '1px solid #F1F5F9'
         }}
       >
+        {/* Officer Profile / Accounts Manager */}
         <button
           type="button"
-          onClick={() => navigateTo('landing')}
+          onClick={() => navigateTo('admin')}
+          title={sidebarCollapsed ? `Officer Profile (${user.name})` : undefined}
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
+            gap: '10px',
             width: '100%',
-            padding: '6px 8px',
-            borderRadius: '6px',
+            padding: sidebarCollapsed ? '8px 0' : '8px 10px',
+            borderRadius: '10px',
+            border: 'none',
+            background: activeRoute === 'admin' ? '#1E293B' : 'transparent',
+            color: activeRoute === 'admin' ? '#FFFFFF' : '#334155',
+            fontSize: '12px',
+            fontWeight: 500,
+            cursor: 'pointer',
+            justifyContent: sidebarCollapsed ? 'center' : 'flex-start',
+            transition: 'all 120ms ease'
+          }}
+        >
+          <UserCheck size={16} color={activeRoute === 'admin' ? '#38BDF8' : '#64748B'} />
+          {!sidebarCollapsed && (
+            <div style={{ textAlign: 'left', overflow: 'hidden' }}>
+              <div
+                style={{
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  color: activeRoute === 'admin' ? '#FFFFFF' : '#0F172A',
+                  whiteSpace: 'nowrap',
+                  textOverflow: 'ellipsis'
+                }}
+              >
+                {user.name}
+              </div>
+              <div
+                style={{
+                  fontSize: '10px',
+                  color: activeRoute === 'admin' ? '#94A3B8' : '#64748B',
+                  whiteSpace: 'nowrap',
+                  textOverflow: 'ellipsis'
+                }}
+              >
+                {user.ministry ? (user.ministry.length > 20 ? `${user.ministry.substring(0, 18)}...` : user.ministry) : 'MoSPI National'}
+              </div>
+            </div>
+          )}
+        </button>
+
+        {/* Settings */}
+        <button
+          type="button"
+          onClick={() => navigateTo('admin')}
+          title={sidebarCollapsed ? 'Settings' : undefined}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            width: '100%',
+            padding: sidebarCollapsed ? '8px 0' : '7px 10px',
+            borderRadius: '10px',
             border: 'none',
             background: 'transparent',
-            color: 'var(--color-text-muted)',
-            fontSize: '11.5px',
+            color: '#475569',
+            fontSize: '12px',
+            fontWeight: 500,
+            cursor: 'pointer',
+            justifyContent: sidebarCollapsed ? 'center' : 'flex-start',
+            transition: 'all 120ms ease'
+          }}
+        >
+          <Settings size={16} color="#64748B" />
+          {!sidebarCollapsed && <span>Settings</span>}
+        </button>
+
+        {/* Public Portal Link */}
+        <button
+          type="button"
+          onClick={() => navigateTo('landing')}
+          title={sidebarCollapsed ? 'Public Portal' : undefined}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            width: '100%',
+            padding: sidebarCollapsed ? '8px 0' : '6px 10px',
+            borderRadius: '10px',
+            border: 'none',
+            background: 'transparent',
+            color: '#64748B',
+            fontSize: '11px',
             cursor: 'pointer',
             justifyContent: sidebarCollapsed ? 'center' : 'flex-start'
           }}
-          title="Back to Public Portal"
         >
-          <ExternalLink size={14} />
+          <ExternalLink size={14} color="#94A3B8" />
           {!sidebarCollapsed && <span>Public Portal</span>}
         </button>
 
@@ -351,20 +479,20 @@ export const Sidebar: React.FC = () => {
             alignItems: 'center',
             gap: '8px',
             width: '100%',
-            padding: '6px 8px',
-            borderRadius: '6px',
+            padding: sidebarCollapsed ? '8px 0' : '6px 10px',
+            borderRadius: '10px',
             border: 'none',
-            background: 'transparent',
-            color: 'var(--color-text-muted)',
-            fontSize: '11.5px',
+            background: '#F8FAFC',
+            color: '#64748B',
+            fontSize: '11px',
             cursor: 'pointer',
             justifyContent: sidebarCollapsed ? 'center' : 'flex-start',
-            marginTop: '4px'
+            marginTop: '2px'
           }}
           title={sidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
         >
           {sidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
-          {!sidebarCollapsed && <span>Collapse menu</span>}
+          {!sidebarCollapsed && <span>Collapse sidebar</span>}
         </button>
       </div>
     </aside>

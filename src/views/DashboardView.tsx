@@ -1,365 +1,399 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
-import { MetricCard } from '../components/common/MetricCard';
 import { StatusBadge } from '../components/common/StatusBadge';
-import { IndiaRiskMap } from '../components/map/IndiaRiskMap';
+import { MetricCard } from '../components/common/MetricCard';
 import {
   FolderGit2,
+  CheckCircle2,
   AlertTriangle,
-  Clock,
-  Coins,
-  ShieldCheck,
-  Download,
-  Activity,
+  Search,
   ChevronRight,
-  Sparkles,
-  Calendar
+  Calendar,
+  X
 } from 'lucide-react';
 
 export const DashboardView: React.FC = () => {
-  const { projects, navigateToProject, navigateTo, showNotification, reportingMonth } = useApp();
+  const {
+    scopedProjects,
+    scopedAlerts,
+    navigateToProject,
+    user,
+    switchDemoRole,
+    reportingMonth,
+    selectedMinistry,
+    setSelectedMinistry
+  } = useApp();
 
-  const [tableFilter, setTableFilter] = useState<'all' | 'critical' | 'high'>('all');
+  const [projectSearch, setProjectSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'on_track' | 'delayed' | 'needs_review' | 'completed'>('all');
 
-  // Filter top critical/high risk projects that need attention
-  const needsAttentionProjects = projects
-    .filter((p) => {
-      const r = (p.riskLevel || '').toLowerCase();
-      if (tableFilter === 'critical') return r === 'critical';
-      if (tableFilter === 'high') return r === 'high';
-      return r === 'critical' || r === 'high';
-    })
-    .sort((a, b) => b.riskScore - a.riskScore);
+  // Summary Metrics
+  const totalProjects = scopedProjects.length;
 
-  const criticalCount = projects.filter((p) => (p.riskLevel || '').toLowerCase() === 'critical').length;
-  const highCount = projects.filter((p) => (p.riskLevel || '').toLowerCase() === 'high').length;
-  const modCount = projects.filter((p) => (p.riskLevel || '').toLowerCase().includes('mod') || (p.riskLevel || '').toLowerCase().includes('med')).length;
-  const lowCount = projects.filter((p) => (p.riskLevel || '').toLowerCase() === 'low').length;
+  const onTrackProjects = useMemo(() => {
+    return scopedProjects.filter(
+      (p) =>
+        (p.status === 'Ongoing' || p.status === 'On Track') &&
+        p.riskLevel.toLowerCase() !== 'critical' &&
+        p.riskLevel.toLowerCase() !== 'high' &&
+        p.scheduleDelayProbability < 60
+    );
+  }, [scopedProjects]);
 
-  const exportTableCSV = () => {
-    const headers = [
-      'Project Code',
-      'Project Name',
-      'Sector',
-      'Ministry',
-      'Risk Score',
-      'Main Delay Driver',
-      'Physical Progress %',
-      'Risk Level'
-    ];
-    const rows = needsAttentionProjects.map((p) => [
-      p.code,
-      `"${p.name}"`,
-      p.sector,
-      `"${p.ministry}"`,
-      p.riskScore,
-      `"${p.mainRiskReason || 'Milestone Slippage'}"`,
-      `${p.physicalProgress}%`,
-      p.riskLevel
-    ]);
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `PAIMANA_Needs_Attention_${reportingMonth.replace(' ', '_')}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    showNotification('Exported Needs Attention list as CSV.');
-  };
+  const needsAttentionProjects = useMemo(() => {
+    return scopedProjects.filter(
+      (p) =>
+        p.riskLevel.toLowerCase() === 'critical' ||
+        p.riskLevel.toLowerCase() === 'high' ||
+        p.status === 'Critical Delay' ||
+        p.status === 'Delayed' ||
+        p.scheduleDelayProbability >= 60 ||
+        (p.progressGap && p.progressGap > 10)
+    );
+  }, [scopedProjects]);
+
+  // Exception list (actionable items with root cause)
+  const exceptionsList = useMemo(() => {
+    return needsAttentionProjects.map((p) => {
+      let issueDesc = p.mainRiskReason || 'Milestone slippage and physical progress deviation';
+      let targetDate = p.revisedCompletionDate || p.originalCompletionDate || 'Target: Dec 2026';
+      let severity: 'critical' | 'high' | 'medium' =
+        p.riskLevel.toLowerCase() === 'critical' ? 'critical' : 'high';
+
+      // Correlate with any active scoped alert
+      const matchingAlert = scopedAlerts.find((a) => a.projectId === p.id);
+      if (matchingAlert) {
+        issueDesc = matchingAlert.reason || matchingAlert.warningTitle || issueDesc;
+        if (matchingAlert.severity.toLowerCase() === 'critical') severity = 'critical';
+      }
+
+      return {
+        id: p.id,
+        name: p.name,
+        code: p.code,
+        agency: p.implementingAgency,
+        issue: issueDesc,
+        severity,
+        targetDate,
+        physicalProgress: p.physicalProgress,
+        scheduleStatus: p.status
+      };
+    });
+  }, [needsAttentionProjects, scopedAlerts]);
+
+  // Filtered Ministry Project List
+  const filteredProjects = useMemo(() => {
+    return scopedProjects.filter((p) => {
+      if (statusFilter === 'on_track' && (p.status === 'Delayed' || p.status === 'Critical Delay' || p.riskLevel === 'critical')) return false;
+      if (statusFilter === 'delayed' && p.status !== 'Delayed' && p.status !== 'Critical Delay') return false;
+      if (statusFilter === 'needs_review' && p.riskLevel !== 'critical' && p.riskLevel !== 'high') return false;
+      if (statusFilter === 'completed' && p.status !== 'Completed' && p.status !== 'Near Completion') return false;
+
+      if (
+        projectSearch &&
+        !p.name.toLowerCase().includes(projectSearch.toLowerCase()) &&
+        !p.code.toLowerCase().includes(projectSearch.toLowerCase()) &&
+        !p.state.toLowerCase().includes(projectSearch.toLowerCase()) &&
+        !p.implementingAgency.toLowerCase().includes(projectSearch.toLowerCase())
+      ) {
+        return false;
+      }
+      return true;
+    });
+  }, [scopedProjects, statusFilter, projectSearch]);
+
+  const ministryTitle = user.isNationalOversight
+    ? selectedMinistry === 'All Ministries'
+      ? 'National Infrastructure Portfolio'
+      : selectedMinistry
+    : user.ministry || 'My Ministry Projects';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Top Header: Single Clean Heading + Cycle Badge */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b border-slate-200/80">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+      {/* Top Header: Simple Ministry Title + Reporting Period */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pb-2 border-b border-slate-200">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Overview</h1>
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">{ministryTitle}</h1>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-50 text-sky-800 border border-sky-200">
               <Calendar size={11} className="text-sky-600" />
               <span>{reportingMonth}</span>
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
-            Central Sector Projects (₹150 Cr+) · Real-time portfolio monitoring & predictive risk surveillance
+          <p className="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
+            <span>Authorised Officer: <strong>{user.name}</strong> ({user.department})</span>
+            <span className="text-slate-300">•</span>
+            <span>Last Synced: 28 Sep 2026, 14:00 IST</span>
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            className="btn-secondary text-xs px-3 py-1.5 flex items-center gap-1.5"
-            onClick={() => navigateTo('simulator')}
-          >
-            <Activity size={13} className="text-sky-600" />
-            <span>What-If Simulator</span>
-          </button>
-          <button
-            type="button"
-            className="btn-primary text-xs px-3.5 py-1.5 flex items-center gap-1.5"
-            onClick={() => navigateTo('reports')}
-          >
-            <Download size={13} />
-            <span>Monthly Flash Report</span>
-          </button>
-        </div>
+        {/* National Scope Selector (Only visible for multi-ministry / national oversight users) */}
+        {user.isNationalOversight ? (
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-slate-500 font-medium">Scope:</span>
+            <select
+              value={selectedMinistry}
+              onChange={(e) => setSelectedMinistry(e.target.value)}
+              className="gov-select text-xs py-1 px-2.5"
+            >
+              <option value="All Ministries">All Ministries (National View)</option>
+              <option value="Ministry of Railways">Ministry of Railways</option>
+              <option value="Ministry of Road Transport and Highways">Ministry of Road Transport and Highways</option>
+              <option value="Ministry of Power">Ministry of Power</option>
+              <option value="Ministry of Petroleum and Natural Gas">Ministry of Petroleum & Natural Gas</option>
+            </select>
+          </div>
+        ) : (
+          /* Role preview switch chips for demo convenience */
+          <div className="flex items-center gap-1.5 bg-slate-50 p-1 rounded-lg border border-slate-200 text-xs">
+            <span className="text-[11px] text-slate-400 px-1 font-medium">Switch Scope:</span>
+            <button
+              type="button"
+              onClick={() => switchDemoRole('railways')}
+              className={`px-2 py-0.5 rounded text-[11px] font-semibold transition ${
+                user.ministry.includes('Railways') ? 'bg-sky-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              Railways
+            </button>
+            <button
+              type="button"
+              onClick={() => switchDemoRole('morth')}
+              className={`px-2 py-0.5 rounded text-[11px] font-semibold transition ${
+                user.ministry.includes('Road') ? 'bg-sky-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              MoRTH
+            </button>
+            <button
+              type="button"
+              onClick={() => switchDemoRole('national_admin')}
+              className="px-2 py-0.5 rounded text-[11px] font-semibold text-slate-600 hover:bg-slate-200"
+            >
+              National Oversight
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* 4 Compact Summary Metrics (~110-120px) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+      {/* 3 Compact Summaries */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
         <MetricCard
-          label="Monitored Projects"
-          value={projects.length}
-          explanation="Active mega & major projects in registry"
-          trend={{ direction: 'neutral', text: '100% active coverage', isGood: true }}
+          label="Total Projects"
+          value={totalProjects}
+          explanation={`Authorised ${user.isNationalOversight ? 'central sector' : user.ministry} registry`}
+          trend={{ direction: 'neutral', text: '100% data coverage', isGood: true }}
           icon={<FolderGit2 size={16} />}
           indicatorColor="primary"
-          onClick={() => navigateTo('projects')}
+        />
+
+        <MetricCard
+          label="On Track"
+          value={onTrackProjects.length}
+          explanation="Delivering within planned milestone schedule"
+          trend={{ direction: 'up', text: `${Math.round((onTrackProjects.length / (totalProjects || 1)) * 100)}% on schedule`, isGood: true }}
+          icon={<CheckCircle2 size={16} />}
+          indicatorColor="medium"
         />
 
         <MetricCard
           label="Needs Attention"
-          value={criticalCount + highCount}
-          explanation={`${criticalCount} critical, ${highCount} high risk`}
-          subtitleBadge="Action Required"
-          trend={{ direction: 'down', text: 'Top priority review', isGood: false }}
+          value={needsAttentionProjects.length}
+          explanation="Milestone slippage, delay risk, or cost variance"
+          subtitleBadge="Immediate Review"
+          trend={{ direction: 'down', text: 'Actionable exceptions', isGood: false }}
           icon={<AlertTriangle size={16} />}
           indicatorColor="critical"
-          onClick={() => navigateTo('alerts')}
-        />
-
-        <MetricCard
-          label="Avg Schedule Delay"
-          value="34.2 Mos"
-          explanation="Weighted cumulative delay across portfolio"
-          trend={{ direction: 'up', text: '+2.1 mos vs baseline', isGood: false }}
-          icon={<Clock size={16} />}
-          indicatorColor="prediction"
-        />
-
-        <MetricCard
-          label="Cost Escalation"
-          value="21.4%"
-          explanation="₹48.2 L Cr cumulative expenditure"
-          trend={{ direction: 'neutral', text: 'Within revised envelope', isGood: true }}
-          icon={<Coins size={16} />}
-          indicatorColor="primary"
         />
       </div>
 
-      {/* Main Grid: Geospatial Map + Risk Distribution Bar */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* Project Spatial Map (7 cols) */}
-        <div className="lg:col-span-7 gov-card p-0 overflow-hidden flex flex-col">
-          <div className="p-3.5 border-b border-slate-100 flex items-center justify-between">
+      {/* Surface Exceptions Automatically: "Needs Attention" Section */}
+      {exceptionsList.length > 0 ? (
+        <div className="gov-card p-0 overflow-hidden border-amber-200/80">
+          <div className="p-3 bg-amber-50/70 border-b border-amber-100 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <h2 className="text-sm font-semibold text-slate-900">Project Map</h2>
+              <AlertTriangle size={15} className="text-amber-700" />
+              <h2 className="text-xs font-bold text-amber-900 uppercase tracking-wide">
+                Actionable Exceptions ({exceptionsList.length} Projects Requiring Review)
+              </h2>
             </div>
-            <span className="text-xs text-slate-400">Click any marker to inspect</span>
-          </div>
-          <div className="flex-1" style={{ minHeight: '380px' }}>
-            <IndiaRiskMap height="380px" showFiltersBar={false} />
-          </div>
-        </div>
-
-        {/* Portfolio Risk Distribution & Early Warning Summary (5 cols) */}
-        <div className="lg:col-span-5 flex flex-col gap-3.5">
-          {/* Portfolio Risk Distribution Card */}
-          <div className="gov-card">
-            <div className="gov-card-header pb-2.5">
-              <div className="flex items-center gap-2">
-                <ShieldCheck size={16} className="text-sky-600" />
-                <h3 className="text-sm font-semibold text-slate-900">Portfolio Risk Distribution</h3>
-              </div>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">
-                Score: 58.4 / 100
-              </span>
-            </div>
-
-            <div className="gov-card-body pt-1">
-              <div className="flex items-center justify-between text-xs text-slate-500 mb-1.5">
-                <span>Risk Tiers ({projects.length} Total)</span>
-                <span className="font-medium text-slate-700">{criticalCount + highCount} Critical/High</span>
-              </div>
-
-              {/* Segmented Distribution Bar */}
-              <div className="h-3 w-full rounded-full bg-slate-100 flex overflow-hidden mb-3">
-                <div style={{ width: `${(criticalCount / projects.length) * 100}%` }} className="bg-red-500" title={`Critical: ${criticalCount}`} />
-                <div style={{ width: `${(highCount / projects.length) * 100}%` }} className="bg-orange-500" title={`High: ${highCount}`} />
-                <div style={{ width: `${(modCount / projects.length) * 100 || 30}%` }} className="bg-amber-400" title={`Moderate: ${modCount}`} />
-                <div style={{ width: `${(lowCount / projects.length) * 100 || 40}%` }} className="bg-emerald-500" title={`Low: ${lowCount}`} />
-              </div>
-
-              {/* Legend */}
-              <div className="grid grid-cols-4 gap-2 text-center text-xs">
-                <div className="p-1.5 rounded bg-red-50/60 border border-red-100">
-                  <div className="font-bold text-red-700">{criticalCount}</div>
-                  <div className="text-[10px] text-red-600">Critical</div>
-                </div>
-                <div className="p-1.5 rounded bg-orange-50/60 border border-orange-100">
-                  <div className="font-bold text-orange-700">{highCount}</div>
-                  <div className="text-[10px] text-orange-600">High</div>
-                </div>
-                <div className="p-1.5 rounded bg-amber-50/60 border border-amber-100">
-                  <div className="font-bold text-amber-700">{modCount || 1}</div>
-                  <div className="text-[10px] text-amber-600">Moderate</div>
-                </div>
-                <div className="p-1.5 rounded bg-emerald-50/60 border border-emerald-100">
-                  <div className="font-bold text-emerald-700">{lowCount || 2}</div>
-                  <div className="text-[10px] text-emerald-600">Low</div>
-                </div>
-              </div>
-            </div>
+            <span className="text-[11px] text-amber-800">Surfaced based on milestone breaches & delay predictions</span>
           </div>
 
-          {/* Quick Intelligence Summary */}
-          <div className="gov-card flex-1">
-            <div className="gov-card-header pb-2">
-              <div className="flex items-center gap-2">
-                <Sparkles size={15} className="text-sky-600" />
-                <h3 className="text-sm font-semibold text-slate-900">Primary Risk Triggers</h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => navigateTo('analytics')}
-                className="text-xs text-sky-600 hover:text-sky-800 flex items-center gap-0.5"
+          <div className="divide-y divide-slate-100">
+            {exceptionsList.map((item) => (
+              <div
+                key={item.id}
+                onClick={() => navigateToProject(item.id)}
+                className="p-3 sm:px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/80 cursor-pointer transition"
               >
-                Analytics <ChevronRight size={12} />
-              </button>
-            </div>
-
-            <div className="gov-card-body space-y-2 pt-1 text-xs text-slate-600">
-              <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100 flex items-start justify-between">
-                <div>
-                  <span className="font-semibold text-slate-800">Right of Way & Land Acquisition</span>
-                  <p className="text-[11px] text-slate-500 mt-0.5">Affects 62% of delayed railway & highway packages</p>
+                <div className="space-y-0.5 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-slate-900 text-xs hover:text-sky-600 transition">
+                      {item.name}
+                    </span>
+                    <StatusBadge level={item.severity} size="sm" />
+                  </div>
+                  <p className="text-xs text-slate-600 m-0 line-clamp-1">
+                    <strong className="text-slate-700 font-medium">Issue:</strong> {item.issue}
+                  </p>
+                  <div className="text-[11px] text-slate-400 flex items-center gap-3">
+                    <span>Code: {item.code}</span>
+                    <span>Agency: {item.agency}</span>
+                    <span>Target: {item.targetDate}</span>
+                  </div>
                 </div>
-                <span className="px-1.5 py-0.5 rounded bg-red-100 text-red-700 font-bold text-[10px] shrink-0">
-                  38% SHAP
-                </span>
-              </div>
 
-              <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100 flex items-start justify-between">
-                <div>
-                  <span className="font-semibold text-slate-800">Environmental & Forest Clearances</span>
-                  <p className="text-[11px] text-slate-500 mt-0.5">Key constraint across thermal, hydro & mining projects</p>
+                <div className="flex items-center gap-3 shrink-0">
+                  <div className="text-right hidden sm:block">
+                    <div className="text-xs font-bold text-slate-700">{item.physicalProgress}%</div>
+                    <div className="text-[10px] text-slate-400">Physical Progress</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigateToProject(item.id);
+                    }}
+                    className="btn-primary text-xs px-3 py-1.5 flex items-center gap-1"
+                  >
+                    <span>Review Project</span>
+                    <ChevronRight size={13} />
+                  </button>
                 </div>
-                <span className="px-1.5 py-0.5 rounded bg-orange-100 text-orange-700 font-bold text-[10px] shrink-0">
-                  27% SHAP
-                </span>
               </div>
-
-              <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100 flex items-start justify-between">
-                <div>
-                  <span className="font-semibold text-slate-800">Contractor & EPC Bottlenecks</span>
-                  <p className="text-[11px] text-slate-500 mt-0.5">Equipment mobilization & multi-agency coordination</p>
-                </div>
-                <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 font-bold text-[10px] shrink-0">
-                  19% SHAP
-                </span>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-800 flex items-center gap-2">
+          <CheckCircle2 size={15} className="text-emerald-600" />
+          <span>No urgent project exceptions found. All monitored projects are progressing within milestone parameters.</span>
+        </div>
+      )}
 
-      {/* Prioritized "Needs Attention" Table (Top 5 Critical/High Risk Projects) */}
-      <div className="gov-card">
-        <div className="gov-card-header flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      {/* Ministry Project List Workspace */}
+      <div className="gov-card p-0 overflow-hidden">
+        {/* Table Toolbar: Search & Simple Status Filter */}
+        <div className="p-3 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-slate-50/50">
           <div className="flex items-center gap-2">
-            <AlertTriangle size={16} className="text-red-500" />
-            <div>
-              <h2 className="text-sm font-bold text-slate-900">Projects Needing Attention</h2>
-              <p className="text-xs text-slate-500">Top prioritized projects exhibiting acute milestone or expenditure variance</p>
-            </div>
+            <FolderGit2 size={15} className="text-sky-600" />
+            <span className="font-bold text-xs text-slate-800">
+              {ministryTitle} Directory ({filteredProjects.length})
+            </span>
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-50 text-xs">
-              <button
-                type="button"
-                className={`px-2.5 py-1 rounded-md font-medium transition ${tableFilter === 'all' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
-                onClick={() => setTableFilter('all')}
-              >
-                All Attention ({needsAttentionProjects.length})
-              </button>
-              <button
-                type="button"
-                className={`px-2.5 py-1 rounded-md font-medium transition ${tableFilter === 'critical' ? 'bg-white text-red-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
-                onClick={() => setTableFilter('critical')}
-              >
-                Critical ({criticalCount})
-              </button>
-              <button
-                type="button"
-                className={`px-2.5 py-1 rounded-md font-medium transition ${tableFilter === 'high' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
-                onClick={() => setTableFilter('high')}
-              >
-                High ({highCount})
-              </button>
+            {/* Search Input */}
+            <div className="relative">
+              <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search projects..."
+                value={projectSearch}
+                onChange={(e) => setProjectSearch(e.target.value)}
+                className="gov-input pl-8 py-1 text-xs w-48 sm:w-60"
+              />
+              {projectSearch && (
+                <button
+                  type="button"
+                  onClick={() => setProjectSearch('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  <X size={12} />
+                </button>
+              )}
             </div>
 
-            <button
-              type="button"
-              onClick={exportTableCSV}
-              className="btn-secondary text-xs px-2.5 py-1 flex items-center gap-1"
+            {/* Status Filter */}
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as any)}
+              className="gov-select text-xs py-1 px-2.5"
             >
-              <Download size={12} /> CSV
-            </button>
+              <option value="all">All Statuses</option>
+              <option value="on_track">On Track</option>
+              <option value="delayed">Delayed</option>
+              <option value="needs_review">Needs Review</option>
+              <option value="completed">Completed</option>
+            </select>
           </div>
         </div>
 
+        {/* Clean Ministry Project Table */}
         <div className="gov-table-wrapper" style={{ border: 'none' }}>
           <table className="gov-table">
             <thead>
               <tr>
-                <th>Project</th>
-                <th>Sector / Ministry</th>
-                <th>Main Issue / Trigger</th>
-                <th>Risk Level</th>
-                <th>Implementing Agency</th>
+                <th>Project Name</th>
+                <th>Progress</th>
+                <th>Schedule Status</th>
+                <th>Next Milestone / Completion</th>
                 <th style={{ textAlign: 'right' }}>Action</th>
               </tr>
             </thead>
             <tbody>
-              {needsAttentionProjects.slice(0, 5).map((project) => (
-                <tr key={project.id} className="hover:bg-slate-50/80 transition-colors">
-                  <td>
-                    <div className="font-semibold text-slate-900 text-xs">
-                      {project.name}
-                    </div>
-                    <div className="text-[11px] text-slate-400">
-                      {project.code} · {project.state}
-                    </div>
-                  </td>
-                  <td>
-                    <div className="text-xs text-slate-700 font-medium">{project.sector}</div>
-                    <div className="text-[10px] text-slate-400 truncate max-w-[140px]">{project.ministry}</div>
-                  </td>
-                  <td>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-700 border border-slate-200">
-                      {project.mainRiskReason || 'Right of Way / Clearance Bottleneck'}
-                    </span>
-                  </td>
-                  <td>
-                    <StatusBadge level={project.riskLevel} customLabel={`${project.riskScore}/100`} size="sm" />
-                  </td>
-                  <td>
-                    <div className="text-xs text-slate-700 font-medium">{project.implementingAgency || 'NHAI / MoRTH'}</div>
-                    <div className="text-[10px] text-slate-400">Escalate to IPMD Taskforce</div>
-                  </td>
-                  <td style={{ textAlign: 'right' }}>
-                    <button
-                      type="button"
-                      onClick={() => navigateToProject(project.id)}
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-sky-600 hover:text-sky-800 bg-sky-50 hover:bg-sky-100 px-2.5 py-1 rounded transition"
-                    >
-                      View Details <ChevronRight size={13} />
-                    </button>
+              {filteredProjects.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-10 text-center text-slate-400">
+                    No projects found matching the filter criteria.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filteredProjects.map((p) => (
+                  <tr
+                    key={p.id}
+                    onClick={() => navigateToProject(p.id)}
+                    className="hover:bg-slate-50/80 cursor-pointer transition"
+                  >
+                    <td>
+                      <div className="font-semibold text-slate-900 text-xs hover:text-sky-600 transition">
+                        {p.name}
+                      </div>
+                      <div className="text-[11px] text-slate-400">
+                        {p.code} · {p.implementingAgency} · {p.state}
+                      </div>
+                    </td>
+                    <td>
+                      <div className="flex items-center gap-2">
+                        <div className="w-16 h-1.5 rounded-full bg-slate-100 overflow-hidden shrink-0">
+                          <div
+                            style={{ width: `${p.physicalProgress}%` }}
+                            className="h-full bg-sky-600 rounded-full"
+                          />
+                        </div>
+                        <span className="tabular-nums text-xs font-semibold text-slate-700">
+                          {p.physicalProgress}%
+                        </span>
+                      </div>
+                    </td>
+                    <td>
+                      <StatusBadge level={p.riskLevel} customLabel={p.status} size="sm" />
+                    </td>
+                    <td>
+                      <div className="text-xs text-slate-700 font-medium">
+                        {p.revisedCompletionDate || p.originalCompletionDate || 'Target Dec 2026'}
+                      </div>
+                      <div className="text-[10px] text-slate-400">
+                        {p.expectedDelayMonths > 0 ? `+${p.expectedDelayMonths} mos slippage` : 'On schedule'}
+                      </div>
+                    </td>
+                    <td style={{ textAlign: 'right' }}>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigateToProject(p.id);
+                        }}
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-sky-600 hover:text-sky-800 bg-sky-50 hover:bg-sky-100 px-2.5 py-1 rounded transition"
+                      >
+                        <span>View</span>
+                        <ChevronRight size={13} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

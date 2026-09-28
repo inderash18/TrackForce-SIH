@@ -61,8 +61,8 @@ export const Header: React.FC = () => {
         return { title: 'Projects', breadcrumb: 'PAIMANA / Projects' };
       case 'project-detail':
         return {
-          title: selectedProject ? selectedProject.name : 'Project Details',
-          breadcrumb: `Projects / ${selectedProjectId}`
+          title: 'Project Details',
+          breadcrumb: `Projects / ${selectedProject ? selectedProject.code : selectedProjectId}`
         };
       case 'risk-monitor':
         return { title: 'Risks & Actions', breadcrumb: 'PAIMANA / Risks' };

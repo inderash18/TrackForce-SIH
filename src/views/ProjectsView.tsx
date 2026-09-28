@@ -14,7 +14,7 @@ import {
 import { sectorSummaryList, ministrySummaryList } from '../data/nationalMetrics';
 
 export const ProjectsView: React.FC = () => {
-  const { projects, navigateToProject, user, showNotification, reportingMonth } = useApp();
+  const { scopedProjects, navigateToProject, user, showNotification, reportingMonth } = useApp();
 
   const [search, setSearch] = useState('');
   const [filterSector, setFilterSector] = useState('all');
@@ -27,7 +27,7 @@ export const ProjectsView: React.FC = () => {
     code: '',
     name: '',
     sector: 'Roads & Highways',
-    ministry: 'Ministry of Road Transport and Highways',
+    ministry: user.ministry || 'Ministry of Road Transport and Highways',
     state: 'Maharashtra',
     originalCost: 1500,
     revisedCost: 1650,
@@ -40,7 +40,7 @@ export const ProjectsView: React.FC = () => {
 
   // Filtered Projects
   const filteredProjects = useMemo(() => {
-    return projects.filter((p) => {
+    return scopedProjects.filter((p) => {
       if (filterSector !== 'all' && p.sector !== filterSector) return false;
       if (filterRisk !== 'all' && p.riskLevel.toLowerCase() !== filterRisk.toLowerCase()) return false;
       if (filterMinistry !== 'all' && p.ministry !== filterMinistry) return false;
@@ -56,7 +56,7 @@ export const ProjectsView: React.FC = () => {
       }
       return true;
     });
-  }, [projects, search, filterSector, filterRisk, filterMinistry, filterStatus]);
+  }, [scopedProjects, search, filterSector, filterRisk, filterMinistry, filterStatus]);
 
   const totalPages = Math.ceil(filteredProjects.length / pageSize) || 1;
   const paginatedProjects = filteredProjects.slice((currentPage - 1) * pageSize, currentPage * pageSize);
@@ -131,13 +131,15 @@ export const ProjectsView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b border-slate-200">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Projects</h1>
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+              {user.isNationalOversight ? 'National Infrastructure Projects' : `${user.ministry || 'Ministry'} Projects`}
+            </h1>
             <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
               {filteredProjects.length} total
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            Central sector infrastructure projects costing ₹150 Crore and above
+            Reporting Period: <strong className="text-slate-700 font-medium">{reportingMonth}</strong> · Centrally Monitored Infrastructure Outlay
           </p>
         </div>
 
@@ -262,27 +264,36 @@ export const ProjectsView: React.FC = () => {
         {/* Expandable "More filters" Tray */}
         {showMoreFilters && (
           <div className="pt-2.5 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 bg-slate-50/60 p-2.5 rounded-md">
-            <div>
-              <label className="block text-[11px] font-medium text-slate-600 mb-1">Ministry / Department</label>
-              <select
-                value={filterMinistry}
-                onChange={(e) => {
-                  setFilterMinistry(e.target.value);
-                  setCurrentPage(1);
-                }}
-                className="gov-select text-xs w-full py-1"
-              >
-                <option value="all">All Ministries</option>
-                {ministrySummaryList.map((m) => (
-                  <option key={m.ministry} value={m.ministry}>
-                    {m.ministry}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* Show Ministry Filter ONLY if National Oversight or Multi-Ministry scope */}
+            {(user.isNationalOversight || user.authorizedMinistries.length > 1) && (
+              <div>
+                <label className="block text-[11px] font-medium text-slate-600 mb-1">Ministry / Scope</label>
+                <select
+                  value={filterMinistry}
+                  onChange={(e) => {
+                    setFilterMinistry(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="gov-select text-xs w-full py-1"
+                >
+                  <option value="all">All Authorized Ministries</option>
+                  {user.authorizedMinistries.includes('ALL')
+                    ? ministrySummaryList.map((m) => (
+                        <option key={m.ministry} value={m.ministry}>
+                          {m.ministry}
+                        </option>
+                      ))
+                    : user.authorizedMinistries.map((m) => (
+                        <option key={m} value={m}>
+                          {m}
+                        </option>
+                      ))}
+                </select>
+              </div>
+            )}
 
             <div>
-              <label className="block text-[11px] font-medium text-slate-600 mb-1">Project Status</label>
+              <label className="block text-[11px] font-medium text-slate-600 mb-1">Delivery Status</label>
               <select
                 value={filterStatus}
                 onChange={(e) => {
@@ -292,10 +303,10 @@ export const ProjectsView: React.FC = () => {
                 className="gov-select text-xs w-full py-1"
               >
                 <option value="all">All Statuses</option>
+                <option value="On Track">On Track</option>
                 <option value="Ongoing">Ongoing</option>
                 <option value="Delayed">Delayed</option>
                 <option value="Critical Delay">Critical Delay</option>
-                <option value="Near Completion">Near Completion</option>
                 <option value="Completed">Completed</option>
               </select>
             </div>
@@ -319,11 +330,11 @@ export const ProjectsView: React.FC = () => {
           <table className="gov-table">
             <thead>
               <tr>
-                <th>Project Name</th>
+                <th>Project Name & Implementing Agency</th>
                 <th>Progress</th>
-                <th>Risk</th>
-                <th>Status</th>
-                <th style={{ textAlign: 'right' }}>Action</th>
+                <th>Schedule Status</th>
+                <th>Target / Completion Date</th>
+                <th style={{ textAlign: 'right' }}>View</th>
               </tr>
             </thead>
             <tbody>
@@ -351,8 +362,12 @@ export const ProjectsView: React.FC = () => {
                       <div className="font-semibold text-slate-900 text-xs hover:text-sky-600 transition-colors">
                         {project.name}
                       </div>
-                      <div className="text-[11px] text-slate-400 mt-0.5">
-                        {project.code} · {project.state} · {project.sector}
+                      <div className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-2">
+                        <span>{project.code}</span>
+                        <span>·</span>
+                        <span>{project.implementingAgency}</span>
+                        <span>·</span>
+                        <span>{project.state}</span>
                       </div>
                     </td>
                     <td>
@@ -369,11 +384,11 @@ export const ProjectsView: React.FC = () => {
                       </div>
                     </td>
                     <td>
-                      <StatusBadge level={project.riskLevel} customLabel={`${project.riskScore}/100`} size="sm" />
+                      <StatusBadge level={project.riskLevel} customLabel={project.status} size="sm" />
                     </td>
                     <td>
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-700 border border-slate-200">
-                        {project.status}
+                      <span className="text-xs text-slate-700 font-medium">
+                        {project.revisedCompletionDate || project.originalCompletionDate || 'Dec 2026'}
                       </span>
                     </td>
                     <td style={{ textAlign: 'right' }}>
