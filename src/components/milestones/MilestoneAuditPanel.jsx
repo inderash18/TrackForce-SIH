@@ -358,7 +358,7 @@ export const MilestoneAuditPanel = ({ project: _project, onAuditSubmit }) => {
 
               <div className="space-y-4 py-2 text-xs">
                 {/* Milestone Detail Grid */}
-                <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 p-3 bg-slate-50 rounded-xl border border-slate-200">
                   <div>
                     <span className="text-[11px] text-slate-500 block">Implementing Contractor</span>
                     <span className="font-semibold text-slate-900">{selectedMilestone.contractor}</span>

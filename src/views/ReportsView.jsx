@@ -187,7 +187,7 @@ export const ReportsView = () => {
               <p className="text-slate-600 leading-relaxed m-0">{previewReport.description}</p>
 
               {/* Dossier Preview Metrics */}
-              <div className="grid grid-cols-3 gap-2.5 bg-slate-50 p-3 rounded-lg border border-slate-200/80 text-center">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 bg-slate-50 p-3 rounded-lg border border-slate-200/80 text-center">
                 <div>
                   <span className="text-[11px] text-slate-400 block">Total Coverage</span>
                   <strong className="text-sm text-slate-900">{scopedProjects.length} Projects</strong>
@@ -225,14 +225,14 @@ export const ReportsView = () => {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
-                <button type="button" onClick={() => setPreviewReport(null)} className="btn-secondary text-xs px-3 py-1.5">
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 flex-wrap">
+                <button type="button" onClick={() => setPreviewReport(null)} className="btn-secondary text-xs px-3 py-1.5 flex-1 sm:flex-none">
                   Close
                 </button>
-                <button type="button" onClick={() => handleDownload(previewReport, 'CSV')} className="btn-secondary text-xs px-3 py-1.5">
+                <button type="button" onClick={() => handleDownload(previewReport, 'CSV')} className="btn-secondary text-xs px-3 py-1.5 flex-1 sm:flex-none">
                   Export CSV
                 </button>
-                <button type="button" onClick={() => handleDownload(previewReport, 'PDF')} className="btn-primary text-xs px-4 py-1.5">
+                <button type="button" onClick={() => handleDownload(previewReport, 'PDF')} className="btn-primary text-xs px-4 py-1.5 flex-1 sm:flex-none">
                   Download Complete PDF
                 </button>
               </div>

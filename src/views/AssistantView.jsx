@@ -97,16 +97,14 @@ export const AssistantView = () => {
 
       {/* Main Chat Interface */}
       <div className="gov-card" style={{
-            height: 'calc(100dvh - 230px)',
-            minHeight: '480px',
-            maxHeight: '750px',
+            height: 'clamp(320px, calc(100dvh - 180px), 750px)',
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden'
         }}>
         {/* Chat Header Bar */}
         <div style={{
-            padding: '12px 18px',
+            padding: '10px 16px',
             borderBottom: '1px solid var(--color-border)',
             background: 'var(--color-surface-nav)',
             display: 'flex',

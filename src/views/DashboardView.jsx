@@ -184,24 +184,24 @@ export const DashboardView = () => {
         {/* Table Toolbar: Search & Simple Status Filter */}
         <div className="p-3 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-slate-50/50">
           <div className="flex items-center gap-2">
-            <FolderGit2 size={15} className="text-sky-600"/>
+            <FolderGit2 size={15} className="text-sky-600 shrink-0"/>
             <span className="font-bold text-xs text-slate-800">
               {ministryTitle} Directory ({filteredProjects.length})
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
             {/* Search Input */}
-            <div className="relative">
+            <div className="relative flex-1 sm:flex-initial">
               <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"/>
-              <input type="text" placeholder="Search projects..." value={projectSearch} onChange={(e) => setProjectSearch(e.target.value)} className="gov-input pl-8 py-1 text-xs w-48 sm:w-60"/>
+              <input type="text" placeholder="Search projects..." value={projectSearch} onChange={(e) => setProjectSearch(e.target.value)} className="gov-input pl-8 py-1 text-xs w-full sm:w-56"/>
               {projectSearch && (<button type="button" onClick={() => setProjectSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
                   <X size={12}/>
                 </button>)}
             </div>
 
             {/* Status Filter */}
-            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="gov-select text-xs py-1 px-2.5">
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="gov-select text-xs py-1 px-2.5 shrink-0">
               <option value="all">All Statuses</option>
               <option value="on_track">On Track</option>
               <option value="delayed">Delayed</option>

@@ -301,7 +301,7 @@ export const ProjectsView = () => {
         </div>
 
         {/* Pagination Controls */}
-        {filteredProjects.length > pageSize && (<div className="p-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 bg-slate-50/50">
+        {filteredProjects.length > pageSize && (<div className="p-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs text-slate-500 bg-slate-50/50">
             <span>
               Showing {(currentPage - 1) * pageSize + 1} to{' '}
               {Math.min(currentPage * pageSize, filteredProjects.length)} of {filteredProjects.length} projects
@@ -322,7 +322,7 @@ export const ProjectsView = () => {
 
       {/* Add Project Modal for Authorised Users */}
       {showAddProjectModal && (<div className="paimana-modal-backdrop" onClick={() => setShowAddProjectModal(false)}>
-          <div className="paimana-modal-card max-w-lg" onClick={(e) => e.stopPropagation()}>
+          <div className="paimana-modal-card max-w-lg max-h-[calc(100dvh-24px)] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="paimana-modal-header">
               <h3 className="text-base font-bold text-slate-900">Add New Infrastructure Project</h3>
               <button className="text-slate-400 hover:text-slate-700" onClick={() => setShowAddProjectModal(false)}>
@@ -338,7 +338,7 @@ export const ProjectsView = () => {
                 <label className="block font-medium text-slate-700 mb-1">Project Name</label>
                 <input type="text" required placeholder="Full sanctioned project name" value={newProjectForm.name} onChange={(e) => setNewProjectForm({ ...newProjectForm, name: e.target.value })} className="gov-input w-full py-1.5 text-xs"/>
               </div>
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <div>
                   <label className="block font-medium text-slate-700 mb-1">Sector</label>
                   <select value={newProjectForm.sector} onChange={(e) => setNewProjectForm({ ...newProjectForm, sector: e.target.value })} className="gov-select w-full py-1.5 text-xs">
@@ -352,7 +352,7 @@ export const ProjectsView = () => {
                   <input type="text" required placeholder="e.g. Maharashtra" value={newProjectForm.state} onChange={(e) => setNewProjectForm({ ...newProjectForm, state: e.target.value })} className="gov-input w-full py-1.5 text-xs"/>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <div>
                   <label className="block font-medium text-slate-700 mb-1">Approved Cost (₹ Cr)</label>
                   <input type="number" min="150" required value={newProjectForm.originalCost} onChange={(e) => setNewProjectForm({ ...newProjectForm, originalCost: parseFloat(e.target.value) || 0 })} className="gov-input w-full py-1.5 text-xs"/>

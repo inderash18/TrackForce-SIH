@@ -206,9 +206,9 @@ export const DataManagementView = () => {
         /* TAB 1: IMPORTS WORKSPACE */
         <div className="space-y-3">
           {/* Subheader Toolbar with Template Download Link */}
-          <div className="gov-card p-3 flex items-center justify-between">
+          <div className="gov-card p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
             <div className="flex items-center gap-2 text-xs text-slate-600">
-              <FileSpreadsheet size={15} className="text-emerald-600"/>
+              <FileSpreadsheet size={15} className="text-emerald-600 shrink-0"/>
               <span>Standard Monthly CUF CSV/XLSX Returns</span>
             </div>
             <button type="button" onClick={handleDownloadTemplate} className="text-xs text-sky-600 hover:text-sky-800 font-semibold flex items-center gap-1">
@@ -364,7 +364,7 @@ export const DataManagementView = () => {
 
               {/* STEP 2: REVIEW & VALIDATION */}
               {importStep === 2 && validationResult && (<div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-2 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-slate-50 p-3 rounded-lg border border-slate-200">
                     <div>
                       <span className="text-[11px] text-slate-400 block">Total Records Found</span>
                       <strong className="text-sm text-slate-900">{validationResult.total_rows} rows</strong>
@@ -378,24 +378,24 @@ export const DataManagementView = () => {
                   </div>
 
                   <span className="font-semibold text-slate-800 block text-xs">Preview of Ingested Rows</span>
-                  <div className="border border-slate-200 rounded-md overflow-hidden text-[11px]">
-                    <div className="bg-slate-100 p-2 font-semibold text-slate-700 grid grid-cols-3">
+                  <div className="border border-slate-200 rounded-md overflow-x-auto text-[11px]">
+                    <div className="bg-slate-100 p-2 font-semibold text-slate-700 grid grid-cols-3 min-w-[280px]">
                       <span>Code</span>
                       <span>Project Name</span>
                       <span>Sector</span>
                     </div>
-                    {(validationResult.preview || []).slice(0, 3).map((r, idx) => (<div key={idx} className="p-2 border-t border-slate-100 grid grid-cols-3">
+                    {(validationResult.preview || []).slice(0, 3).map((r, idx) => (<div key={idx} className="p-2 border-t border-slate-100 grid grid-cols-3 min-w-[280px]">
                         <span className="font-mono text-slate-600">{r.code}</span>
                         <span className="truncate text-slate-800">{r.name}</span>
                         <span className="text-slate-500">{r.sector}</span>
                       </div>))}
                   </div>
 
-                  <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
-                    <button type="button" onClick={() => setImportStep(1)} className="btn-secondary text-xs px-3 py-1.5">
+                  <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 flex-wrap">
+                    <button type="button" onClick={() => setImportStep(1)} className="btn-secondary text-xs px-3 py-1.5 flex-1 sm:flex-none">
                       Back
                     </button>
-                    <button type="button" disabled={isImporting} onClick={handleConfirmImport} className="btn-primary text-xs px-4 py-1.5">
+                    <button type="button" disabled={isImporting} onClick={handleConfirmImport} className="btn-primary text-xs px-4 py-1.5 flex-1 sm:flex-none">
                       {isImporting ? 'Ingesting Data...' : 'Confirm & Commit Ingestion'}
                     </button>
                   </div>

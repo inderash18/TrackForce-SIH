@@ -72,7 +72,7 @@ export const LoginView = ({ onNavigate }) => {
 
       {/* Top Bar with Brand and Return Link */}
       <header style={{
-            padding: '24px 36px',
+            padding: '16px 20px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -135,7 +135,7 @@ export const LoginView = ({ onNavigate }) => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '20px',
+            padding: '16px',
             position: 'relative',
             zIndex: 10
         }}>
@@ -145,10 +145,10 @@ export const LoginView = ({ onNavigate }) => {
             background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.95) 100%)',
             backdropFilter: 'blur(24px)',
             WebkitBackdropFilter: 'blur(24px)',
-            borderRadius: '28px',
+            borderRadius: '24px',
             border: '1px solid rgba(255, 255, 255, 0.95)',
             boxShadow: '0 25px 60px -15px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.8)',
-            padding: '36px 32px 32px 32px',
+            padding: '28px 22px 24px 22px',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center'

@@ -14,7 +14,6 @@ export const Header = () => {
         user,
         logoutUser,
         navigateTo,
-        mobileNavOpen,
         setMobileNavOpen
     } = useApp();
 
