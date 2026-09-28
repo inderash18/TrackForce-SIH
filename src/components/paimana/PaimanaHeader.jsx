@@ -1,10 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useApp } from '../../context/AppContext';
 import { Menu, X, PlusCircle, LogIn, UserCheck } from 'lucide-react';
 export const PaimanaHeader = ({ activeRoute: explicitActiveRoute, onNavigate, onOpenAddProject, onOpenLoginModal }) => {
     const { navigateTo, user, activeRoute: contextActiveRoute } = useApp();
     const activeRoute = explicitActiveRoute || contextActiveRoute;
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape' && mobileMenuOpen) {
+                setMobileMenuOpen(false);
+            }
+        };
+        if (mobileMenuOpen) {
+            document.body.style.overflow = 'hidden';
+            window.addEventListener('keydown', handleKeyDown);
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [mobileMenuOpen]);
+
     const handleNavClick = (route) => {
         if (onNavigate) {
             onNavigate(route);
@@ -15,6 +35,7 @@ export const PaimanaHeader = ({ activeRoute: explicitActiveRoute, onNavigate, on
         setMobileMenuOpen(false);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
+
     return (<header className="paimana-header-unified" role="banner">
       {/* Main Glass Navbar */}
       <div className="paimana-navbar-main">
@@ -91,8 +112,9 @@ export const PaimanaHeader = ({ activeRoute: explicitActiveRoute, onNavigate, on
         </div>
       </div>
 
-      {/* Mobile Drawer Menu */}
-      {mobileMenuOpen && (<div className="paimana-mobile-overlay" onClick={() => setMobileMenuOpen(false)}>
+      {/* Mobile Drawer Menu rendered via Portal into body */}
+      {mobileMenuOpen && createPortal(
+        <div className="paimana-mobile-overlay" onClick={() => setMobileMenuOpen(false)}>
           <div className="paimana-mobile-sheet" onClick={(e) => e.stopPropagation()}>
             <div className="paimana-mobile-header">
               <div className="paimana-mobile-brand">
@@ -145,6 +167,8 @@ export const PaimanaHeader = ({ activeRoute: explicitActiveRoute, onNavigate, on
               </button>
             </nav>
           </div>
-        </div>)}
+        </div>,
+        document.body
+      )}
     </header>);
 };
