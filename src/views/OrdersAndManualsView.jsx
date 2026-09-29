@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { PaimanaHeader } from '../components/paimana/PaimanaHeader';
 import { PaimanaFooter } from '../components/paimana/PaimanaFooter';
+import { useApp } from '../context/AppContext';
 import { Download, Calendar, Search } from 'lucide-react';
+import { generateOfficialPDF } from '../utils/pdfGenerator';
 const DOCUMENTS_LIST = [
     {
         sNo: 1,
@@ -45,8 +47,31 @@ const DOCUMENTS_LIST = [
     }
 ];
 export const OrdersAndManualsView = ({ onNavigate, onOpenAddProject, onOpenLoginModal }) => {
+    const { showNotification } = useApp();
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [search, setSearch] = useState('');
+    const [downloadingNo, setDownloadingNo] = useState(null);
+
+    const handleDownload = (doc) => {
+        try {
+            setDownloadingNo(doc.documentNo);
+            const fileName = generateOfficialPDF({
+                title: doc.subject,
+                documentNo: doc.documentNo,
+                category: doc.category,
+                issueDate: doc.issueDate,
+                fileSize: doc.fileSize,
+                description: `Statutory Publication and Operational Directive issued under IPMD MoSPI: ${doc.subject}. Reference No: ${doc.documentNo}. Issued on: ${doc.issueDate}.`
+            });
+            if (showNotification) {
+                showNotification(`Downloaded statutory document: ${fileName}`);
+            }
+        } catch (err) {
+            console.error('Error downloading document PDF:', err);
+        } finally {
+            setTimeout(() => setDownloadingNo(null), 600);
+        }
+    };
     const filteredDocs = DOCUMENTS_LIST.filter((d) => {
         if (selectedCategory !== 'All' && d.category !== selectedCategory)
             return false;
@@ -132,8 +157,8 @@ export const OrdersAndManualsView = ({ onNavigate, onOpenAddProject, onOpenLogin
                         </div>
                       </td>
                       <td style={{ textAlign: 'center' }}>
-                        <button type="button" className="paimana-action-btn-dl" onClick={() => alert(`Downloading Document: ${d.documentNo}`)} title={`Download ${d.subject}`}>
-                          <Download size={13}/> PDF ({d.fileSize})
+                        <button type="button" className="paimana-action-btn-dl" onClick={() => handleDownload(d)} title={`Download ${d.subject}`}>
+                          <Download size={13}/> {downloadingNo === d.documentNo ? 'Saving...' : `PDF (${d.fileSize})`}
                         </button>
                       </td>
                     </tr>))}

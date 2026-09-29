@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext';
 import { sectorSummaryList } from '../data/nationalMetrics';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { ShieldAlert, AlertTriangle, ChevronRight, TrendingUp, Search, RotateCcw, Download, Flame, DollarSign, Clock, Layers, MapPin, Building2, Info } from 'lucide-react';
+import { generateOfficialPDF } from '../utils/pdfGenerator';
 export const RiskMonitorView = () => {
     const { projects, navigateToProject, reportingMonth, showNotification } = useApp();
     const [selectedRiskTier, setSelectedRiskTier] = useState('all');
@@ -57,7 +58,22 @@ export const RiskMonitorView = () => {
         };
     }, [projects]);
     const handleExport = () => {
-        showNotification('Generating Risk Surveillance Dossier (PDF/Excel)...');
+        try {
+            const fileName = generateOfficialPDF({
+                title: 'National Infrastructure Risk Surveillance & Early Warning Dossier',
+                classification: 'Restricted / Official Use',
+                period: reportingMonth || 'FY 2025-2026',
+                description: 'Comprehensive risk classification dossier covering critical projects with severe milestone stagnation, schedule deviation, and cost escalation across line ministries.',
+                totalCost: `₹${metrics.criticalOutlayCr}K Cr`,
+                projectsMonitored: `${projects.length} Monitored`,
+                criticalProjects: `${metrics.criticalCount} Critical`,
+                avgCompletion: '64.8%'
+            });
+            showNotification(`Downloaded Risk Surveillance Dossier: ${fileName}`);
+        } catch (err) {
+            console.error('Error generating PDF:', err);
+            showNotification('Failed to generate PDF dossier.', 'error');
+        }
     };
     const resetFilters = () => {
         setSelectedRiskTier('all');

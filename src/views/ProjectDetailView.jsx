@@ -5,6 +5,7 @@ import { SHAPExplanationChart } from '../components/charts/SHAPExplanationChart'
 import { ProgressTimelineChart } from '../components/charts/ProgressTimelineChart';
 import { MilestoneAuditPanel } from '../components/milestones/MilestoneAuditPanel';
 import { Building2, Clock, Sparkles, SlidersHorizontal, FileText, MapPin, ChevronRight, AlertTriangle, Send, Bot, User, X, MoreHorizontal, Gauge, Wallet, IndianRupee, Target, ClipboardList, Cpu, ArrowLeft } from 'lucide-react';
+import { generateOfficialPDF } from '../utils/pdfGenerator';
 const NOT_AVAILABLE = 'Not available';
 const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
 const inr = (v) => (isNum(v) ? `\u20B9${v.toLocaleString('en-IN')} Cr` : NOT_AVAILABLE);
@@ -251,8 +252,23 @@ export const ProjectDetailView = () => {
               <span>Ask AI</span>
             </button>
             <button type="button" className="ui-btn ui-btn-primary" onClick={() => {
-            showNotification(`Exporting executive dossier for ${p.code}...`);
-            navigateTo('reports');
+            try {
+              const fileName = generateOfficialPDF({
+                title: `${p.name} - Official Project Dossier`,
+                id: p.code || p.id,
+                category: p.sector || 'Central Sector Infrastructure',
+                classification: 'Official Technical Dossier',
+                totalCost: inr(p.sanctionedCostCr || p.costCr),
+                projectsMonitored: '1 Monitored Asset',
+                criticalProjects: p.riskLevel,
+                avgCompletion: pct(p.physicalProgressPct),
+                description: `Detailed project dossier for ${p.name} (${p.code}). Implementing Agency: ${p.agency || 'MoSPI'}. State: ${p.state}. Current physical progress: ${p.physicalProgressPct}%. Risk classification: ${p.riskLevel} with predicted delay of ${p.predictedDelayMonths || 0} months.`
+              });
+              showNotification(`Downloaded project dossier: ${fileName}`);
+            } catch (err) {
+              console.error('Error exporting dossier:', err);
+              showNotification('Failed to generate project dossier PDF.', 'error');
+            }
         }}>
               <FileText size={14} aria-hidden="true"/>
               <span>Export Dossier</span>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { FileText, Download, Calendar, Sparkles, ChevronRight } from 'lucide-react';
+import { generateOfficialPDF } from '../../utils/pdfGenerator';
 const PUBLICATIONS_LIST = [
     {
         id: 'pub-01',
@@ -54,18 +55,32 @@ const PUBLICATIONS_LIST = [
     }
 ];
 export const WhatsNewSection = () => {
-    const { navigateTo } = useApp();
+    const { navigateTo, showNotification } = useApp();
     const [activeFilter, setActiveFilter] = useState('all');
     const [downloadingId, setDownloadingId] = useState(null);
     const filteredPublications = activeFilter === 'all'
         ? PUBLICATIONS_LIST
         : PUBLICATIONS_LIST.filter((p) => p.category === activeFilter);
     const handleDownload = (pub) => {
-        setDownloadingId(pub.id);
-        setTimeout(() => {
-            setDownloadingId(null);
-            navigateTo('reports');
-        }, 400);
+        try {
+            setDownloadingId(pub.id);
+            const fileName = generateOfficialPDF({
+                title: `${pub.title} (${pub.period})`,
+                period: pub.period,
+                category: pub.category,
+                fileSize: pub.fileSize,
+                description: pub.description
+            });
+            if (showNotification) {
+                showNotification(`Downloaded publication: ${fileName}`);
+            }
+        } catch (err) {
+            console.error('Error downloading PDF:', err);
+        } finally {
+            setTimeout(() => {
+                setDownloadingId(null);
+            }, 600);
+        }
     };
     return (<section id="whats-new" className="paimana-whatsnew-section" aria-labelledby="whatsnew-heading">
       <div className="paimana-section-container">

@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { PaimanaHeader } from '../components/paimana/PaimanaHeader';
 import { PaimanaFooter } from '../components/paimana/PaimanaFooter';
-import { FileText, Download, Calendar, Eye, Archive, ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { FileText, Download, Calendar, Eye, Archive, ChevronLeft, ChevronRight, Search, CheckCircle } from 'lucide-react';
+import { generateOfficialPDF } from '../utils/pdfGenerator';
 const PROJECT_MONITORING_REPORTS = [
     {
         id: 'pm-2026-03',
@@ -100,7 +101,8 @@ const PROJECT_MONITORING_REPORTS = [
     }
 ];
 export const ProjectMonitoringReportsView = ({ isArchiveMode = false, onNavigate, onOpenAddProject, onOpenLoginModal }) => {
-    const { navigateTo } = useApp();
+    const { navigateTo, showNotification } = useApp();
+    const [downloadingId, setDownloadingId] = useState(null);
     const [selectedType, setSelectedType] = useState('All');
     const [selectedYear, setSelectedYear] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
@@ -132,10 +134,17 @@ export const ProjectMonitoringReportsView = ({ isArchiveMode = false, onNavigate
     const totalPages = Math.ceil(filteredReports.length / pageSize) || 1;
     const paginatedReports = filteredReports.slice((currentPage - 1) * pageSize, currentPage * pageSize);
     const handleDownload = (r) => {
-        const link = document.createElement('a');
-        link.href = '#';
-        link.setAttribute('download', `${r.id}_FlashReport.pdf`);
-        alert(`Downloading Official MoSPI Document: ${r.title}`);
+        try {
+            setDownloadingId(r.id);
+            const fileName = generateOfficialPDF(r);
+            if (showNotification) {
+                showNotification(`Downloaded official PDF: ${fileName}`);
+            }
+        } catch (err) {
+            console.error('PDF generation error:', err);
+        } finally {
+            setTimeout(() => setDownloadingId(null), 600);
+        }
     };
     return (<div className="paimana-portal-wrapper">
       <PaimanaHeader activeRoute={isArchiveMode ? 'archive-project-monitoring' : 'project-monitoring'} onNavigate={onNavigate} onOpenAddProject={onOpenAddProject} onOpenLoginModal={onOpenLoginModal}/>

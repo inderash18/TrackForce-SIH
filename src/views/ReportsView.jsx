@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { standardReportsList } from '../data/reportsData';
 import { useApp } from '../context/AppContext';
 import { Search, Download, Eye, PlusCircle, FileText, X } from 'lucide-react';
+import { generateOfficialPDF } from '../utils/pdfGenerator';
 export const ReportsView = () => {
     const { showNotification, reportingMonth, scopedProjects, user } = useApp();
     const [activeTab, setActiveTab] = useState('current');
@@ -36,19 +37,39 @@ export const ReportsView = () => {
         });
     }, [activeTab, filterType, search]);
     const handleDownload = (rep, format) => {
-        // Generate actual file download
-        const filename = `${rep.title.replace(/\s+/g, '_')}_${(reportingMonth || '2026').replace(/\s+/g, '_')}.${format.toLowerCase()}`;
-        const scopeLabel = user.isNationalOversight ? 'All Central Sector Projects (>150 Cr)' : `${user.ministry} Monitored Projects`;
-        const content = `PAIMANA Infrastructure Intelligence Report\nTitle: ${rep.title}\nReporting Period: ${reportingMonth}\nGenerated: ${new Date().toLocaleDateString()}\nScope: ${scopeLabel}\nTotal Projects Monitored: ${scopedProjects.length}\nClassification: ${rep.classification}\n`;
-        const blob = new Blob([content], { type: format === 'PDF' ? 'application/pdf' : 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        showNotification(`Downloaded "${rep.title}" as ${format} package.`);
+        if (format === 'PDF') {
+            try {
+                const fileName = generateOfficialPDF({
+                    title: rep.title,
+                    id: rep.id,
+                    category: rep.category,
+                    classification: rep.classification,
+                    period: reportingMonth || 'FY 2025-2026',
+                    description: rep.description,
+                    totalCost: '₹3,42,850 Cr',
+                    projectsMonitored: `${scopedProjects.length} Projects`,
+                    criticalProjects: '184 Delayed'
+                });
+                showNotification(`Downloaded official PDF: ${fileName}`);
+            } catch (err) {
+                console.error('PDF generation error:', err);
+                showNotification(`Failed to generate PDF for ${rep.title}`, 'error');
+            }
+        } else {
+            // Generate CSV/XLSX text file
+            const filename = `${rep.title.replace(/\s+/g, '_')}_${(reportingMonth || '2026').replace(/\s+/g, '_')}.csv`;
+            const scopeLabel = user.isNationalOversight ? 'All Central Sector Projects (>150 Cr)' : `${user.ministry} Monitored Projects`;
+            const content = `PAIMANA Infrastructure Intelligence Report\nTitle: ${rep.title}\nReporting Period: ${reportingMonth}\nGenerated: ${new Date().toLocaleDateString()}\nScope: ${scopeLabel}\nTotal Projects Monitored: ${scopedProjects.length}\nClassification: ${rep.classification}\n`;
+            const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showNotification(`Downloaded "${rep.title}" data export.`);
+        }
     };
     const handleGenerateSubmit = (e) => {
         e.preventDefault();
@@ -56,6 +77,14 @@ export const ReportsView = () => {
         setTimeout(() => {
             setIsGenerating(false);
             setShowGenerateModal(false);
+            if (generateForm.format === 'PDF') {
+                generateOfficialPDF({
+                    title: `${generateForm.type} - Custom Executive Dossier`,
+                    category: generateForm.type,
+                    period: generateForm.period,
+                    description: `Custom Generated Dossier for ${generateForm.scope}. Synthesized by PAIMANA Sentinel AI engine.`
+                });
+            }
             showNotification(`Generated official ${generateForm.type} for ${generateForm.period} (${generateForm.format}).`);
         }, 800);
     };
